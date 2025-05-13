@@ -1,3 +1,3 @@
 #include "vinile.h"
 
-cd::cd() {}
+vinile::vinile() {}

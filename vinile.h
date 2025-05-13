@@ -1,10 +1,9 @@
 #ifndef VINILE_H
 #define VINILE_H
 
-class cd
-{
+class vinile {
 public:
-    cd();
+    vinile();
 };
 
 #endif // VINILE_H
