@@ -1,10 +1,22 @@
 #ifndef LIBRO_H
 #define LIBRO_H
 
-class libro
-{
+#include <QString>
+
+class libro {
+private:
+    QString titolo;
+    QString autore;
+    QString editore;
+    QString descrizione;
+
 public:
-    libro();
+    libro(const QString& titolo, const QString& autore, const QString& editore, const QString& descrizione);
+
+    QString getTitolo() const;
+    QString getAutore() const;
+    QString getEditore() const;
+    QString getDescrizione() const;
 };
 
 #endif // LIBRO_H
