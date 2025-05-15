@@ -9,7 +9,6 @@ private:
     string produzione;
 public:
     audiovisivo(QImage immagine, string titolo, float prezzo, Data dataPubblicazione, string genere, bool disponibilita, int copie, int durata, string produzione);
-    virtual ~audiovisivo();
     int getDurata() const;
     string getProduzione() const;
 };

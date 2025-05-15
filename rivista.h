@@ -18,7 +18,6 @@ private:
 public:
     rivista(QImage immagine, string titolo, float prezzo, Data dataPubblicazione, string genere,
             bool disponibilita, int copie, string autore, string editore, int numero, periodicita tipoPeriodicita);
-    virtual ~rivista();
     int getNumero() const;
     periodicita getPeriodicita() const;
 };

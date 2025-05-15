@@ -15,7 +15,6 @@ private:
 public:
     libro(QImage immagine, string titolo, float prezzo, Data dataPubblicazione, string genere, bool disponibilita,
           int copie, string autore, string editore, string lingua, formato tipoFormato);
-    virtual ~libro();
     formato getFormato() const;
     string getLingua() const;
 };

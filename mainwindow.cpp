@@ -13,83 +13,87 @@
 MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent) {
     this->setMinimumSize(400,300);
 
-    // Creazione della pagina principale (central widget)
-    centralWidget = new QWidget(this);
-    setCentralWidget(centralWidget);
+    //Inizializzazione pagine
+    paginaPrincipale = new QWidget(this);
+    paginaNuovoMedia = new QWidget(this);
 
-    // Creazione del layout principale
-    mainLayout = new QVBoxLayout();
-    centralWidget->setLayout(mainLayout);
+    //Pagina principale
 
-    // Creazione del layout per la barra dei bottoni
-    buttonBarLayout = new QHBoxLayout();
-    mainLayout->addLayout(buttonBarLayout);
+    //Top Bar
+    QHBoxLayout *layoutTopBar = new QHBoxLayout();
 
-    // Creazione del layout per il corpo centrale
-    centralBodyLayout = new QHBoxLayout();
-    mainLayout->addLayout(centralBodyLayout);
+    QPushButton *button1 = new QPushButton("Bottone 1");
+    QPushButton *button2 = new QPushButton("Bottone 2");
+    QPushButton *toNuovoMedia = new QPushButton("Vai a Pagina 2");
 
+    layoutTopBar->addWidget(button1);
+    layoutTopBar->addWidget(button2);
+    layoutTopBar->addWidget(toNuovoMedia);
 
-    // Creazione del pannello di sinistra e relativo layout
-    leftPanel = new QWidget();
-    leftPanelLayout = new QVBoxLayout();  // Creazione separata del layout
-    leftPanel->setLayout(leftPanelLayout);  // Assegnazione del layout al pannello
+    //Left Panel
+    QVBoxLayout *layoutLeftPanel = new QVBoxLayout();
 
-
-    //Buttons Bar
-    button1 = new QPushButton("Bottone 1");
-    button2 = new QPushButton("Bottone 2");
-    buttonBarLayout->addWidget(button1);
-    buttonBarLayout->addWidget(button2);
-
-    //Search Bar
     QLineEdit *searchBar = new QLineEdit();
     searchBar->setPlaceholderText("Cerca...");
-    leftPanelLayout->addWidget(searchBar);
+    QLabel *leftLabel = new QLabel("Risultati:");
+    QListWidget *listaMedia = new QListWidget();
+    for (int i = 1; i <= 50; ++i) { //Esempio
+        listaMedia->addItem("Media " + QString::number(i));
+    }
 
-    //Info Label
-    QLabel *infoLabel = new QLabel("Testo iniziale");
-    leftPanelLayout->addWidget(infoLabel);
+    layoutLeftPanel->addWidget(searchBar);
+    layoutLeftPanel->addWidget(leftLabel);
+    layoutLeftPanel->addWidget(listaMedia);
 
-    //Scroll Panel
-    QListWidget *listaLibri = new QListWidget();
-    leftPanelLayout->addWidget(listaLibri);
+    QWidget *leftPanel = new QWidget();
+    leftPanel->setLayout(layoutLeftPanel);
 
     //Right Panel
-    rightPanel = new QLabel("Pannello destro");
-    rightPanel->setStyleSheet("background-color: lightgray; padding: 20px;");
+    QWidget *rightPanel = new QWidget();
+    rightPanel->setStyleSheet("background-color: white;");
 
-    //Unione Left e Right Panel
-    centralBodyLayout->addWidget(leftPanel, 1);
-    centralBodyLayout->addWidget(rightPanel, 3);
+    //Layout left e right panel
+    QHBoxLayout *LayoutLeftRightPanel = new QHBoxLayout();
+    LayoutLeftRightPanel->addWidget(leftPanel, 1);
+    LayoutLeftRightPanel->addWidget(rightPanel, 3);
 
-    //Prova
-    libro *libro1 = new libro("a", "n", "c", "d");
+    //Layout pagina principale
+    QVBoxLayout *layoutPaginaPrincipale = new QVBoxLayout();
+    layoutPaginaPrincipale->addLayout(layoutTopBar);
+    layoutPaginaPrincipale->addLayout(LayoutLeftRightPanel);
+    paginaPrincipale->setLayout(layoutPaginaPrincipale);
 
-    QListWidgetItem *item = new QListWidgetItem();
+    //Pagina nuovo media
 
-    QString itemText = "Titolo: " + libro1->getTitolo() + "\n"
-                       + "Autore: " + libro1->getAutore() + "\n"
-                       + "Editore: " + libro1->getEditore() + "\n"
-                       + "Descrizione: " + libro1->getDescrizione();
-    item->setText(itemText);
-    listaLibri->addItem(item);
+    //Top Bar
+    QHBoxLayout *topBar2Layout = new QHBoxLayout();
+    QPushButton *button21 = new QPushButton("Bottone 1");
+    QPushButton *button22 = new QPushButton("Bottone 2");
+    QPushButton *toPrincipale = new QPushButton("Torna a Pagina 1");
+    topBar2Layout->addWidget(button21);
+    topBar2Layout->addWidget(button22);
+    topBar2Layout->addWidget(toPrincipale);
 
-    connect(listaLibri, &QListWidget::itemClicked, this, &MainWindow::onItemClicked);
+    paginaNuovoMedia->setLayout(topBar2Layout);
+
+    // Stack di pagine
+    stackedWidget = new QStackedWidget(this);
+    stackedWidget->addWidget(paginaPrincipale);
+    stackedWidget->addWidget(paginaNuovoMedia);
+    stackedWidget->setCurrentWidget(paginaPrincipale);
+    setCentralWidget(stackedWidget);
+
+    // Connessioni
+    connect(toPrincipale, &QPushButton::clicked, this, &MainWindow::showPaginaPrincipale);
+    connect(toNuovoMedia, &QPushButton::clicked, this, &MainWindow::showPaginaNuovoMedia);
 }
 
 MainWindow::~MainWindow() {}
 
-void MainWindow::onItemClicked(QListWidgetItem *item)
-{
-    // Quando un item è cliccato, aggiorna il pannello a destra con i dettagli del libro
-    if (item) {
-        // Ottieni il titolo del libro selezionato
-        QString titolo = item->text();
+void MainWindow::showPaginaPrincipale() {
+    stackedWidget->setCurrentWidget(paginaPrincipale);
+}
 
-        // Controlla quale libro è stato selezionato
-        QString details = "ciao";
-        rightPanel->setText(details);
-
-    }
+void MainWindow::showPaginaNuovoMedia() {
+    stackedWidget->setCurrentWidget(paginaNuovoMedia);
 }

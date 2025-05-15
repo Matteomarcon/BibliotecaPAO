@@ -16,7 +16,6 @@ private:
     int copie;
 public:
     Media(QImage immagine, string titolo, float prezzo, Data dataPubblicazione, string genere, bool disponibilita, int copie);
-    virtual ~Media();
     QImage getImmagine() const;
     string getTitolo() const;
     float getPrezzo() const;

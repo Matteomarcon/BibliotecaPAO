@@ -9,7 +9,6 @@ private:
 public:
     vinile(QImage immagine, string titolo, float prezzo, Data dataPubblicazione, string genere, bool disponibilita, int copie, int durata, string produzione,
 string artista, int numeroTracce);
-    virtual ~vinile();
     string getArtista() const;
     int getNumeroTracce() const;
 };
