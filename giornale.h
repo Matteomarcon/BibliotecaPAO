@@ -1,10 +1,18 @@
 #ifndef GIORNALE_H
 #define GIORNALE_H
+#include "cartaceo.h"
 
-class Giornale
+class Giornale: public cartaceo
 {
+private:
+    string testata;
+
 public:
-    Giornale();
+    Giornale(QImage immagine, string titolo, float prezzo, Data dataPubblicazione, string genere, bool disponibilita, int copie, string autore, string editore,
+string testata);
+    virtual ~Giornale();
+    string getTestata() const;
+
 };
 
 #endif // GIORNALE_H

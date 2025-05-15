@@ -1,18 +1,16 @@
 #include "libro.h"
 
-libro::libro(const QString& titolo, const QString& autore, const QString& editore, const QString& descrizione) : titolo(titolo), autore(autore), editore(editore), descrizione(descrizione) {
+libro::libro(QImage immagine, string titolo, float prezzo, Data dataPubblicazione, string genere, bool disponibilita,
+             int copie, string autore, string editore, string lingua, formato tipoFormato) :
+    cartaceo(immagine, titolo, prezzo, dataPubblicazione, genere, disponibilita,
+               copie, autore, editore), lingua(lingua), tipoFormato(tipoFormato) {
 
 }
 
-QString libro::getTitolo() const {
-    return titolo;
+string libro::getLingua() const {
+    return lingua;
 }
-QString libro::getAutore() const {
-    return autore;
-}
-QString libro::getEditore() const {
-    return editore;
-}
-QString libro::getDescrizione() const {
-    return descrizione;
+
+libro::formato libro::getFormato() const {
+    return tipoFormato;
 }

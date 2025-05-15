@@ -1,22 +1,23 @@
 #ifndef LIBRO_H
 #define LIBRO_H
-
+#include "cartaceo.h"
 #include <QString>
 
-class libro {
+class libro: public cartaceo {
 private:
-    QString titolo;
-    QString autore;
-    QString editore;
-    QString descrizione;
-
+    enum formato {
+        copertinaRigida,
+        tascabile,
+        ebook
+    };
+    string lingua;
+    formato tipoFormato;
 public:
-    libro(const QString& titolo, const QString& autore, const QString& editore, const QString& descrizione);
-
-    QString getTitolo() const;
-    QString getAutore() const;
-    QString getEditore() const;
-    QString getDescrizione() const;
+    libro(QImage immagine, string titolo, float prezzo, Data dataPubblicazione, string genere, bool disponibilita,
+          int copie, string autore, string editore, string lingua, formato tipoFormato);
+    virtual ~libro();
+    formato getFormato() const;
+    string getLingua() const;
 };
 
 #endif // LIBRO_H
