@@ -10,6 +10,7 @@ class MainWindow : public QMainWindow {
 private slots:
     void showPaginaPrincipale();
     void showPaginaNuovoMedia();
+    QWidget * widgetMedia(const QString& titolo, const QString& descrizione, const QIcon& icona);
 
 private:
     QStackedWidget *stackedWidget;

@@ -1,7 +1,7 @@
 #include "media.h"
 using std::string;
 
-Media::Media( QImage immagine, string titolo, float prezzo, Data dataPubblicazione, string genere, bool disponibilita, int copie):
+Media::Media(QImage immagine, string titolo, float prezzo, Data dataPubblicazione, string genere, bool disponibilita, int copie):
     immagine(immagine), titolo(titolo), prezzo(prezzo), dataPubblicazione(dataPubblicazione), genere(genere), disponibilita(disponibilita), copie(copie){
 
 }
