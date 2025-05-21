@@ -15,6 +15,8 @@ private:
     bool disponibilita;
     int copie;
 public:
+    virtual ~Media() {}
+
     Media(QImage immagine, string titolo, float prezzo, Data dataPubblicazione, string genere, bool disponibilita, int copie);
     QImage getImmagine() const;
     string getTitolo() const;

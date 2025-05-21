@@ -1,4 +1,4 @@
-#include "gestione_json.h"
+#include "gestorejson.h"
 #include <QJsonDocument>
 #include <QJsonArray>
 #include <QStringList>
@@ -13,9 +13,9 @@
 #include "rivista.h"
 #include "vinile.h"
 
-gestione_json::gestione_json(const QString& nomeFile) : percorsoFile(nomeFile) {}
+GestoreJson::GestoreJson(const QString& nomeFile) : percorsoFile(nomeFile) {}
 
-void gestione_json::salvaNuovoMedia(Media* nuovoMedia) {
+void GestoreJson::salvaNuovoMedia(Media* nuovoMedia) {
     media.append(nuovoMedia);
     QJsonObject nuovoOggetto;
     if (typeid(*nuovoMedia)==typeid(Libro)) {
@@ -35,7 +35,7 @@ void gestione_json::salvaNuovoMedia(Media* nuovoMedia) {
     }
     QFile file(percorsoFile);
     if (!file.open(QIODevice::ReadOnly)) {
-        throw std::runtime_error("Impossibile aprire dati.json");
+        throw std::runtime_error("Impossibile aprire 1 dati.json");
     }
     QJsonDocument documento = QJsonDocument::fromJson(file.readAll());
     file.close();
@@ -48,15 +48,19 @@ void gestione_json::salvaNuovoMedia(Media* nuovoMedia) {
 
     QFile outputFile(percorsoFile);
     QJsonDocument aggiornaDocumento(jsonArray);
-    if (!file.open(QIODevice::WriteOnly)) {
-        throw std::runtime_error("Impossibile aprire dati.json");
+    if (!outputFile.open(QIODevice::WriteOnly)) {
+        throw std::runtime_error("Impossibile aprire 2 dati.json");
         return;
     }
     outputFile.write(aggiornaDocumento.toJson());
     outputFile.close();
+
+    if (typeid(*nuovoMedia)!=typeid(Vinile)) {
+        qDebug() << "Vinile rilevato";
+    }
 }
 
-void gestione_json::salvaMedia(Media* media, QJsonObject& oggetto){
+void GestoreJson::salvaMedia(Media* media, QJsonObject& oggetto){
     QImage image = media->getImmagine();
     QByteArray byteArray;
     QBuffer buffer(&byteArray);
@@ -73,17 +77,17 @@ void gestione_json::salvaMedia(Media* media, QJsonObject& oggetto){
     oggetto["Copie"] = media->getCopie();
 }
 
-void gestione_json::salvaMedia(Audiovisivo* audiovisivo, QJsonObject& oggetto){
+void GestoreJson::salvaMedia(Audiovisivo* audiovisivo, QJsonObject& oggetto){
     oggetto["Durata"] = audiovisivo->getDurata();
     oggetto["Produzione"] = QString::fromStdString(audiovisivo->getProduzione());
 }
 
-void gestione_json::salvaMedia(Cartaceo* cartaceo, QJsonObject& oggetto){
+void GestoreJson::salvaMedia(Cartaceo* cartaceo, QJsonObject& oggetto){
     oggetto["Autore"] = QString::fromStdString(cartaceo->getAutore());
     oggetto["Editore"] = QString::fromStdString(cartaceo->getEditore());
 }
 
-QJsonObject gestione_json::salvaMedia(Libro* libro){
+QJsonObject GestoreJson::salvaMedia(Libro* libro){
     QJsonObject oggetto;
     oggetto["Classe"]="Libro";
     salvaMedia(static_cast<Media*>(libro), oggetto);
@@ -105,7 +109,7 @@ QJsonObject gestione_json::salvaMedia(Libro* libro){
     return oggetto;
 }
 
-QJsonObject gestione_json::salvaMedia(Rivista* rivista){
+QJsonObject GestoreJson::salvaMedia(Rivista* rivista){
     QJsonObject oggetto;
     oggetto["Classe"]="Rivista";
     salvaMedia(static_cast<Media*>(rivista), oggetto);
@@ -136,7 +140,7 @@ QJsonObject gestione_json::salvaMedia(Rivista* rivista){
     return oggetto;
 }
 
-QJsonObject gestione_json::salvaMedia(Vinile* vinile){
+QJsonObject GestoreJson::salvaMedia(Vinile* vinile){
     QJsonObject oggetto;
     oggetto["Classe"]="Vinile";
     salvaMedia(static_cast<Media*>(vinile), oggetto);
@@ -146,7 +150,7 @@ QJsonObject gestione_json::salvaMedia(Vinile* vinile){
     return oggetto;
 }
 
-QJsonObject gestione_json::salvaMedia(Film* film){
+QJsonObject GestoreJson::salvaMedia(Film* film){
     QJsonObject oggetto;
     oggetto["Classe"]="Film";
     salvaMedia(static_cast<Media*>(film), oggetto);
@@ -157,7 +161,7 @@ QJsonObject gestione_json::salvaMedia(Film* film){
     return oggetto;
 }
 
-QJsonObject gestione_json::salvaMedia(Giornale* giornale){
+QJsonObject GestoreJson::salvaMedia(Giornale* giornale){
     QJsonObject oggetto;
     oggetto["Classe"]="Giornale";
     salvaMedia(static_cast<Media*>(giornale), oggetto);

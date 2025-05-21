@@ -13,7 +13,8 @@ SOURCES += \
     cartaceo.cpp \
     data.cpp \
     film.cpp \
-    gestione_json.cpp \
+    gestorejson.cpp \
+    gestoremedia.cpp \
     giornale.cpp \
     libro.cpp \
     main.cpp \
@@ -27,7 +28,8 @@ HEADERS += \
     cartaceo.h \
     data.h \
     film.h \
-    gestione_json.h \
+    gestorejson.h \
+    gestoremedia.h \
     giornale.h \
     libro.h \
     mainwindow.h \

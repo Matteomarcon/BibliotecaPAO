@@ -1,4 +1,6 @@
 #include "mainwindow.h"
+#include "vinile.h"
+#include "gestoremedia.h"
 
 #include <QPushButton>
 #include <QHBoxLayout>
@@ -13,7 +15,7 @@
 #include <QFormLayout>
 #include <QComboBox>
 #include <QCheckBox>
-#include <QSpinBox>
+#include <QFileDialog>
 
 MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent) {
     this->setMinimumSize(400,300);
@@ -27,16 +29,33 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent) {
     //Top Bar
     QHBoxLayout *layoutTopBar = new QHBoxLayout();
 
-    QPushButton *button1 = new QPushButton("Bottone 1");
-    QPushButton *button2 = new QPushButton("Bottone 2");
-    QPushButton *toNuovoMedia = new QPushButton("Vai a Pagina 2");
+    QPushButton *nuovaBibiotecaButton = new QPushButton("  Apri Biblioteca");
+    QPushButton *toNuovoMedia = new QPushButton("Nuovo Media");
+    nuovaBibiotecaButton->setStyleSheet(
+        "QPushButton {"
+        "  background-color: transparent;"
+        "  border: none;"
+        "}"
+        );
+    toNuovoMedia->setStyleSheet(
+        "QPushButton {"
+        "  background-color: transparent;"
+        "  border: none;"
+        "}"
+        );
 
-    layoutTopBar->addWidget(button1);
-    layoutTopBar->addWidget(button2);
+    nuovaBibiotecaButton->setIconSize(QSize(36, 36));
+    toNuovoMedia->setIconSize(QSize(48, 48));
+
+    nuovaBibiotecaButton->setIcon(QIcon("C:/Users/javie/Desktop/folder.png"));
+    toNuovoMedia->setIcon(QIcon("C:/Users/javie/Desktop/add.png"));
+
+    layoutTopBar->addWidget(nuovaBibiotecaButton);
     layoutTopBar->addWidget(toNuovoMedia);
 
     //Left Panel
     QVBoxLayout *layoutLeftPanel = new QVBoxLayout();
+    layoutLeftPanel->addLayout(layoutTopBar);
 
     QLineEdit *searchBar = new QLineEdit();
     searchBar->setPlaceholderText("Cerca...");
@@ -72,13 +91,12 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent) {
 
     //Layout pagina principale
     QVBoxLayout *layoutPaginaPrincipale = new QVBoxLayout();
-    layoutPaginaPrincipale->addLayout(layoutTopBar);
     layoutPaginaPrincipale->addLayout(LayoutLeftRightPanel);
     paginaPrincipale->setLayout(layoutPaginaPrincipale);
 
-    //Pagina nuovo media
+    // Pagina nuovo media
 
-    //Top Bar
+    // Top Bar
     QHBoxLayout *topBar2Layout = new QHBoxLayout();
     QPushButton *button21 = new QPushButton("Bottone 1");
     QPushButton *button22 = new QPushButton("Bottone 2");
@@ -88,69 +106,94 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent) {
     topBar2Layout->addWidget(toPrincipale);
     topBar2Layout->setAlignment(Qt::AlignTop);
 
-    // Layout principale della pagina
+    // Layout principale
     QVBoxLayout *layoutNuovoMedia = new QVBoxLayout(paginaNuovoMedia);
     layoutNuovoMedia->addLayout(topBar2Layout);
 
-    // Selettore tipo media
-    QComboBox *comboTipoMedia = new QComboBox();
-    comboTipoMedia->addItem("Libro");
-    comboTipoMedia->addItem("Film");
-    // Aggiungi gli altri 3 tipi
-    layoutNuovoMedia->addWidget(new QLabel("Tipo di media:"));
-    layoutNuovoMedia->addWidget(comboTipoMedia);
+    // Stack dei form
+    QStackedWidget *formStack = new QStackedWidget();
+    layoutNuovoMedia->addWidget(formStack);
 
-    // Form comune
-    QFormLayout *formComune = new QFormLayout();
-    QLineEdit *inputTitolo = new QLineEdit();
-    QLineEdit *inputPrezzo = new QLineEdit();
-    QLineEdit *inputData = new QLineEdit(); // oppure QDateEdit
-    QLineEdit *inputGenere = new QLineEdit();
-    QCheckBox *checkDisponibile = new QCheckBox("Disponibile");
-    QSpinBox *inputCopie = new QSpinBox();
-    inputCopie->setRange(0, 1000);
+    // Form Vinile
+    QWidget *vinileForm = new QWidget();
+    QFormLayout *vinileLayout = new QFormLayout(vinileForm);
 
-    formComune->addRow("Titolo:", inputTitolo);
-    formComune->addRow("Prezzo:", inputPrezzo);
-    formComune->addRow("Data pubblicazione:", inputData);
-    formComune->addRow("Genere:", inputGenere);
-    formComune->addRow("", checkDisponibile);
-    formComune->addRow("Copie:", inputCopie);
+    // Campi comuni
+    QLineEdit *titoloEdit = new QLineEdit();
+    QLineEdit *prezzoEdit = new QLineEdit();
+    QLineEdit *genereEdit = new QLineEdit();
+    QLineEdit *copieEdit = new QLineEdit();
+    QCheckBox *disponibileBox = new QCheckBox("Disponibile");
 
-    layoutNuovoMedia->addLayout(formComune);
+    // Campi specifici
+    QLineEdit *durataEdit = new QLineEdit();
+    QLineEdit *produzioneEdit = new QLineEdit();
+    QLineEdit *artistaEdit = new QLineEdit();
+    QLineEdit *tracceEdit = new QLineEdit();
 
-    // Area campi specifici
-    QStackedWidget *stackSpecifici = new QStackedWidget();
-    layoutNuovoMedia->addWidget(stackSpecifici);
+    // Immagine
+    QLabel *immagineLabel = new QLabel("Nessuna immagine selezionata");
+    QPushButton *caricaImmagineBtn = new QPushButton("Carica immagine");
+    QImage *immagine = new QImage();
 
-    // Widget per "Libro"
-    QWidget *widgetLibro = new QWidget();
-    QFormLayout *layoutLibro = new QFormLayout(widgetLibro);
-    QLineEdit *inputRegista = new QLineEdit();
-    QLineEdit *inputLingua = new QLineEdit();
-    QLineEdit *inputPaese = new QLineEdit();
-    layoutLibro->addRow("Regista:", inputRegista);
-    layoutLibro->addRow("Lingua originale:", inputLingua);
-    layoutLibro->addRow("Paese di produzione:", inputPaese);
+    // Aggiunta campi al form
+    vinileLayout->addRow("Titolo", titoloEdit);
+    vinileLayout->addRow("Prezzo", prezzoEdit);
+    vinileLayout->addRow("Genere", genereEdit);
+    vinileLayout->addRow("Copie disponibili", copieEdit);
+    vinileLayout->addRow("Disponibilità", disponibileBox);
+    vinileLayout->addRow("Durata", durataEdit);
+    vinileLayout->addRow("Produzione", produzioneEdit);
+    vinileLayout->addRow("Artista", artistaEdit);
+    vinileLayout->addRow("Numero tracce", tracceEdit);
+    vinileLayout->addRow(caricaImmagineBtn, immagineLabel);
 
-    // Widget per "Film" (esempio con campi diversi, anche se identici per ora)
-    QWidget *widgetFilm = new QWidget();
-    QFormLayout *layoutFilm = new QFormLayout(widgetFilm);
-    layoutFilm->addRow("Regista:", new QLineEdit());
-    layoutFilm->addRow("Studio:", new QLineEdit());
+    formStack->addWidget(vinileForm);
 
-    stackSpecifici->addWidget(widgetLibro); // index 0
-    stackSpecifici->addWidget(widgetFilm);  // index 1
+    // Pulsante salva
+    QPushButton *saveButton = new QPushButton("Salva");
+    layoutNuovoMedia->addWidget(saveButton);
 
-    // Cambia la sezione specifica quando si cambia tipo media
-    QObject::connect(comboTipoMedia, QOverload<int>::of(&QComboBox::currentIndexChanged),
-                     [stackSpecifici](int index){
-                         stackSpecifici->setCurrentIndex(index);
-                     });
+    // Caricamento immagine
+    QObject::connect(caricaImmagineBtn, &QPushButton::clicked, [=]() {
+        QString fileName = QFileDialog::getOpenFileName(nullptr, "Seleziona immagine", "", "Immagini (*.png *.jpg *.jpeg)");
+        if (!fileName.isEmpty()) {
+            immagine->load(fileName);
+            immagineLabel->setText("Immagine caricata");
+        }
+    });
 
-    // Bottone Salva in fondo
-    QPushButton *salvaButton = new QPushButton("Salva");
-    layoutNuovoMedia->addWidget(salvaButton);
+    // Salvataggio
+    QObject::connect(saveButton, &QPushButton::clicked, [=]() {
+        QString titolo = titoloEdit->text();
+        float prezzo = prezzoEdit->text().toFloat();
+        QString genere = genereEdit->text();
+        int copie = copieEdit->text().toInt();
+        QString artista = artistaEdit->text();
+        int durata = durataEdit->text().toInt();
+        QString produzione = produzioneEdit->text();
+        int tracce = tracceEdit->text().toInt();
+        bool disponibilita = disponibileBox->isChecked();
+
+        // Costruzione oggetto Vinile
+        Vinile *vinile = new Vinile(
+            *immagine,
+            titolo.toStdString(),
+            prezzo,
+            Data(),  // se non hai un campo data per ora usa costruttore vuoto
+            genere.toStdString(),
+            disponibilita,
+            copie,
+            durata,
+            produzione.toStdString(),
+            artista.toStdString(),
+            tracce
+            );
+
+        GestoreMedia gestore(listaMedia, "dati.json");
+        gestore.inserisciNuovoMedia(vinile);
+    });
+
 
     // Stack di pagine
     stackedWidget = new QStackedWidget(this);

@@ -1,5 +1,5 @@
-#ifndef GESTIONE_JSON_H
-#define GESTIONE_JSON_H
+#ifndef GESTOREJSON_H
+#define GESTOREJSON_H
 
 #include <QJsonObject>
 #include <QString>
@@ -14,14 +14,14 @@ class Rivista;
 class Vinile;
 class Film;
 
-class gestione_json: public QObject
+class GestoreJson: public QObject
 {
 Q_OBJECT
 private:
     QList<Media*> media;
     QString percorsoFile;
 public:
-    gestione_json(const QString& nomeFile);
+    GestoreJson(const QString& nomeFile);
     void salvaNuovoMedia(Media* media);
     void salvaMedia(Media* media, QJsonObject& oggetto);
     void salvaMedia(Audiovisivo* audiovisivo, QJsonObject& oggetto);
@@ -33,4 +33,4 @@ public:
     QJsonObject salvaMedia(Giornale* giornale);
 };
 
-#endif // GESTIONE_JSON_H
+#endif // GESTOREJSON_H
