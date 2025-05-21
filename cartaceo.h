@@ -2,13 +2,13 @@
 #define CARTACEO_H
 #include "media.h"
 
-class cartaceo: public Media
+class Cartaceo: public Media
 {
 private:
     string autore;
     string editore;
 public:
-    cartaceo(QImage immagine, string titolo, float prezzo, Data dataPubblicazione, string genere, bool disponibilita,
+    Cartaceo(QImage immagine, string titolo, float prezzo, Data dataPubblicazione, string genere, bool disponibilita,
              int copie, string autore, string editore);
     string getAutore() const;
     string getEditore() const;
