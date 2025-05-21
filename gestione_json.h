@@ -23,9 +23,9 @@ private:
 public:
     gestione_json(const QString& nomeFile);
     void salvaNuovoMedia(Media* media);
-    void salvaMedia(Media* media, QJsonObject& obj);
-    void salvaMedia(Audiovisivo* audiovisivo, QJsonObject& obj);
-    void salvaMedia(Cartaceo* cartaceo, QJsonObject& obj);
+    void salvaMedia(Media* media, QJsonObject& oggetto);
+    void salvaMedia(Audiovisivo* audiovisivo, QJsonObject& oggetto);
+    void salvaMedia(Cartaceo* cartaceo, QJsonObject& oggetto);
     QJsonObject salvaMedia(Libro* libro);
     QJsonObject salvaMedia(Rivista* rivista);
     QJsonObject salvaMedia(Vinile* vinile);

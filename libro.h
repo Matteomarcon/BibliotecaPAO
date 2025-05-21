@@ -7,8 +7,8 @@ class Libro: public Cartaceo {
 private:
     enum formato {
         copertinaRigida,
-        tascabile,
-        ebook
+        copertinaFlessibile,
+        tascabile
     };
     string lingua;
     formato tipoFormato;
