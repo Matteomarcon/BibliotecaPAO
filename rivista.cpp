@@ -2,7 +2,7 @@
 
 Rivista::Rivista(QImage immagine, string titolo, float prezzo, Data dataPubblicazione, string genere,
                  bool disponibilita, int copie, string autore, string editore, int numero, periodicita tipoPeriodicita):
-    cartaceo(immagine, titolo, prezzo, dataPubblicazione, genere, disponibilita, copie, autore, editore),
+    Cartaceo(immagine, titolo, prezzo, dataPubblicazione, genere, disponibilita, copie, autore, editore),
     numero(numero), tipoPeriodicita(tipoPeriodicita){
 
 }
