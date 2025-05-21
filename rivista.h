@@ -2,7 +2,7 @@
 #define RIVISTA_H
 #include "cartaceo.h"
 
-class rivista: public cartaceo
+class Rivista: public Cartaceo
 {
 private:
     int numero;
@@ -16,7 +16,7 @@ private:
     };
     periodicita tipoPeriodicita;
 public:
-    rivista(QImage immagine, string titolo, float prezzo, Data dataPubblicazione, string genere,
+    Rivista(QImage immagine, string titolo, float prezzo, Data dataPubblicazione, string genere,
             bool disponibilita, int copie, string autore, string editore, int numero, periodicita tipoPeriodicita);
     int getNumero() const;
     periodicita getPeriodicita() const;

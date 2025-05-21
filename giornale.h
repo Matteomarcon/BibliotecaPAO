@@ -2,7 +2,7 @@
 #define GIORNALE_H
 #include "cartaceo.h"
 
-class Giornale: public cartaceo
+class Giornale: public Cartaceo
 {
 private:
     string testata;

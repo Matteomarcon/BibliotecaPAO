@@ -2,7 +2,7 @@
 #define FILM_H
 #include "audiovisivo.h"
 
-class Film: public audiovisivo {
+class Film: public Audiovisivo {
 private:
     string regista;
     string linguaOriginale;

@@ -2,13 +2,13 @@
 #define AUDIOVISIVO_H
 #include "media.h"
 
-class audiovisivo: public Media
+class Audiovisivo: public Media
 {
 private:
     int durata;
     string produzione;
 public:
-    audiovisivo(QImage immagine, string titolo, float prezzo, Data dataPubblicazione, string genere, bool disponibilita, int copie, int durata, string produzione);
+    Audiovisivo(QImage immagine, string titolo, float prezzo, Data dataPubblicazione, string genere, bool disponibilita, int copie, int durata, string produzione);
     int getDurata() const;
     string getProduzione() const;
 };
