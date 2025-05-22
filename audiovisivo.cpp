@@ -6,6 +6,10 @@ Audiovisivo::Audiovisivo(QImage immagine, string titolo, float prezzo, Data data
 
 }
 
+Audiovisivo::Audiovisivo(): Media() {}
+
+Audiovisivo::~Audiovisivo() {}
+
 int Audiovisivo::getDurata() const {
     return durata;
 }

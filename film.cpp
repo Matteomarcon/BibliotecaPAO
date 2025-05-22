@@ -7,6 +7,8 @@ Film::Film(QImage immagine, string titolo, float prezzo, Data dataPubblicazione,
 
 }
 
+Film::Film(): Audiovisivo() {}
+
 string Film::getRegista() const {
     return regista;
 }
@@ -15,4 +17,9 @@ string Film::getLinguaOriginale() const {
 }
 string Film::getPaeseProduzione() const {
     return paeseProduzione;
+}
+
+QIcon Film::getIcon() const {
+    QIcon icona("C:/Users/javie/Desktop/film.png");
+    return icona;
 }

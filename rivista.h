@@ -6,20 +6,14 @@ class Rivista: public Cartaceo
 {
 private:
     int numero;
-    enum periodicita {
-    settimanale,
-    mensile,
-    bimestrale,
-    trimestrale,
-    semestrale,
-    annuale
-    };
-    periodicita tipoPeriodicita;
+    string periodicita;
 public:
     Rivista(QImage immagine, string titolo, float prezzo, Data dataPubblicazione, string genere,
-            bool disponibilita, int copie, string autore, string editore, int numero, periodicita tipoPeriodicita);
+            bool disponibilita, int copie, string autore, string editore, int numero, string periodicita);
     int getNumero() const;
-    periodicita getPeriodicita() const;
+    string getPeriodicita() const;
+
+    QIcon getIcon() const override;
 };
 
 #endif // RIVISTA_H

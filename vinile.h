@@ -11,6 +11,8 @@ public:
 string artista, int numeroTracce);
     string getArtista() const;
     int getNumeroTracce() const;
+
+    QIcon getIcon() const override;
 };
 
 #endif // VINILE_H

@@ -6,6 +6,8 @@ Cartaceo::Cartaceo(QImage immagine, string titolo, float prezzo, Data dataPubbli
 
 }
 
+Cartaceo::~Cartaceo() {}
+
 string Cartaceo::getAutore() const {
     return autore;
 }

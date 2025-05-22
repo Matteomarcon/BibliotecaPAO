@@ -10,9 +10,12 @@ private:
 public:
     Film(QImage immagine, string titolo, float prezzo, Data dataPubblicazione, string genere, bool disponibilita, int copie, int durata, string produzione,
 string regista, string linguaOriginale, string paeseProduzione);
+    Film();
     string getRegista() const;
     string getLinguaOriginale() const;
     string getPaeseProduzione() const;
+
+    QIcon getIcon() const override;
 };
 
 #endif // FILM_H

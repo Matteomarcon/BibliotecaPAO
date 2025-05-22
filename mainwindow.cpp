@@ -61,7 +61,10 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent) {
     searchBar->setPlaceholderText("Cerca...");
     QLabel *leftLabel = new QLabel("Risultati:");
     QListWidget *listaMedia = new QListWidget();
-    for (int i = 1; i <= 10; ++i) { //Esempio
+
+    GestoreMedia gestore(listaMedia, "dati.json");
+    gestore.caricaBiblioteca();
+    /*for (int i = 1; i <= 10; ++i) { //Esempio
         QListWidgetItem *item = new QListWidgetItem(listaMedia);
         item->setSizeHint(QSize(200, 60)); // Altezza personalizzata
 
@@ -71,7 +74,7 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent) {
         QString descrizione = "Descrizione per media " + QString::number(i);
 
         listaMedia->setItemWidget(item, widgetMedia(titolo, descrizione, icona));
-    }
+    }*/
 
     layoutLeftPanel->addWidget(searchBar);
     layoutLeftPanel->addWidget(leftLabel);
@@ -190,8 +193,8 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent) {
             tracce
             );
 
-        GestoreMedia gestore(listaMedia, "dati.json");
-        gestore.inserisciNuovoMedia(vinile);
+        //gestore.inserisciNuovoMedia(vinile);
+        //gestore.caricaBiblioteca();
     });
 
 

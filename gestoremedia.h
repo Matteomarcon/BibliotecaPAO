@@ -12,6 +12,7 @@ public:
     GestoreMedia(QListWidget* lista, const QString& percorso = "dati.json");
 
     void inserisciNuovoMedia(Media* media);
+    void caricaBiblioteca();
 };
 
 #endif // GESTOREMEDIA_H

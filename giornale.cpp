@@ -9,3 +9,8 @@ Giornale::Giornale(QImage immagine, string titolo, float prezzo, Data dataPubbli
 string Giornale::getTestata() const {
     return testata;
 }
+
+QIcon Giornale::getIcon() const {
+    QIcon icona("C:/Users/javie/Desktop/newspaper.png");
+    return icona;
+}

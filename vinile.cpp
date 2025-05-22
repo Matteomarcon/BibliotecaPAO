@@ -14,3 +14,8 @@ string Vinile::getArtista() const {
 int Vinile::getNumeroTracce() const {
     return numeroTracce;
 }
+
+QIcon Vinile::getIcon() const {
+    QIcon icona("C:/Users/javie/Desktop/record.png");
+    return icona;
+}

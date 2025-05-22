@@ -6,6 +6,10 @@ Media::Media(QImage immagine, string titolo, float prezzo, Data dataPubblicazion
 
 }
 
+Media::Media() {}
+
+Media::~Media() {}
+
 QImage Media::getImmagine() const {
     return immagine;
 }

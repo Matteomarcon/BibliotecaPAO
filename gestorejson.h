@@ -21,7 +21,10 @@ private:
     QList<Media*> media;
     QString percorsoFile;
 public:
+
+
     GestoreJson(const QString& nomeFile);
+    QList<Media*> caricaBiblioteca();
     void salvaNuovoMedia(Media* media);
     void salvaMedia(Media* media, QJsonObject& oggetto);
     void salvaMedia(Audiovisivo* audiovisivo, QJsonObject& oggetto);
@@ -31,6 +34,12 @@ public:
     QJsonObject salvaMedia(Vinile* vinile);
     QJsonObject salvaMedia(Film* film);
     QJsonObject salvaMedia(Giornale* giornale);
+
+    Rivista* caricaRivista(const QJsonObject& jsonObject);
+    Film* caricaFilm(const QJsonObject& jsonObject);
+    Vinile* caricaVinile(const QJsonObject& jsonObject);
+    Giornale* caricaGiornale(const QJsonObject& jsonObject);
+    Libro* caricaLibro(const QJsonObject& jsonObject);
 };
 
 #endif // GESTOREJSON_H

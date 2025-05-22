@@ -12,6 +12,7 @@ public:
 string testata);
     string getTestata() const;
 
+    QIcon getIcon() const override;
 };
 
 #endif // GIORNALE_H
