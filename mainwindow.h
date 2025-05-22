@@ -3,6 +3,8 @@
 
 #include <QMainWindow>
 #include <QStackedWidget>
+#include <QListWidgetItem>
+#include <QLabel>
 
 class MainWindow : public QMainWindow {
     Q_OBJECT
@@ -10,12 +12,16 @@ class MainWindow : public QMainWindow {
 private slots:
     void showPaginaPrincipale();
     void showPaginaNuovoMedia();
-    QWidget * widgetMedia(const QString& titolo, const QString& descrizione, const QIcon& icona);
+    void onItemClicked(QListWidgetItem *item);
 
 private:
     QStackedWidget *stackedWidget;
     QWidget *paginaPrincipale;
     QWidget *paginaNuovoMedia;
+
+    QWidget *rightPanel;
+    QLabel *labelTitolo;
+    QLabel *labelDescrizione;
 
 public:
     MainWindow(QWidget *parent = nullptr);

@@ -15,6 +15,6 @@ string Rivista::getPeriodicita() const {
 }
 
 QIcon Rivista::getIcon() const {
-    QIcon icona("C:/Users/javie/Desktop/magazine.png");
+    QIcon icona(":/icone/magazine.png");
     return icona;
 }

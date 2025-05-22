@@ -11,6 +11,6 @@ string Giornale::getTestata() const {
 }
 
 QIcon Giornale::getIcon() const {
-    QIcon icona("C:/Users/javie/Desktop/newspaper.png");
+    QIcon icona(":/icone/newspaper.png");
     return icona;
 }

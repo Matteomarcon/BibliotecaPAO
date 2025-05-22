@@ -20,6 +20,6 @@ string Film::getPaeseProduzione() const {
 }
 
 QIcon Film::getIcon() const {
-    QIcon icona("C:/Users/javie/Desktop/film.png");
+    QIcon icona(":/icone/film.png");
     return icona;
 }

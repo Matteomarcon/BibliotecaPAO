@@ -16,6 +16,6 @@ int Vinile::getNumeroTracce() const {
 }
 
 QIcon Vinile::getIcon() const {
-    QIcon icona("C:/Users/javie/Desktop/record.png");
+    QIcon icona(":/icone/record.png");
     return icona;
 }

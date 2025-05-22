@@ -1,5 +1,4 @@
 #include "mainwindow.h"
-#include "vinile.h"
 #include "gestoremedia.h"
 
 #include <QPushButton>
@@ -47,8 +46,8 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent) {
     nuovaBibiotecaButton->setIconSize(QSize(36, 36));
     toNuovoMedia->setIconSize(QSize(48, 48));
 
-    nuovaBibiotecaButton->setIcon(QIcon("C:/Users/javie/Desktop/folder.png"));
-    toNuovoMedia->setIcon(QIcon("C:/Users/javie/Desktop/add.png"));
+    nuovaBibiotecaButton->setIcon(QIcon(":/icone/folder.png"));
+    toNuovoMedia->setIcon(QIcon(":/icone/add.png"));
 
     layoutTopBar->addWidget(nuovaBibiotecaButton);
     layoutTopBar->addWidget(toNuovoMedia);
@@ -64,17 +63,8 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent) {
 
     GestoreMedia gestore(listaMedia, "dati.json");
     gestore.caricaBiblioteca();
-    /*for (int i = 1; i <= 10; ++i) { //Esempio
-        QListWidgetItem *item = new QListWidgetItem(listaMedia);
-        item->setSizeHint(QSize(200, 60)); // Altezza personalizzata
 
-        QIcon icona("C:/Users/javie/Desktop/book.png"); // Sostituisci con il tuo percorso icona
-
-        QString titolo = "Media " + QString::number(i);
-        QString descrizione = "Descrizione per media " + QString::number(i);
-
-        listaMedia->setItemWidget(item, widgetMedia(titolo, descrizione, icona));
-    }*/
+    connect(listaMedia, &QListWidget::itemClicked, this, &MainWindow::onItemClicked);
 
     layoutLeftPanel->addWidget(searchBar);
     layoutLeftPanel->addWidget(leftLabel);
@@ -84,8 +74,13 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent) {
     leftPanel->setLayout(layoutLeftPanel);
 
     //Right Panel
-    QWidget *rightPanel = new QWidget();
-    rightPanel->setStyleSheet("background-color: cyan;");
+    rightPanel = new QWidget(this);
+    QVBoxLayout *rightLayout = new QVBoxLayout(rightPanel);
+    labelTitolo = new QLabel("Titolo:", rightPanel);
+    labelDescrizione = new QLabel("Descrizione:", rightPanel);
+    rightLayout->addWidget(labelTitolo);
+    rightLayout->addWidget(labelDescrizione);
+    rightPanel->setLayout(rightLayout);
 
     //Layout left e right panel
     QHBoxLayout *LayoutLeftRightPanel = new QHBoxLayout();
@@ -166,38 +161,6 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent) {
         }
     });
 
-    // Salvataggio
-    QObject::connect(saveButton, &QPushButton::clicked, [=]() {
-        QString titolo = titoloEdit->text();
-        float prezzo = prezzoEdit->text().toFloat();
-        QString genere = genereEdit->text();
-        int copie = copieEdit->text().toInt();
-        QString artista = artistaEdit->text();
-        int durata = durataEdit->text().toInt();
-        QString produzione = produzioneEdit->text();
-        int tracce = tracceEdit->text().toInt();
-        bool disponibilita = disponibileBox->isChecked();
-
-        // Costruzione oggetto Vinile
-        Vinile *vinile = new Vinile(
-            *immagine,
-            titolo.toStdString(),
-            prezzo,
-            Data(),  // se non hai un campo data per ora usa costruttore vuoto
-            genere.toStdString(),
-            disponibilita,
-            copie,
-            durata,
-            produzione.toStdString(),
-            artista.toStdString(),
-            tracce
-            );
-
-        //gestore.inserisciNuovoMedia(vinile);
-        //gestore.caricaBiblioteca();
-    });
-
-
     // Stack di pagine
     stackedWidget = new QStackedWidget(this);
     stackedWidget->addWidget(paginaPrincipale);
@@ -220,32 +183,8 @@ void MainWindow::showPaginaNuovoMedia() {
     stackedWidget->setCurrentWidget(paginaNuovoMedia);
 }
 
-QWidget* MainWindow::widgetMedia(const QString& titolo, const QString& descrizione, const QIcon& icona) {
-    // Widget base
-    QWidget *widget = new QWidget();
-
-    // Icona a sinistra
-    QLabel *labelIcona = new QLabel();
-    labelIcona->setPixmap(icona.pixmap(48, 48));  // Dimensione dell'icona
-
-    // Titolo e descrizione a destra
-    QLabel *labelTitolo = new QLabel(titolo);
-    labelTitolo->setStyleSheet("font-weight: bold;");
-    QLabel *labelDescrizione = new QLabel(descrizione);
-    labelDescrizione->setStyleSheet("color: gray;");
-
-    // Layout verticale per titolo + descrizione
-    QVBoxLayout *layoutTesto = new QVBoxLayout();
-    layoutTesto->addWidget(labelTitolo);
-    layoutTesto->addWidget(labelDescrizione);
-
-    // Layout orizzontale: icona a sinistra, testo a destra
-    QHBoxLayout *layoutPrincipale = new QHBoxLayout(widget);
-    layoutPrincipale->addWidget(labelIcona, 0);  // forza icona a sinistra
-    layoutPrincipale->addLayout(layoutTesto, 1);                // layout testo si espande
-    layoutPrincipale->setSpacing(10);
-    layoutPrincipale->setContentsMargins(5, 5, 5, 5);
-    layoutPrincipale->setAlignment(Qt::AlignLeft); // forza l'intero layout a sinistra
-
-    return widget;
+void MainWindow::onItemClicked(QListWidgetItem *item) {
+    if (item) {
+        labelTitolo->setText(item->text());
+    }
 }

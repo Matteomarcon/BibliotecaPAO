@@ -9,7 +9,7 @@
 #include <giornale.h>
 #include <libro.h>
 
-GestoreMedia::GestoreMedia(QListWidget* lista, const QString& percorso)
+GestoreMedia::GestoreMedia(QListWidget* lista, QString percorso)
     : gestoreJson(percorso), listaMedia(lista) {}
 
 void GestoreMedia::inserisciNuovoMedia(Media* media) {
@@ -49,8 +49,12 @@ void GestoreMedia::caricaBiblioteca() {
             tipo = "Libro";
         }
 
-        QString nomeItem = tipo + ": " + QString::fromStdString(media->getTitolo());
+        QString nomeItem = tipo + ":\n" + QString::fromStdString(media->getTitolo());
         QListWidgetItem* item = new QListWidgetItem(media->getIcon(), nomeItem, listaMedia);
+        QFont font;
+        font.setBold(true);
+        item->setFont(font);
+
         listaMedia->setIconSize(QSize(48, 48));
         listaMedia->addItem(item);
     }

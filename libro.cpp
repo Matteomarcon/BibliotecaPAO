@@ -16,6 +16,6 @@ string Libro::getFormato() const {
 }
 
 QIcon Libro::getIcon() const {
-    QIcon icona("C:/Users/javie/Desktop/book.png");
+    QIcon icona(":/icone/book.png");
     return icona;
 }
