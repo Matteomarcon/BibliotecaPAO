@@ -19,3 +19,9 @@ QIcon Libro::getIcon() const {
     QIcon icona(":/icone/book.png");
     return icona;
 }
+
+void Libro::creaForm(QFormLayout* layout) {
+    Cartaceo::creaForm(layout);
+    layout->addRow("Formato", new QLineEdit());
+    layout->addRow("Lingua", new QLineEdit());
+}

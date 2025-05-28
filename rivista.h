@@ -2,8 +2,7 @@
 #define RIVISTA_H
 #include "cartaceo.h"
 
-class Rivista: public Cartaceo
-{
+class Rivista: public Cartaceo {
 private:
     int numero;
     string periodicita;
@@ -14,6 +13,7 @@ public:
     string getPeriodicita() const;
 
     QIcon getIcon() const override;
+    static void creaForm(QFormLayout *layout);
 };
 
 #endif // RIVISTA_H

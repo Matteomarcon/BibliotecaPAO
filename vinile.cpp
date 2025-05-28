@@ -19,3 +19,9 @@ QIcon Vinile::getIcon() const {
     QIcon icona(":/icone/record.png");
     return icona;
 }
+
+void Vinile::creaForm(QFormLayout* layout) {
+    Audiovisivo::creaForm(layout);
+    layout->addRow("Artista", new QLineEdit());
+    layout->addRow("Numero Tracce", new QSpinBox());
+}

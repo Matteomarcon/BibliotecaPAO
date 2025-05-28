@@ -3,6 +3,7 @@
 #include <string>
 #include <QImage>
 #include <QIcon>
+#include <QFormLayout>
 #include "Data.h"
 using std::string;
 
@@ -29,6 +30,7 @@ public:
     int getCopie() const;
 
     virtual QIcon getIcon() const = 0;
+    static void creaForm(QFormLayout* layout);
 };
 
 #endif // MEDIA_H

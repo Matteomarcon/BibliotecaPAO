@@ -2,8 +2,7 @@
 #define GIORNALE_H
 #include "cartaceo.h"
 
-class Giornale: public Cartaceo
-{
+class Giornale: public Cartaceo {
 private:
     string testata;
 
@@ -13,6 +12,7 @@ string testata);
     string getTestata() const;
 
     QIcon getIcon() const override;
+    static void creaForm(QFormLayout *layout);
 };
 
 #endif // GIORNALE_H

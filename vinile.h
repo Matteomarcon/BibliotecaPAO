@@ -13,6 +13,7 @@ string artista, int numeroTracce);
     int getNumeroTracce() const;
 
     QIcon getIcon() const override;
+    static void creaForm(QFormLayout *layout);
 };
 
 #endif // VINILE_H

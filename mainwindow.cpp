@@ -1,5 +1,4 @@
 #include "mainwindow.h"
-#include "gestoremedia.h"
 
 #include <QPushButton>
 #include <QHBoxLayout>
@@ -61,8 +60,8 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent) {
     QLabel *leftLabel = new QLabel("Risultati:");
     QListWidget *listaMedia = new QListWidget();
 
-    GestoreMedia gestore(listaMedia, "dati.json");
-    gestore.caricaBiblioteca();
+    gestore = new GestoreMedia(listaMedia, "dati.json");
+    gestore->caricaBiblioteca();
 
     connect(listaMedia, &QListWidget::itemClicked, this, &MainWindow::onItemClicked);
 
@@ -110,12 +109,26 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent) {
 
     //Combo box per selezione tipo
     QComboBox *selettoreMedia = new QComboBox();
-    selettoreMedia->addItems(gestore.getTipiDisponibili());
+    selettoreMedia->addItems(gestore->getTipiDisponibili());
     layoutNuovoMedia->addWidget(selettoreMedia);
 
-    // Stack dei form
-    QStackedWidget *formStack = new QStackedWidget();
-    layoutNuovoMedia->addWidget(formStack);
+    QWidget* formContainer = new QWidget();
+    formLayout = new QFormLayout(formContainer);
+    layoutNuovoMedia->addWidget(formContainer);
+
+    connect(selettoreMedia, &QComboBox::currentTextChanged, this, [=](const QString& tipoSelezionato) {
+        // Pulisce i widget vecchi
+        QLayoutItem* item;
+        while ((item = formLayout->takeAt(0)) != nullptr) {
+            if (item->widget()) {
+                item->widget()->deleteLater();  // elimina il widget in modo sicuro
+            }
+            delete item;
+        }
+
+        // Crea il nuovo oggetto Media
+        gestore->creaForm(tipoSelezionato, formLayout);
+    });
 
     // Pulsante salva
     QPushButton *saveButton = new QPushButton("Salva");

@@ -14,6 +14,7 @@ public:
     string getLingua() const;
 
     QIcon getIcon() const override;
+    static void creaForm(QFormLayout *layout);
 };
 
 #endif // LIBRO_H

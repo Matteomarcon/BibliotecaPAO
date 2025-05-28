@@ -1,6 +1,8 @@
 #ifndef CARTACEO_H
 #define CARTACEO_H
 #include "media.h"
+#include <QLineEdit>
+#include <QFormLayout>
 
 class Cartaceo: public Media
 {
@@ -16,6 +18,7 @@ public:
     string getEditore() const;
 
     virtual QIcon getIcon() const = 0;
+    static void creaForm(QFormLayout *layout);
 };
 
 #endif // CARTACEO_H

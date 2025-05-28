@@ -1,4 +1,12 @@
 #include "media.h"
+#include <QFormLayout>
+#include <QLineEdit>
+#include <QPushButton>
+#include <QSpinBox>
+#include <QDoubleSpinBox>
+#include <QDateEdit>
+#include <QCheckBox>
+
 using std::string;
 
 Media::Media(QImage immagine, string titolo, float prezzo, Data dataPubblicazione, string genere, bool disponibilita, int copie):
@@ -30,4 +38,15 @@ bool Media::getDisponibilita() const {
 }
 int Media::getCopie() const {
     return copie;
+}
+
+void Media::creaForm(QFormLayout* layout) {
+    layout->addRow("Immagine", new QPushButton("Carica immagine"));
+    layout->addRow("Titolo", new QLineEdit());
+    layout->addRow("Prezzo", new QDoubleSpinBox());
+    layout->addRow("Data", new QDateEdit());
+    layout->addRow("Genere", new QLineEdit());
+    layout->addRow("Disponibilita", new QCheckBox("Disponibile"));
+    layout->addRow("Copie", new QSpinBox());
+
 }

@@ -5,6 +5,7 @@
 #include <QStackedWidget>
 #include <QListWidgetItem>
 #include <QLabel>
+#include "GestoreMedia.h"
 
 class MainWindow : public QMainWindow {
     Q_OBJECT
@@ -15,6 +16,9 @@ private slots:
     void onItemClicked(QListWidgetItem *item);
 
 private:
+    GestoreMedia *gestore;
+    QFormLayout* formLayout;
+
     QStackedWidget *stackedWidget;
     QWidget *paginaPrincipale;
     QWidget *paginaNuovoMedia;

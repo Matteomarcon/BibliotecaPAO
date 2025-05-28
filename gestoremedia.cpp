@@ -64,3 +64,11 @@ void GestoreMedia::caricaBiblioteca() {
     }
 
 }
+
+void GestoreMedia::creaForm(const QString& tipo, QFormLayout* layout) const {
+    if (tipo == "Film") Film::creaForm(layout);
+    else if (tipo == "Giornale") Giornale::creaForm(layout);
+    else if (tipo == "Libro") Libro::creaForm(layout);
+    else if (tipo == "Rivista") Rivista::creaForm(layout);
+    else if (tipo == "Vinile") Vinile::creaForm(layout);
+}

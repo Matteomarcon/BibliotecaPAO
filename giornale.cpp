@@ -14,3 +14,8 @@ QIcon Giornale::getIcon() const {
     QIcon icona(":/icone/newspaper.png");
     return icona;
 }
+
+void Giornale::creaForm(QFormLayout* layout) {
+    Cartaceo::creaForm(layout);
+    layout->addRow("Testata", new QLineEdit());
+}
