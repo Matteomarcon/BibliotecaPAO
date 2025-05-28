@@ -12,6 +12,10 @@
 GestoreMedia::GestoreMedia(QListWidget* lista, QString percorso)
     : gestoreJson(percorso), listaMedia(lista) {}
 
+QStringList GestoreMedia::getTipiDisponibili() const {
+    return {"Film", "Giornale", "Libro", "Rivista", "Vinile"};
+}
+
 void GestoreMedia::inserisciNuovoMedia(Media* media) {
     // Salva nel JSON usando l'istanza gestoreJson
     gestoreJson.salvaNuovoMedia(media);

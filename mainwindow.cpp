@@ -108,58 +108,19 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent) {
     QVBoxLayout *layoutNuovoMedia = new QVBoxLayout(paginaNuovoMedia);
     layoutNuovoMedia->addLayout(topBar2Layout);
 
+    //Combo box per selezione tipo
+    QComboBox *selettoreMedia = new QComboBox();
+    selettoreMedia->addItems(gestore.getTipiDisponibili());
+    layoutNuovoMedia->addWidget(selettoreMedia);
+
     // Stack dei form
     QStackedWidget *formStack = new QStackedWidget();
     layoutNuovoMedia->addWidget(formStack);
-
-    // Form Vinile
-    QWidget *vinileForm = new QWidget();
-    QFormLayout *vinileLayout = new QFormLayout(vinileForm);
-
-    // Campi comuni
-    QLineEdit *titoloEdit = new QLineEdit();
-    QLineEdit *prezzoEdit = new QLineEdit();
-    QLineEdit *genereEdit = new QLineEdit();
-    QLineEdit *copieEdit = new QLineEdit();
-    QCheckBox *disponibileBox = new QCheckBox("Disponibile");
-
-    // Campi specifici
-    QLineEdit *durataEdit = new QLineEdit();
-    QLineEdit *produzioneEdit = new QLineEdit();
-    QLineEdit *artistaEdit = new QLineEdit();
-    QLineEdit *tracceEdit = new QLineEdit();
-
-    // Immagine
-    QLabel *immagineLabel = new QLabel("Nessuna immagine selezionata");
-    QPushButton *caricaImmagineBtn = new QPushButton("Carica immagine");
-    QImage *immagine = new QImage();
-
-    // Aggiunta campi al form
-    vinileLayout->addRow("Titolo", titoloEdit);
-    vinileLayout->addRow("Prezzo", prezzoEdit);
-    vinileLayout->addRow("Genere", genereEdit);
-    vinileLayout->addRow("Copie disponibili", copieEdit);
-    vinileLayout->addRow("Disponibilità", disponibileBox);
-    vinileLayout->addRow("Durata", durataEdit);
-    vinileLayout->addRow("Produzione", produzioneEdit);
-    vinileLayout->addRow("Artista", artistaEdit);
-    vinileLayout->addRow("Numero tracce", tracceEdit);
-    vinileLayout->addRow(caricaImmagineBtn, immagineLabel);
-
-    formStack->addWidget(vinileForm);
 
     // Pulsante salva
     QPushButton *saveButton = new QPushButton("Salva");
     layoutNuovoMedia->addWidget(saveButton);
 
-    // Caricamento immagine
-    QObject::connect(caricaImmagineBtn, &QPushButton::clicked, [=]() {
-        QString fileName = QFileDialog::getOpenFileName(nullptr, "Seleziona immagine", "", "Immagini (*.png *.jpg *.jpeg)");
-        if (!fileName.isEmpty()) {
-            immagine->load(fileName);
-            immagineLabel->setText("Immagine caricata");
-        }
-    });
 
     // Stack di pagine
     stackedWidget = new QStackedWidget(this);
