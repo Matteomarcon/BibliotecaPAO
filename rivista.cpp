@@ -1,8 +1,9 @@
 #include "rivista.h"
 #include <QSpinBox>
+#include <QComboBox>
 
-Rivista::Rivista(QImage immagine, string titolo, float prezzo, Data dataPubblicazione, string genere,
-                 bool disponibilita, int copie, string autore, string editore, int numero, string periodicita):
+Rivista::Rivista(QString immagine, QString titolo, float prezzo, Data dataPubblicazione, QString genere,
+                 bool disponibilita, int copie, QString autore, QString editore, int numero, QString periodicita):
     Cartaceo(immagine, titolo, prezzo, dataPubblicazione, genere, disponibilita, copie, autore, editore),
     numero(numero), periodicita(periodicita){
 
@@ -11,7 +12,7 @@ Rivista::Rivista(QImage immagine, string titolo, float prezzo, Data dataPubblica
 int Rivista::getNumero() const {
     return numero;
 }
-string Rivista::getPeriodicita() const {
+QString Rivista::getPeriodicita() const {
     return periodicita;
 }
 
@@ -23,6 +24,10 @@ QIcon Rivista::getIcon() const {
 void Rivista::creaForm(QFormLayout* layout) {
     Cartaceo::creaForm(layout);
     layout->addRow("Numero", new QSpinBox());
-    layout->addRow("Periodicita", new QLineEdit());
+    QComboBox* periodicita = new QComboBox();
+    periodicita->addItems({"Seleziona periocità...", "Settimanale", "Mensile", "Trimestrale", "Quadrimestrale", "Semestrale", "Annuale"});
+    periodicita->setItemData(0, 0, Qt::UserRole - 1); //Disabilita la voce
+    periodicita->setCurrentIndex(-1);
+    layout->addRow("Periodicità", periodicita);
 }
 

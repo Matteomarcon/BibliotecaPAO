@@ -14,6 +14,7 @@
 #include <QComboBox>
 #include <QCheckBox>
 #include <QFileDialog>
+#include <QMessageBox>
 
 MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent) {
     this->setMinimumSize(400,300);
@@ -77,8 +78,11 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent) {
     QVBoxLayout *rightLayout = new QVBoxLayout(rightPanel);
     labelTitolo = new QLabel("Titolo:", rightPanel);
     labelDescrizione = new QLabel("Descrizione:", rightPanel);
+    labelImmagine = new QLabel("Immagine:", rightPanel);
+
     rightLayout->addWidget(labelTitolo);
     rightLayout->addWidget(labelDescrizione);
+    rightLayout->addWidget(labelImmagine);
     rightPanel->setLayout(rightLayout);
 
     //Layout left e right panel
@@ -109,7 +113,10 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent) {
 
     //Combo box per selezione tipo
     QComboBox *selettoreMedia = new QComboBox();
+    selettoreMedia->addItem("Scegli media...");
+    selettoreMedia->setItemData(0, 0, Qt::UserRole - 1); //Disabilita la voce
     selettoreMedia->addItems(gestore->getTipiDisponibili());
+    selettoreMedia->setCurrentIndex(0);
     layoutNuovoMedia->addWidget(selettoreMedia);
 
     QWidget* formContainer = new QWidget();
@@ -117,23 +124,26 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent) {
     layoutNuovoMedia->addWidget(formContainer);
 
     connect(selettoreMedia, &QComboBox::currentTextChanged, this, [=](const QString& tipoSelezionato) {
-        // Pulisce i widget vecchi
-        QLayoutItem* item;
-        while ((item = formLayout->takeAt(0)) != nullptr) {
-            if (item->widget()) {
-                item->widget()->deleteLater();  // elimina il widget in modo sicuro
-            }
-            delete item;
+        // Pulisce tutti i widget dal formLayout
+        while (formLayout->rowCount() > 0) {
+            QLayoutItem* labelItem = formLayout->itemAt(0, QFormLayout::LabelRole);
+            QLayoutItem* fieldItem = formLayout->itemAt(0, QFormLayout::FieldRole);
+
+            if (labelItem && labelItem->widget()) delete labelItem->widget();
+            if (fieldItem && fieldItem->widget()) delete fieldItem->widget();
+
+            formLayout->removeRow(0);
         }
 
-        // Crea il nuovo oggetto Media
         gestore->creaForm(tipoSelezionato, formLayout);
     });
 
-    // Pulsante salva
-    QPushButton *saveButton = new QPushButton("Salva");
-    layoutNuovoMedia->addWidget(saveButton);
 
+    layoutNuovoMedia->addStretch(1);
+
+    // Pulsante salva
+    QPushButton *salvaNuovoMediaButton = new QPushButton("Salva");
+    layoutNuovoMedia->addWidget(salvaNuovoMediaButton);
 
     // Stack di pagine
     stackedWidget = new QStackedWidget(this);
@@ -142,9 +152,14 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent) {
     stackedWidget->setCurrentWidget(paginaPrincipale);
     setCentralWidget(stackedWidget);
 
+
     // Connessioni
     connect(toPrincipale, &QPushButton::clicked, this, &MainWindow::showPaginaPrincipale);
     connect(toNuovoMedia, &QPushButton::clicked, this, &MainWindow::showPaginaNuovoMedia);
+    connect(salvaNuovoMediaButton, &QPushButton::clicked, this, [=]() {
+        if (selettoreMedia->currentIndex() == 0) QMessageBox::warning(nullptr, "Attenzione", "Per favore seleziona un tipo di media.");
+        else gestore->salvaMediaDaForm(selettoreMedia->currentText(), formLayout);
+    });
 }
 
 MainWindow::~MainWindow() {}
@@ -160,5 +175,17 @@ void MainWindow::showPaginaNuovoMedia() {
 void MainWindow::onItemClicked(QListWidgetItem *item) {
     if (item) {
         labelTitolo->setText(item->text());
+
+        QString base64 = item->data(Qt::UserRole).toString();
+        QByteArray byteArray = QByteArray::fromBase64(base64.toLatin1());
+
+        qDebug() << "Base64 length:" << base64.size();
+        qDebug() << "Base64 head:" << base64.left(50);
+
+        QPixmap pixmap;
+        if (pixmap.loadFromData(byteArray)) {
+            labelImmagine->setPixmap(pixmap.scaled(100, 100, Qt::KeepAspectRatio, Qt::SmoothTransformation));
+        }
+
     }
 }

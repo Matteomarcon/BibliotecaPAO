@@ -5,13 +5,13 @@
 
 class Libro: public Cartaceo {
 private:
-    string formato;
-    string lingua;
+    QString formato;
+    QString lingua;
 public:
-    Libro(QImage immagine, string titolo, float prezzo, Data dataPubblicazione, string genere, bool disponibilita,
-          int copie, string autore, string editore, string lingua, string formato);
-    string getFormato() const;
-    string getLingua() const;
+    Libro(QString immagine, QString titolo, float prezzo, Data dataPubblicazione, QString genere, bool disponibilita,
+          int copie, QString autore, QString editore, QString lingua, QString formato);
+    QString getFormato() const;
+    QString getLingua() const;
 
     QIcon getIcon() const override;
     static void creaForm(QFormLayout *layout);

@@ -26,6 +26,7 @@ private:
     QWidget *rightPanel;
     QLabel *labelTitolo;
     QLabel *labelDescrizione;
+    QLabel *labelImmagine;
 
 public:
     MainWindow(QWidget *parent = nullptr);

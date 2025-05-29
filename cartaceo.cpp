@@ -1,18 +1,18 @@
 #include "cartaceo.h"
 
-Cartaceo::Cartaceo(QImage immagine, string titolo, float prezzo, Data dataPubblicazione, string genere, bool disponibilita,
-                   int copie, string autore, string editore):
+Cartaceo::Cartaceo(QString immagine, QString titolo, float prezzo, Data dataPubblicazione, QString genere, bool disponibilita,
+                   int copie, QString autore, QString editore):
     Media(immagine, titolo, prezzo, dataPubblicazione, genere, disponibilita, copie), autore(autore), editore(editore) {
 
 }
 
 Cartaceo::~Cartaceo() {}
 
-string Cartaceo::getAutore() const {
+QString Cartaceo::getAutore() const {
     return autore;
 }
 
-string Cartaceo::getEditore() const {
+QString Cartaceo::getEditore() const {
     return editore;
 }
 

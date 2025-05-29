@@ -7,15 +7,15 @@
 class Cartaceo: public Media
 {
 private:
-    string autore;
-    string editore;
+    QString autore;
+    QString editore;
 public:
     virtual ~Cartaceo();
 
-    Cartaceo(QImage immagine, string titolo, float prezzo, Data dataPubblicazione, string genere, bool disponibilita,
-             int copie, string autore, string editore);
-    string getAutore() const;
-    string getEditore() const;
+    Cartaceo(QString immagine, QString titolo, float prezzo, Data dataPubblicazione, QString genere, bool disponibilita,
+             int copie, QString autore, QString editore);
+    QString getAutore() const;
+    QString getEditore() const;
 
     virtual QIcon getIcon() const = 0;
     static void creaForm(QFormLayout *layout);

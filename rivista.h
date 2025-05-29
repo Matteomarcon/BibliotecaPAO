@@ -5,12 +5,12 @@
 class Rivista: public Cartaceo {
 private:
     int numero;
-    string periodicita;
+    QString periodicita;
 public:
-    Rivista(QImage immagine, string titolo, float prezzo, Data dataPubblicazione, string genere,
-            bool disponibilita, int copie, string autore, string editore, int numero, string periodicita);
+    Rivista(QString immagine, QString titolo, float prezzo, Data dataPubblicazione, QString genere,
+            bool disponibilita, int copie, QString autore, QString editore, int numero, QString periodicita);
     int getNumero() const;
-    string getPeriodicita() const;
+    QString getPeriodicita() const;
 
     QIcon getIcon() const override;
     static void creaForm(QFormLayout *layout);

@@ -4,12 +4,12 @@
 
 class Vinile: public Audiovisivo {
 private:
-    string artista;
+    QString artista;
     int numeroTracce;
 public:
-    Vinile(QImage immagine, string titolo, float prezzo, Data dataPubblicazione, string genere, bool disponibilita, int copie, int durata, string produzione,
-string artista, int numeroTracce);
-    string getArtista() const;
+    Vinile(QString immagine, QString titolo, float prezzo, Data dataPubblicazione, QString genere, bool disponibilita, int copie, int durata, QString produzione,
+QString artista, int numeroTracce);
+    QString getArtista() const;
     int getNumeroTracce() const;
 
     QIcon getIcon() const override;

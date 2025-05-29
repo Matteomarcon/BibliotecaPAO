@@ -54,37 +54,27 @@ void GestoreJson::salvaNuovoMedia(Media* nuovoMedia) {
     }
     outputFile.write(aggiornaDocumento.toJson());
     outputFile.close();
-
-    if (typeid(*nuovoMedia)!=typeid(Vinile)) {
-        qDebug() << "Vinile rilevato";
-    }
 }
 
 void GestoreJson::salvaMedia(Media* media, QJsonObject& oggetto){
-    QImage image = media->getImmagine();
-    QByteArray byteArray;
-    QBuffer buffer(&byteArray);
-    buffer.open(QIODevice::WriteOnly);
-    image.save(&buffer, "PNG");
-    QString imageInBase64 = QString::fromLatin1(byteArray.toBase64());
-    oggetto["Immagine"] = imageInBase64;
+    oggetto["Immagine"] = media->getImmagine();
 
-    oggetto["Titolo"] = QString::fromStdString(media->getTitolo());
+    oggetto["Titolo"] = media->getTitolo();
     oggetto["Prezzo"] = media->getPrezzo();
     oggetto["Data di pubblicazione"] = QString::fromStdString(media->getData().toString());
-    oggetto["Genere"] = QString::fromStdString(media->getGenere());
+    oggetto["Genere"] = media->getGenere();
     oggetto["Disponibilita'"] = media->getDisponibilita();
     oggetto["Copie"] = media->getCopie();
 }
 
 void GestoreJson::salvaMedia(Audiovisivo* audiovisivo, QJsonObject& oggetto){
     oggetto["Durata"] = audiovisivo->getDurata();
-    oggetto["Produzione"] = QString::fromStdString(audiovisivo->getProduzione());
+    oggetto["Produzione"] = audiovisivo->getProduzione();
 }
 
 void GestoreJson::salvaMedia(Cartaceo* cartaceo, QJsonObject& oggetto){
-    oggetto["Autore"] = QString::fromStdString(cartaceo->getAutore());
-    oggetto["Editore"] = QString::fromStdString(cartaceo->getEditore());
+    oggetto["Autore"] = cartaceo->getAutore();
+    oggetto["Editore"] = cartaceo->getEditore();
 }
 
 QJsonObject GestoreJson::salvaMedia(Libro* libro){
@@ -93,8 +83,8 @@ QJsonObject GestoreJson::salvaMedia(Libro* libro){
     salvaMedia(static_cast<Media*>(libro), oggetto);
     salvaMedia(static_cast<Cartaceo*>(libro), oggetto);
     QString formato;
-    oggetto["Formato"] = QString::fromStdString(libro->getFormato());
-    oggetto["Lingua"] = QString::fromStdString(libro->getLingua());
+    oggetto["Formato"] = libro->getFormato();
+    oggetto["Lingua"] = libro->getLingua();
     return oggetto;
 }
 
@@ -104,7 +94,7 @@ QJsonObject GestoreJson::salvaMedia(Rivista* rivista){
     salvaMedia(static_cast<Media*>(rivista), oggetto);
     salvaMedia(static_cast<Cartaceo*>(rivista), oggetto);
     oggetto["Numero"] = rivista->getNumero();
-    oggetto["Periodicita"] = QString::fromStdString(rivista->getPeriodicita());
+    oggetto["Periodicita"] = rivista->getPeriodicita();
     return oggetto;
 }
 
@@ -113,7 +103,7 @@ QJsonObject GestoreJson::salvaMedia(Vinile* vinile){
     oggetto["Classe"]="Vinile";
     salvaMedia(static_cast<Media*>(vinile), oggetto);
     salvaMedia(static_cast<Audiovisivo*>(vinile), oggetto);
-    oggetto["Artista"] = QString::fromStdString(vinile->getArtista());
+    oggetto["Artista"] = vinile->getArtista();
     oggetto["Numero tracce"] = vinile->getNumeroTracce();
     return oggetto;
 }
@@ -123,9 +113,9 @@ QJsonObject GestoreJson::salvaMedia(Film* film){
     oggetto["Classe"]="Film";
     salvaMedia(static_cast<Media*>(film), oggetto);
     salvaMedia(static_cast<Audiovisivo*>(film), oggetto);
-    oggetto["Regista"] = QString::fromStdString(film->getRegista());
-    oggetto["Lingua originale"] = QString::fromStdString(film->getLinguaOriginale());
-    oggetto["Paese di produzione"] = QString::fromStdString(film->getPaeseProduzione());
+    oggetto["Regista"] = film->getRegista();
+    oggetto["Lingua originale"] = film->getLinguaOriginale();
+    oggetto["Paese di produzione"] = film->getPaeseProduzione();
     return oggetto;
 }
 
@@ -134,7 +124,7 @@ QJsonObject GestoreJson::salvaMedia(Giornale* giornale){
     oggetto["Classe"]="Giornale";
     salvaMedia(static_cast<Media*>(giornale), oggetto);
     salvaMedia(static_cast<Cartaceo*>(giornale), oggetto);
-    oggetto["Testata"] = QString::fromStdString(giornale->getTestata());
+    oggetto["Testata"] = giornale->getTestata();
     return oggetto;
 }
 
@@ -171,49 +161,44 @@ QList<Media*> GestoreJson::caricaBiblioteca() {
 }
 
 Rivista* GestoreJson::caricaRivista(const QJsonObject& jsonObject) {
-    QImage immagine;
     Data data;
 
-    return new Rivista(immagine, jsonObject["Titolo"].toString().toStdString(), static_cast<float>(jsonObject["Prezzo"].toDouble()),
-                       data, jsonObject["Genere"].toString().toStdString(), jsonObject["Disponibilita"].toBool(),
-                       jsonObject["Copie"].toInt(), jsonObject["Autore"].toString().toStdString(), jsonObject["Editore"].toString().toStdString(),
-                       jsonObject["Numero"].toInt(), jsonObject["Periodicita"].toString().toStdString());
+    return new Rivista(jsonObject["Immagine"].toString(), jsonObject["Titolo"].toString(), static_cast<float>(jsonObject["Prezzo"].toDouble()),
+                       data, jsonObject["Genere"].toString(), jsonObject["Disponibilita"].toBool(),
+                       jsonObject["Copie"].toInt(), jsonObject["Autore"].toString(), jsonObject["Editore"].toString(),
+                       jsonObject["Numero"].toInt(), jsonObject["Periodicita"].toString());
 }
 Film* GestoreJson::caricaFilm(const QJsonObject& jsonObject) {
-    QImage immagine;
     Data data;
 
-    return new Film(immagine, jsonObject["Titolo"].toString().toStdString(), static_cast<float>(jsonObject["Prezzo"].toDouble()),
-                       data, jsonObject["Genere"].toString().toStdString(), jsonObject["Disponibilita"].toBool(),
-                    jsonObject["Copie"].toInt(), jsonObject["Duarata"].toInt(), jsonObject["Produzione"].toString().toStdString(), jsonObject["Regista"].toString().toStdString(),
-                       jsonObject["Lingua originale"].toString().toStdString(), jsonObject["Paese produzione"].toString().toStdString());
+    return new Film(jsonObject["Immagine"].toString(), jsonObject["Titolo"].toString(), static_cast<float>(jsonObject["Prezzo"].toDouble()),
+                       data, jsonObject["Genere"].toString(), jsonObject["Disponibilita"].toBool(),
+                    jsonObject["Copie"].toInt(), jsonObject["Duarata"].toInt(), jsonObject["Produzione"].toString(), jsonObject["Regista"].toString(),
+                       jsonObject["Lingua originale"].toString(), jsonObject["Paese produzione"].toString());
 }
 Vinile* GestoreJson::caricaVinile(const QJsonObject& jsonObject) {
-    QImage immagine;
     Data data;
 
-    return new Vinile(immagine, jsonObject["Titolo"].toString().toStdString(), static_cast<float>(jsonObject["Prezzo"].toDouble()),
-                       data, jsonObject["Genere"].toString().toStdString(), jsonObject["Disponibilita"].toBool(),
-                       jsonObject["Copie"].toInt(), jsonObject["Duarata"].toInt(), jsonObject["Produzione"].toString().toStdString(),
-                       jsonObject["Artista"].toString().toStdString(), jsonObject["Numero tracce"].toInt());
+    return new Vinile(jsonObject["Immagine"].toString(), jsonObject["Titolo"].toString(), static_cast<float>(jsonObject["Prezzo"].toDouble()),
+                       data, jsonObject["Genere"].toString(), jsonObject["Disponibilita"].toBool(),
+                       jsonObject["Copie"].toInt(), jsonObject["Duarata"].toInt(), jsonObject["Produzione"].toString(),
+                       jsonObject["Artista"].toString(), jsonObject["Numero tracce"].toInt());
 }
 Giornale* GestoreJson::caricaGiornale(const QJsonObject& jsonObject) {
-    QImage immagine;
     Data data;
 
-    return new Giornale(immagine, jsonObject["Titolo"].toString().toStdString(), static_cast<float>(jsonObject["Prezzo"].toDouble()),
-                    data, jsonObject["Genere"].toString().toStdString(), jsonObject["Disponibilita"].toBool(),
-                    jsonObject["Copie"].toInt(), jsonObject["Autore"].toString().toStdString(), jsonObject["Editore"].toString().toStdString(),
-                    jsonObject["Testata"].toString().toStdString());
+    return new Giornale(jsonObject["Immagine"].toString(), jsonObject["Titolo"].toString(), static_cast<float>(jsonObject["Prezzo"].toDouble()),
+                    data, jsonObject["Genere"].toString(), jsonObject["Disponibilita"].toBool(),
+                    jsonObject["Copie"].toInt(), jsonObject["Autore"].toString(), jsonObject["Editore"].toString(),
+                    jsonObject["Testata"].toString());
 }
 Libro* GestoreJson::caricaLibro(const QJsonObject& jsonObject) {
-    QImage immagine;
     Data data;
 
-    return new Libro(immagine, jsonObject["Titolo"].toString().toStdString(), static_cast<float>(jsonObject["Prezzo"].toDouble()),
-                      data, jsonObject["Genere"].toString().toStdString(), jsonObject["Disponibilita"].toBool(),
-                      jsonObject["Copie"].toInt(), jsonObject["Autore"].toString().toStdString(), jsonObject["Editore"].toString().toStdString(),
-                      jsonObject["Lingua"].toString().toStdString(), jsonObject["Formato"].toString().toStdString());
+    return new Libro(jsonObject["Immagine"].toString(), jsonObject["Titolo"].toString(), static_cast<float>(jsonObject["Prezzo"].toDouble()),
+                      data, jsonObject["Genere"].toString(), jsonObject["Disponibilita"].toBool(),
+                      jsonObject["Copie"].toInt(), jsonObject["Autore"].toString(), jsonObject["Editore"].toString(),
+                      jsonObject["Lingua"].toString(), jsonObject["Formato"].toString());
 }
 
 

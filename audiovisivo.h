@@ -8,14 +8,14 @@
 class Audiovisivo: public Media {
 private:
     int durata;
-    string produzione;
+    QString produzione;
 public:
     virtual ~Audiovisivo();
 
-    Audiovisivo(QImage immagine, string titolo, float prezzo, Data dataPubblicazione, string genere, bool disponibilita, int copie, int durata, string produzione);
+    Audiovisivo(QString immagine, QString titolo, float prezzo, Data dataPubblicazione, QString genere, bool disponibilita, int copie, int durata, QString produzione);
     Audiovisivo();
     int getDurata() const;
-    string getProduzione() const;
+    QString getProduzione() const;
 
     virtual QIcon getIcon() const = 0;
     static void creaForm(QFormLayout* layout);

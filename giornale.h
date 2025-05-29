@@ -4,12 +4,12 @@
 
 class Giornale: public Cartaceo {
 private:
-    string testata;
+    QString testata;
 
 public:
-    Giornale(QImage immagine, string titolo, float prezzo, Data dataPubblicazione, string genere, bool disponibilita, int copie, string autore, string editore,
-string testata);
-    string getTestata() const;
+    Giornale(QString immagine, QString titolo, float prezzo, Data dataPubblicazione, QString genere, bool disponibilita, int copie, QString autore, QString editore,
+QString testata);
+    QString getTestata() const;
 
     QIcon getIcon() const override;
     static void creaForm(QFormLayout *layout);

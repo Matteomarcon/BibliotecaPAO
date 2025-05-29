@@ -1,7 +1,7 @@
 #include "film.h"
 
-Film::Film(QImage immagine, string titolo, float prezzo, Data dataPubblicazione, string genere, bool disponibilita, int copie, int durata, string produzione,
-           string regista, string linguaOriginale, string paeseProduzione):
+Film::Film(QString immagine, QString titolo, float prezzo, Data dataPubblicazione, QString genere, bool disponibilita, int copie, int durata, QString produzione,
+           QString regista, QString linguaOriginale, QString paeseProduzione):
     Audiovisivo(immagine, titolo, prezzo, dataPubblicazione, genere, disponibilita, copie, durata, produzione),
     regista(regista), linguaOriginale(linguaOriginale), paeseProduzione(paeseProduzione) {
 
@@ -9,13 +9,13 @@ Film::Film(QImage immagine, string titolo, float prezzo, Data dataPubblicazione,
 
 Film::Film(): Audiovisivo() {}
 
-string Film::getRegista() const {
+QString Film::getRegista() const {
     return regista;
 }
-string Film::getLinguaOriginale() const {
+QString Film::getLinguaOriginale() const {
     return linguaOriginale;
 }
-string Film::getPaeseProduzione() const {
+QString Film::getPaeseProduzione() const {
     return paeseProduzione;
 }
 

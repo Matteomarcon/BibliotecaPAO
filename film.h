@@ -4,16 +4,16 @@
 
 class Film: public Audiovisivo {
 private:
-    string regista;
-    string linguaOriginale;
-    string paeseProduzione;
+    QString regista;
+    QString linguaOriginale;
+    QString paeseProduzione;
 public:
-    Film(QImage immagine, string titolo, float prezzo, Data dataPubblicazione, string genere, bool disponibilita, int copie, int durata, string produzione,
-string regista, string linguaOriginale, string paeseProduzione);
+    Film(QString immagine, QString titolo, float prezzo, Data dataPubblicazione, QString genere, bool disponibilita, int copie, int durata, QString produzione,
+QString regista, QString linguaOriginale, QString paeseProduzione);
     Film();
-    string getRegista() const;
-    string getLinguaOriginale() const;
-    string getPaeseProduzione() const;
+    QString getRegista() const;
+    QString getLinguaOriginale() const;
+    QString getPaeseProduzione() const;
 
     QIcon getIcon() const override;
     static void creaForm(QFormLayout *layout);

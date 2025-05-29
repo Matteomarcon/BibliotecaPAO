@@ -1,13 +1,13 @@
 #include "vinile.h"
 
-Vinile::Vinile(QImage immagine, string titolo, float prezzo, Data dataPubblicazione, string genere, bool disponibilita, int copie, int durata, string produzione,
-               string artista, int numeroTracce):
+Vinile::Vinile(QString immagine, QString titolo, float prezzo, Data dataPubblicazione, QString genere, bool disponibilita, int copie, int durata, QString produzione,
+               QString artista, int numeroTracce):
     Audiovisivo(immagine, titolo, prezzo, dataPubblicazione, genere, disponibilita, copie, durata, produzione),
     artista(artista), numeroTracce(numeroTracce){
 
 }
 
-string Vinile::getArtista() const {
+QString Vinile::getArtista() const {
     return artista;
 }
 

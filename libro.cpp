@@ -1,17 +1,17 @@
 #include "libro.h"
 
-Libro::Libro(QImage immagine, string titolo, float prezzo, Data dataPubblicazione, string genere, bool disponibilita,
-             int copie, string autore, string editore, string lingua, string formato) :
+Libro::Libro(QString immagine, QString titolo, float prezzo, Data dataPubblicazione, QString genere, bool disponibilita,
+             int copie, QString autore, QString editore, QString lingua, QString formato) :
     Cartaceo(immagine, titolo, prezzo, dataPubblicazione, genere, disponibilita,
                copie, autore, editore), formato(formato), lingua(lingua) {
 
 }
 
-string Libro::getLingua() const {
+QString Libro::getLingua() const {
     return lingua;
 }
 
-string Libro::getFormato() const {
+QString Libro::getFormato() const {
     return formato;
 }
 

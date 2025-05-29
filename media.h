@@ -1,31 +1,28 @@
 #ifndef MEDIA_H
 #define MEDIA_H
-#include <string>
-#include <QImage>
 #include <QIcon>
 #include <QFormLayout>
 #include "Data.h"
-using std::string;
 
 class Media {
 private:
-    QImage immagine;
-    string titolo;
+    QString immagine;
+    QString titolo;
     float prezzo;
     Data dataPubblicazione;
-    string genere;
+    QString genere;
     bool disponibilita;
     int copie;
 public:
     virtual ~Media();
 
-    Media(QImage immagine, string titolo, float prezzo, Data dataPubblicazione, string genere, bool disponibilita, int copie);
+    Media(QString immagine, QString titolo, float prezzo, Data dataPubblicazione, QString genere, bool disponibilita, int copie);
     Media();
-    QImage getImmagine() const;
-    string getTitolo() const;
+    QString getImmagine() const;
+    QString getTitolo() const;
     float getPrezzo() const;
     Data getData() const;
-    string getGenere() const;
+    QString getGenere() const;
     bool getDisponibilita() const;
     int getCopie() const;
 

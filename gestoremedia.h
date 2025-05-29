@@ -13,10 +13,15 @@ public:
     GestoreMedia(QListWidget* lista, QString percorso = "dati.json");
 
     QStringList getTipiDisponibili() const;
-    void inserisciNuovoMedia(Media* media);
+    void salvaMediaDaForm(QString tipo, QFormLayout *layout);
     void caricaBiblioteca();
 
-    void creaForm(const QString& tipo, QFormLayout* layout) const;
+    void creaForm(const QString& tipo, QFormLayout *layout) const;
+    Media* creaFilm(QFormLayout* layout);
+    //Media* creaGiornale(QFormLayout* layout);
+    //Media* creaLibro(QFormLayout* layout);
+    //Media* creaRivista(QFormLayout* layout);
+    //Media* creaVinile(QFormLayout* layout);
 };
 
 #endif // GESTOREMEDIA_H
