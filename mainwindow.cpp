@@ -184,8 +184,11 @@ void MainWindow::onItemClicked(QListWidgetItem *item) {
 
         QPixmap pixmap;
         if (pixmap.loadFromData(byteArray)) {
-            labelImmagine->setPixmap(pixmap.scaled(100, 100, Qt::KeepAspectRatio, Qt::SmoothTransformation));
+            labelImmagine->setPixmap(pixmap.scaled(500, 500, Qt::KeepAspectRatio, Qt::SmoothTransformation));
         }
-
+        else {
+            labelImmagine->clear();
+            labelImmagine->setText("Immagine:");
+        }
     }
 }
