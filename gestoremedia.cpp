@@ -24,10 +24,10 @@ void GestoreMedia::salvaMediaDaForm(QString tipo, QFormLayout *layout) {
     Media* media = nullptr;
 
     if (tipo == "Film") media = creaFilm(layout);
-    else if (tipo == "Giornale"); //media = creaGiornale(layout);
-    else if (tipo == "Libro"); //media = creaLibro(layout);
-    else if (tipo == "Rivista"); //media = creaRivista(layout);
-    else if (tipo == "Vinile"); //media = creaVinile(layout);
+    else if (tipo == "Giornale") media = creaGiornale(layout);
+    else if (tipo == "Libro") media = creaLibro(layout);
+    else if (tipo == "Rivista") media = creaRivista(layout);
+    else if (tipo == "Vinile") media = creaVinile(layout);
 
     gestoreJson.salvaNuovoMedia(media);
 }

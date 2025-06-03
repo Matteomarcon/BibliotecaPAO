@@ -14,6 +14,7 @@ private slots:
     void showPaginaPrincipale();
     void showPaginaNuovoMedia();
     void onItemClicked(QListWidgetItem *item);
+    void caricaBiblioteca();
 
 private:
     GestoreMedia *gestore;
@@ -22,6 +23,8 @@ private:
     QStackedWidget *stackedWidget;
     QWidget *paginaPrincipale;
     QWidget *paginaNuovoMedia;
+
+    QListWidget *listaMedia;
 
     QWidget *rightPanel;
     QLabel *labelTitolo;

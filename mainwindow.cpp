@@ -28,9 +28,9 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent) {
     //Top Bar
     QHBoxLayout *layoutTopBar = new QHBoxLayout();
 
-    QPushButton *nuovaBibiotecaButton = new QPushButton("  Apri Biblioteca");
+    QPushButton *nuovaBibliotecaButton = new QPushButton("  Apri Biblioteca");
     QPushButton *toNuovoMedia = new QPushButton("Nuovo Media");
-    nuovaBibiotecaButton->setStyleSheet(
+    nuovaBibliotecaButton->setStyleSheet(
         "QPushButton {"
         "  background-color: transparent;"
         "  border: none;"
@@ -43,13 +43,13 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent) {
         "}"
         );
 
-    nuovaBibiotecaButton->setIconSize(QSize(36, 36));
+    nuovaBibliotecaButton->setIconSize(QSize(36, 36));
     toNuovoMedia->setIconSize(QSize(48, 48));
 
-    nuovaBibiotecaButton->setIcon(QIcon(":/icone/folder.png"));
+    nuovaBibliotecaButton->setIcon(QIcon(":/icone/folder.png"));
     toNuovoMedia->setIcon(QIcon(":/icone/add.png"));
 
-    layoutTopBar->addWidget(nuovaBibiotecaButton);
+    layoutTopBar->addWidget(nuovaBibliotecaButton);
     layoutTopBar->addWidget(toNuovoMedia);
 
     //Left Panel
@@ -59,9 +59,9 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent) {
     QLineEdit *searchBar = new QLineEdit();
     searchBar->setPlaceholderText("Cerca...");
     QLabel *leftLabel = new QLabel("Risultati:");
-    QListWidget *listaMedia = new QListWidget();
+    listaMedia = new QListWidget();
 
-    gestore = new GestoreMedia(listaMedia, "dati.json");
+    gestore = new GestoreMedia(listaMedia, "dati.json"); // !!! Da creare il file se non presente
     gestore->caricaBiblioteca();
 
     connect(listaMedia, &QListWidget::itemClicked, this, &MainWindow::onItemClicked);
@@ -144,6 +144,8 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent) {
     setCentralWidget(stackedWidget);
 
     // Connessioni
+    connect(nuovaBibliotecaButton, &QPushButton::clicked, this, &MainWindow::caricaBiblioteca);
+
     connect(toPrincipale, &QPushButton::clicked, this, &MainWindow::showPaginaPrincipale);
     connect(toNuovoMedia, &QPushButton::clicked, this, &MainWindow::showPaginaNuovoMedia);
     connect(salvaNuovoMediaButton, &QPushButton::clicked, this, [=]() {
@@ -151,13 +153,26 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent) {
         else  {
             gestore->salvaMediaDaForm(selettoreMedia->currentText(), formLayout);
             gestore->caricaBiblioteca();
+            //showPaginaPrincipale();
         }
     });
 }
 
 MainWindow::~MainWindow() {}
 
+
+void MainWindow::caricaBiblioteca() {
+    QString percorsoFile = QFileDialog::getOpenFileName(nullptr, "Scegli Biblioteca", "", "Documento (*.json)");
+
+    gestore = new GestoreMedia(listaMedia, percorsoFile); // !!! Distruzione funziona????
+    gestore->caricaBiblioteca();
+}
+
+
 void MainWindow::showPaginaPrincipale() {
+
+    // !!! Dividi pulsante annulla e salva
+
     QMessageBox msgBox;
     msgBox.setWindowTitle("Modifiche non salvate");
     msgBox.setText("Vuoi salvare la bozza prima di uscire?");
@@ -175,7 +190,7 @@ void MainWindow::showPaginaPrincipale() {
     if (msgBox.clickedButton() == salvaBozzaButton) {
          stackedWidget->setCurrentWidget(paginaPrincipale);
     } else if (msgBox.clickedButton() == nonSalvareButton) {
-        stackedWidget->setCurrentWidget(paginaPrincipale); // da implementare: senza salvare
+        stackedWidget->setCurrentWidget(paginaPrincipale); // !!! da implementare: senza salvare
     } else if (msgBox.clickedButton() == annullaButton) {
         msgBox.close();
     }
