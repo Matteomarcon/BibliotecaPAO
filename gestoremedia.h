@@ -18,10 +18,10 @@ public:
 
     void creaForm(const QString& tipo, QFormLayout *layout) const;
     Media* creaFilm(QFormLayout* layout);
-    //Media* creaGiornale(QFormLayout* layout);
-    //Media* creaLibro(QFormLayout* layout);
-    //Media* creaRivista(QFormLayout* layout);
-    //Media* creaVinile(QFormLayout* layout);
+    Media* creaGiornale(QFormLayout* layout);
+    Media* creaLibro(QFormLayout* layout);
+    Media* creaRivista(QFormLayout* layout);
+    Media* creaVinile(QFormLayout* layout);
 };
 
 #endif // GESTOREMEDIA_H
