@@ -97,19 +97,8 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent) {
 
     // Pagina nuovo media
 
-    // Top Bar
-    QHBoxLayout *topBar2Layout = new QHBoxLayout();
-    QPushButton *button21 = new QPushButton("Bottone 1");
-    QPushButton *button22 = new QPushButton("Bottone 2");
-    QPushButton *toPrincipale = new QPushButton("Torna a Pagina 1");
-    topBar2Layout->addWidget(button21);
-    topBar2Layout->addWidget(button22);
-    topBar2Layout->addWidget(toPrincipale);
-    topBar2Layout->setAlignment(Qt::AlignTop);
-
-    // Layout principale
+    // Layout seconda pagina
     QVBoxLayout *layoutNuovoMedia = new QVBoxLayout(paginaNuovoMedia);
-    layoutNuovoMedia->addLayout(topBar2Layout);
 
     //Combo box per selezione tipo
     QComboBox *selettoreMedia = new QComboBox();
@@ -138,12 +127,14 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent) {
         gestore->creaForm(tipoSelezionato, formLayout);
     });
 
-
-    layoutNuovoMedia->addStretch(1);
-
-    // Pulsante salva
+    // Bottom Bar
+    QHBoxLayout *bottomBarLayout = new QHBoxLayout();
+    QPushButton *toPrincipale = new QPushButton("Annulla");
     QPushButton *salvaNuovoMediaButton = new QPushButton("Salva");
-    layoutNuovoMedia->addWidget(salvaNuovoMediaButton);
+    bottomBarLayout->addWidget(toPrincipale);
+    bottomBarLayout->addWidget(salvaNuovoMediaButton);
+    bottomBarLayout->setAlignment(Qt::AlignBottom);
+    layoutNuovoMedia->addLayout(bottomBarLayout);
 
     // Stack di pagine
     stackedWidget = new QStackedWidget(this);
@@ -152,20 +143,42 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent) {
     stackedWidget->setCurrentWidget(paginaPrincipale);
     setCentralWidget(stackedWidget);
 
-
     // Connessioni
     connect(toPrincipale, &QPushButton::clicked, this, &MainWindow::showPaginaPrincipale);
     connect(toNuovoMedia, &QPushButton::clicked, this, &MainWindow::showPaginaNuovoMedia);
     connect(salvaNuovoMediaButton, &QPushButton::clicked, this, [=]() {
         if (selettoreMedia->currentIndex() == 0) QMessageBox::warning(nullptr, "Attenzione", "Per favore seleziona un tipo di media.");
-        else gestore->salvaMediaDaForm(selettoreMedia->currentText(), formLayout);
+        else  {
+            gestore->salvaMediaDaForm(selettoreMedia->currentText(), formLayout);
+            gestore->caricaBiblioteca();
+        }
     });
 }
 
 MainWindow::~MainWindow() {}
 
 void MainWindow::showPaginaPrincipale() {
-    stackedWidget->setCurrentWidget(paginaPrincipale);
+    QMessageBox msgBox;
+    msgBox.setWindowTitle("Modifiche non salvate");
+    msgBox.setText("Vuoi salvare la bozza prima di uscire?");
+    msgBox.setIcon(QMessageBox::Warning);
+
+    // Aggiungi i pulsanti personalizzati
+    QPushButton *annullaButton = msgBox.addButton("Annulla", QMessageBox::RejectRole);
+    QPushButton *nonSalvareButton = msgBox.addButton("Non salvare", QMessageBox::DestructiveRole);
+    QPushButton *salvaBozzaButton = msgBox.addButton("Salva bozza", QMessageBox::AcceptRole);
+
+    // Mostra la finestra di dialogo
+    msgBox.exec();
+
+    // Controlla il pulsante premuto
+    if (msgBox.clickedButton() == salvaBozzaButton) {
+         stackedWidget->setCurrentWidget(paginaPrincipale);
+    } else if (msgBox.clickedButton() == nonSalvareButton) {
+        stackedWidget->setCurrentWidget(paginaPrincipale); // da implementare: senza salvare
+    } else if (msgBox.clickedButton() == annullaButton) {
+        msgBox.close();
+    }
 }
 
 void MainWindow::showPaginaNuovoMedia() {
