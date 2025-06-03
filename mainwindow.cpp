@@ -15,6 +15,7 @@
 #include <QCheckBox>
 #include <QFileDialog>
 #include <QMessageBox>
+#include <QCoreApplication>
 
 MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent) {
     this->setMinimumSize(400,300);
@@ -61,7 +62,22 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent) {
     QLabel *leftLabel = new QLabel("Risultati:");
     listaMedia = new QListWidget();
 
-    gestore = new GestoreMedia(listaMedia, "dati.json"); // !!! Da creare il file se non presente
+    QString percorsoBase = QCoreApplication::applicationDirPath();
+    QString percorsoFile = QDir(percorsoBase).filePath("../../../BibliotecaDefault.json");
+
+    QFileInfo checkFile(percorsoFile);
+    if (!checkFile.exists() || !checkFile.isFile()) {
+        gestore = new GestoreMedia(listaMedia, percorsoFile); // !!! Da creare il file se non presente
+        QFile file(percorsoFile);
+        if (file.open(QIODevice::WriteOnly | QIODevice::Truncate)) {
+            QTextStream out(&file);
+            out << "[]";  // JSON vuoto
+            file.close();
+        }
+    }
+
+    // !!! cosa succede se non crea il file?
+    gestore = new GestoreMedia(listaMedia, percorsoFile);
     gestore->caricaBiblioteca();
 
     connect(listaMedia, &QListWidget::itemClicked, this, &MainWindow::onItemClicked);
