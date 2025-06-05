@@ -21,7 +21,7 @@ public:
     QString getImmagine() const;
     QString getTitolo() const;
     float getPrezzo() const;
-    Data getData() const;
+    QString getData() const;
     QString getGenere() const;
     bool getDisponibilita() const;
     int getCopie() const;

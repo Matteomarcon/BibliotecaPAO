@@ -16,6 +16,10 @@
 GestoreMedia::GestoreMedia(QListWidget* lista, QString percorso)
     : gestoreJson(percorso), listaMedia(lista) {}
 
+void GestoreMedia::eliminaMedia(int indice) {
+    gestoreJson.eliminaMedia(indice);
+}
+
 QStringList GestoreMedia::getTipiDisponibili() const {
     return {"Film", "Giornale", "Libro", "Rivista", "Vinile"};
 }
@@ -36,7 +40,7 @@ Media* GestoreMedia::creaFilm(QFormLayout* layout) {
     QString immagineStr, titoloStr, genereStr, produzioneStr, registaStr, linguaOriginaleStr, paeseProduzioneStr;
     double prezzoVal = 0;
     QDate dataVal;
-    bool disponibilitaVal = false;
+    bool disponibilitaVal;
     int copieVal = 0, durataVal = 0;
 
     for (int i = 1; i < layout->rowCount(); ++i) {
@@ -106,7 +110,7 @@ Media* GestoreMedia::creaGiornale(QFormLayout* layout) {
     QString immagineStr, titoloStr, genereStr, autoreStr, editoreStr, testataStr;
     double prezzoVal = 0;
     QDate dataVal;
-    bool disponibilitaVal = false;
+    bool disponibilitaVal;
     int copieVal = 0;
 
     for (int i = 1; i < layout->rowCount(); ++i) {
@@ -170,7 +174,7 @@ Media* GestoreMedia::creaLibro(QFormLayout* layout) {
     QString immagineStr, titoloStr, genereStr, autoreStr, editoreStr, formatoStr, linguaStr;
     double prezzoVal = 0;
     QDate dataVal;
-    bool disponibilitaVal = false;
+    bool disponibilitaVal;
     int copieVal = 0;
 
     for (int i = 1; i < layout->rowCount(); ++i) {
@@ -238,7 +242,7 @@ Media* GestoreMedia::creaRivista(QFormLayout* layout) {
     QString immagineStr, titoloStr, genereStr, autoreStr, editoreStr, periodicitaStr;
     double prezzoVal = 0;
     QDate dataVal;
-    bool disponibilitaVal = false;
+    bool disponibilitaVal;
     int copieVal = 0, numeroVal = 0;
 
     for (int i = 1; i < layout->rowCount(); ++i) {
@@ -305,7 +309,7 @@ Media* GestoreMedia::creaVinile(QFormLayout* layout) {
     QString immagineStr, titoloStr, genereStr, produzioneStr, artistaStr;
     double prezzoVal = 0;
     QDate dataVal;
-    bool disponibilitaVal = false;
+    bool disponibilitaVal;
     int copieVal = 0, durataVal = 0, tracceVal = 0;
 
     for (int i = 1; i < layout->rowCount(); ++i) {
@@ -369,29 +373,59 @@ Media* GestoreMedia::creaVinile(QFormLayout* layout) {
 
 
 void GestoreMedia::caricaBiblioteca() {
+
     listaMedia->clear();
     QList<Media*> lista = gestoreJson.caricaBiblioteca();
 
     for (Media* media : lista) {
-        QString tipo;
+        QListWidgetItem* item = new QListWidgetItem(media->getIcon(), media->getTitolo(), listaMedia);
 
-        if (typeid(*media) == typeid(Vinile)) {
-            tipo = "Vinile";
-        } else if (typeid(*media) == typeid(Film)) {
-            tipo = "Film";
-        } else if (typeid(*media) == typeid(Rivista)) {
-            tipo = "Rivista";
-        } else if (typeid(*media) == typeid(Giornale)) {
-            tipo = "Giornale";
-        } else if (typeid(*media) == typeid(Libro)) {
-            tipo = "Libro";
+        item->setData(Qt::UserRole + 1, media->getImmagine());
+        item->setData(Qt::UserRole + 2, media->getTitolo());
+        item->setData(Qt::UserRole + 3, media->getPrezzo());
+        item->setData(Qt::UserRole + 4, media->getData());
+        item->setData(Qt::UserRole + 5, media->getGenere());
+        item->setData(Qt::UserRole + 6, media->getDisponibilita());
+        item->setData(Qt::UserRole + 7, media->getCopie());
+
+
+        if (Film* film = dynamic_cast<Film*>(media)) {
+            item->setData(Qt::UserRole, "Film");
+            item->setData(Qt::UserRole + 8, film->getDurata());
+            item->setData(Qt::UserRole + 9, film->getProduzione());
+            item->setData(Qt::UserRole + 12, film->getRegista());
+            item->setData(Qt::UserRole + 13, film->getLinguaOriginale());
+            item->setData(Qt::UserRole + 14, film->getPaeseProduzione());
+        }
+        else if (Giornale* giornale = dynamic_cast<Giornale*>(media)) {
+            item->setData(Qt::UserRole, "Giornale");
+            item->setData(Qt::UserRole + 10, giornale->getAutore());
+            item->setData(Qt::UserRole + 11, giornale->getEditore());
+            item->setData(Qt::UserRole + 15, giornale->getTestata());
+        }
+        else if (Libro* libro = dynamic_cast<Libro*>(media)) {
+            item->setData(Qt::UserRole, "Libro");
+            item->setData(Qt::UserRole + 10, libro->getAutore());
+            item->setData(Qt::UserRole + 11, libro->getEditore());
+            item->setData(Qt::UserRole + 16, libro->getFormato());
+            item->setData(Qt::UserRole + 17, libro->getLingua());
+        }
+        else if (Rivista* rivista = dynamic_cast<Rivista*>(media)) {
+            item->setData(Qt::UserRole, "Rivista");
+            item->setData(Qt::UserRole + 10, rivista->getAutore());
+            item->setData(Qt::UserRole + 11, rivista->getEditore());
+            item->setData(Qt::UserRole + 18, rivista->getNumero());
+            item->setData(Qt::UserRole + 19, rivista->getPeriodicita());
+        }
+        else if (Vinile* vinile = dynamic_cast<Vinile*>(media)) {
+            item->setData(Qt::UserRole, "Vinile");
+            item->setData(Qt::UserRole + 8, vinile->getDurata());
+            item->setData(Qt::UserRole + 9, vinile->getProduzione());
+            item->setData(Qt::UserRole + 20, vinile->getArtista());
+            item->setData(Qt::UserRole + 21, vinile->getNumeroTracce());
         }
 
-        QString nomeItem = tipo + ":\n" + media->getTitolo();
-        QListWidgetItem* item = new QListWidgetItem(media->getIcon(), nomeItem, listaMedia);
-        QString base64Immagine = media->getImmagine();
-        item->setData(Qt::UserRole, base64Immagine);
-
+        // ---------- Stile ----------
         QFont font;
         font.setBold(true);
         item->setFont(font);
@@ -399,8 +433,8 @@ void GestoreMedia::caricaBiblioteca() {
         listaMedia->setIconSize(QSize(48, 48));
         listaMedia->addItem(item);
     }
-
 }
+
 
 void GestoreMedia::creaForm(const QString& tipo, QFormLayout* layout) const {
     if (tipo == "Film") Film::creaForm(layout);

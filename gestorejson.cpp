@@ -15,6 +15,27 @@
 
 GestoreJson::GestoreJson(const QString& nomeFile) : percorsoFile(nomeFile) {}
 
+void GestoreJson::eliminaMedia(int indice) {
+    QFile file(percorsoFile);
+    if (!file.open(QIODevice::ReadOnly)) return;
+
+    QJsonDocument doc = QJsonDocument::fromJson(file.readAll());
+    file.close();
+
+    if (!doc.isArray()) return;
+
+    QJsonArray array = doc.array();
+    if (indice >= 0 && indice < array.size()) {
+        array.removeAt(indice);
+    }
+
+    if (!file.open(QIODevice::WriteOnly | QIODevice::Truncate)) return;
+
+    file.write(QJsonDocument(array).toJson());
+    file.close();
+}
+
+
 void GestoreJson::salvaNuovoMedia(Media* nuovoMedia) {
     media.append(nuovoMedia);
     QJsonObject nuovoOggetto;
@@ -61,9 +82,9 @@ void GestoreJson::salvaMedia(Media* media, QJsonObject& oggetto){
 
     oggetto["Titolo"] = media->getTitolo();
     oggetto["Prezzo"] = media->getPrezzo();
-    oggetto["Data di pubblicazione"] = QString::fromStdString(media->getData().toString());
+    oggetto["Data di pubblicazione"] = media->getData();
     oggetto["Genere"] = media->getGenere();
-    oggetto["Disponibilita'"] = media->getDisponibilita();
+    oggetto["Disponibilita"] = media->getDisponibilita();
     oggetto["Copie"] = media->getCopie();
 }
 

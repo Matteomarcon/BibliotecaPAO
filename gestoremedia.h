@@ -16,6 +16,9 @@ public:
     void salvaMediaDaForm(QString tipo, QFormLayout *layout);
     void caricaBiblioteca();
 
+
+    void eliminaMedia(int indice);
+
     void creaForm(const QString& tipo, QFormLayout *layout) const;
     Media* creaFilm(QFormLayout* layout);
     Media* creaGiornale(QFormLayout* layout);

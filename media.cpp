@@ -32,8 +32,8 @@ QString Media::getTitolo() const {
 float Media::getPrezzo() const {
     return prezzo;
 }
-Data Media::getData() const {
-    return dataPubblicazione;
+QString Media::getData() const {
+    return QString::fromStdString(dataPubblicazione.toString());
 }
 QString Media::getGenere() const {
     return genere;

@@ -15,6 +15,7 @@ private slots:
     void showPaginaNuovoMedia();
     void onItemClicked(QListWidgetItem *item);
     void caricaBiblioteca();
+    void eliminaMedia();
 
 private:
     GestoreMedia *gestore;
@@ -27,8 +28,30 @@ private:
     QListWidget *listaMedia;
 
     QWidget *rightPanel;
+    QLabel *labelIcona;
+    QLabel *labelCategoria;
+    QLabel *labelAutore;
+    QLabel *labelEditore;
+    QLabel *labelTestata;
+    QLabel *labelNumeroTracce;
+    QLabel *labelArtista;
+    QLabel *labelProduzione;
+    QLabel *labelDurata;
+    QLabel *labelCopie;
+    QLabel *labelDisponibilita;
+    QLabel *labelGenere;
+    QLabel *labelData;
+    QLabel *labelPrezzo;
+    QLabel *labelNumero;
+    QLabel *labelPeriodicita;
+    QLabel *labelLingua;
+    QLabel *labelLinguaOriginale;
+    QLabel *labelFormato;
+    QLabel *labelTitoloTopBar;
     QLabel *labelTitolo;
     QLabel *labelDescrizione;
+    QLabel *labelPaese;
+    QLabel *labelRegista;
     QLabel *labelImmagine;
 
 public:
