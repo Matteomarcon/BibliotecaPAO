@@ -1,11 +1,10 @@
 #include "gestoremedia.h"
-#include <media.h>
-#include <film.h>
-#include <vinile.h>
-#include <rivista.h>
-#include <giornale.h>
-#include <libro.h>
-
+#include "media.h"
+#include "film.h"
+#include "vinile.h"
+#include "rivista.h"
+#include "giornale.h"
+#include "libro.h"
 
 #include <QHBoxLayout>
 #include <QCheckBox>
@@ -26,8 +25,66 @@ QStringList GestoreMedia::getTipiDisponibili() {
     return {"Film", "Giornale", "Libro", "Rivista", "Vinile"};
 }
 
+void GestoreMedia::caricaFormDaMedia(int indice) {
+    Media* media = listaMedia->item(indice)->data(Qt::UserRole).value<Media*>();
+
+    // Funzione interna per trovare il widget del formLayout con una certa label (da ripetere ogni volta)
+    auto findWidgetByLabel = [this](const QString& labelText) -> QWidget* {
+        for (int i = 0; i < formLayout->rowCount(); ++i) {
+            QLabel* label = qobject_cast<QLabel*>(formLayout->itemAt(i, QFormLayout::LabelRole)->widget());
+            if (label && label->text() == labelText) {
+                return formLayout->itemAt(i, QFormLayout::FieldRole)->widget();
+            }
+        }
+        return nullptr;
+    };
+
+    if (QLineEdit* titolo = qobject_cast<QLineEdit*>(findWidgetByLabel("Titolo"))) titolo->setText(media->getTitolo());
+    if (QDoubleSpinBox* prezzo = qobject_cast<QDoubleSpinBox*>(findWidgetByLabel("Prezzo"))) prezzo->setValue(media->getPrezzo());
+    if (QDateEdit* data = qobject_cast<QDateEdit*>(findWidgetByLabel("Data"))) data->setDate(QDate::fromString(media->getData(), "dd-MM-yyyy"));
+    if (QLineEdit* genere = qobject_cast<QLineEdit*>(findWidgetByLabel("Genere"))) genere->setText(media->getGenere());
+    if (QCheckBox* disp = qobject_cast<QCheckBox*>(findWidgetByLabel("Disponibilita"))) disp->setChecked(media->getDisponibilita());
+    if (QSpinBox* copie = qobject_cast<QSpinBox*>(findWidgetByLabel("Copie"))) copie->setValue(media->getCopie());
+
+    if (Film* film = dynamic_cast<Film*>(media)) {
+        if (QSpinBox* durata = qobject_cast<QSpinBox*>(findWidgetByLabel("Durata (min)"))) durata->setValue(film->getDurata());
+        if (QLineEdit* produzione = qobject_cast<QLineEdit*>(findWidgetByLabel("Produzione"))) produzione->setText(film->getProduzione());
+        if (QLineEdit* regista = qobject_cast<QLineEdit*>(findWidgetByLabel("Regista"))) regista->setText(film->getRegista());
+        if (QLineEdit* lingua = qobject_cast<QLineEdit*>(findWidgetByLabel("Lingua originale"))) lingua->setText(film->getLinguaOriginale());
+        if (QLineEdit* paese = qobject_cast<QLineEdit*>(findWidgetByLabel("Paese di produzione"))) paese->setText(film->getPaeseProduzione());
+    }
+    else if (Giornale* giornale = dynamic_cast<Giornale*>(media)) {
+        if (QLineEdit* autore = qobject_cast<QLineEdit*>(findWidgetByLabel("Autore"))) autore->setText(giornale->getAutore());
+        if (QLineEdit* editore = qobject_cast<QLineEdit*>(findWidgetByLabel("Editore"))) editore->setText(giornale->getEditore());
+        if (QLineEdit* testata = qobject_cast<QLineEdit*>(findWidgetByLabel("Testata"))) testata->setText(giornale->getTestata());
+    }
+    else if (Libro* libro = dynamic_cast<Libro*>(media)) {
+        if (QLineEdit* autore = qobject_cast<QLineEdit*>(findWidgetByLabel("Autore"))) autore->setText(libro->getAutore());
+        if (QLineEdit* editore = qobject_cast<QLineEdit*>(findWidgetByLabel("Editore"))) editore->setText(libro->getEditore());
+        if (QLineEdit* formato = qobject_cast<QLineEdit*>(findWidgetByLabel("Formato"))) formato->setText(libro->getFormato());
+        if (QLineEdit* lingua = qobject_cast<QLineEdit*>(findWidgetByLabel("Lingua"))) lingua->setText(libro->getLingua());
+    }
+    else if (Rivista* rivista = dynamic_cast<Rivista*>(media)) {
+        if (QLineEdit* autore = qobject_cast<QLineEdit*>(findWidgetByLabel("Autore"))) autore->setText(rivista->getAutore());
+        if (QLineEdit* editore = qobject_cast<QLineEdit*>(findWidgetByLabel("Editore"))) editore->setText(rivista->getEditore());
+        if (QSpinBox* numero = qobject_cast<QSpinBox*>(findWidgetByLabel("Numero"))) numero->setValue(rivista->getNumero());
+        if (QComboBox* periodicita = qobject_cast<QComboBox*>(findWidgetByLabel("Periodicità"))) {
+            int index = periodicita->findText(rivista->getPeriodicita());
+            if (index != -1)
+                periodicita->setCurrentIndex(index);
+        }
+    }
+    else if (Vinile* vinile = dynamic_cast<Vinile*>(media)) {
+        if (QSpinBox* durata = qobject_cast<QSpinBox*>(findWidgetByLabel("Durata (min)"))) durata->setValue(vinile->getDurata());
+        if (QLineEdit* produzione = qobject_cast<QLineEdit*>(findWidgetByLabel("Produzione"))) produzione->setText(vinile->getProduzione());
+        if (QLineEdit* artista = qobject_cast<QLineEdit*>(findWidgetByLabel("Artista"))) artista->setText(vinile->getArtista());
+        if (QSpinBox* tracce = qobject_cast<QSpinBox*>(findWidgetByLabel("Numero tracce"))) tracce->setValue(vinile->getNumeroTracce());
+    }
+
+}
+
 //Gestione Media
-void GestoreMedia::salvaMediaDaForm(const QString& tipo) {
+void GestoreMedia::salvaMediaDaForm(const QString& tipo, int indice) {
     Media* media = nullptr;
 
     if (tipo == "Film") media = creaFilm();
@@ -36,13 +93,15 @@ void GestoreMedia::salvaMediaDaForm(const QString& tipo) {
     else if (tipo == "Rivista") media = creaRivista();
     else if (tipo == "Vinile") media = creaVinile();
 
-    gestoreJson.salvaNuovoMedia(media);
+    gestoreJson.salvaMedia(media, indice);
 }
 
 void GestoreMedia::caricaBiblioteca() {
 
     listaMedia->clear();
     QList<Media*> lista = gestoreJson.caricaBiblioteca();
+
+    qDebug() << lista;
 
     for (Media* media : lista) {
         QListWidgetItem* item = new QListWidgetItem(media->getIcon(), media->getTitolo(), listaMedia);
@@ -53,7 +112,6 @@ void GestoreMedia::caricaBiblioteca() {
         item->setFont(font);
 
         listaMedia->setIconSize(QSize(48, 48));
-        listaMedia->addItem(item);
     }
 }
 
@@ -97,7 +155,7 @@ void GestoreMedia::creaForm(const QString& tipo) {
         base64Edit->setText(base64);
     });
 
-    formLayout->addRow("Titolo", new QLineEdit("titoloEdit"));
+    formLayout->addRow("Titolo", new QLineEdit());
     formLayout->addRow("Prezzo", new QDoubleSpinBox());
     formLayout->addRow("Data", new QDateEdit());
     formLayout->addRow("Genere", new QLineEdit());
@@ -106,7 +164,7 @@ void GestoreMedia::creaForm(const QString& tipo) {
 
     if (tipo == "Film") creaFormFilm();
     else if (tipo == "Giornale") creaFormGiornale();
-    else if (tipo == "Libro") creaFormFilm();
+    else if (tipo == "Libro") creaFormLibro();
     else if (tipo == "Rivista") creaFormRivista();
     else if (tipo == "Vinile") creaFormVinile();
 }
@@ -124,8 +182,8 @@ void GestoreMedia::creaFormCartaceo() {
 void GestoreMedia::creaFormFilm() {
     creaFormAudiovisivo();
     formLayout->addRow("Regista", new QLineEdit());
-    formLayout->addRow("Lingua Originale", new QLineEdit());
-    formLayout->addRow("Paese Produzione", new QLineEdit());
+    formLayout->addRow("Lingua originale", new QLineEdit());
+    formLayout->addRow("Paese di produzione", new QLineEdit());
 }
 
 void GestoreMedia::creaFormGiornale() {
@@ -152,7 +210,7 @@ void GestoreMedia::creaFormRivista() {
 void GestoreMedia::creaFormVinile() {
     creaFormAudiovisivo();
     formLayout->addRow("Artista", new QLineEdit());
-    formLayout->addRow("Numero Tracce", new QSpinBox());
+    formLayout->addRow("Numero tracce", new QSpinBox());
 }
 
 //Creazione Media
@@ -197,7 +255,7 @@ Media* GestoreMedia::creaFilm() {
             if (auto spinBox = qobject_cast<QSpinBox*>(field)) {
                 copieVal = spinBox->value();
             }
-        } else if (labelText == "Durata") {
+        } else if (labelText == "Durata (min)") {
             if (auto spinBox = qobject_cast<QSpinBox*>(field)) {
                 durataVal = spinBox->value();
             }
@@ -213,7 +271,7 @@ Media* GestoreMedia::creaFilm() {
             if (auto lineEdit = qobject_cast<QLineEdit*>(field)) {
                 linguaOriginaleStr = lineEdit->text();
             }
-        } else if (labelText == "Paese produzione") {
+        } else if (labelText == "Paese di produzione") {
             if (auto lineEdit = qobject_cast<QLineEdit*>(field)) {
                 paeseProduzioneStr = lineEdit->text();
             }
@@ -466,7 +524,7 @@ Media* GestoreMedia::creaVinile() {
             if (auto spinBox = qobject_cast<QSpinBox*>(field)) {
                 copieVal = spinBox->value();
             }
-        } else if (labelText == "Durata") {
+        } else if (labelText == "Durata (min)") {
             if (auto spinBox = qobject_cast<QSpinBox*>(field)) {
                 durataVal = spinBox->value();
             }

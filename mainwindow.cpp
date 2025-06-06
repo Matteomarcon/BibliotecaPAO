@@ -253,22 +253,40 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent) {
     connect(nuovaBibliotecaButton, &QPushButton::clicked, this, &MainWindow::caricaBiblioteca);
 
     connect(toPrincipale, &QPushButton::clicked, this, &MainWindow::showPaginaPrincipale);
-    connect(toNuovoMedia, &QPushButton::clicked, this, &MainWindow::showPaginaNuovoMedia);
-    connect(salvaNuovoMediaButton, &QPushButton::clicked, this, [=]() {
-        if (selettoreMedia->currentIndex() == 0) QMessageBox::warning(nullptr, "Attenzione", "Per favore seleziona un tipo di media.");
-        else  {
-            gestore->salvaMediaDaForm(selettoreMedia->currentText());
-            gestore->caricaBiblioteca();
-            stackedWidget->setCurrentWidget(paginaPrincipale);
-            /*QPoint globalPos = salvaNuovoMediaButton->mapToGlobal(QPoint(0, 0));
-            QToolTip::showText(globalPos, "Salvataggio completato", salvaNuovoMediaButton);
-
-            // Nascondi il tooltip dopo 3 secondi (opzionale, in genere scompare da solo)
-            QTimer::singleShot(3000, this, []() {
-                QToolTip::hideText();
-            });*/
-        }
+    connect(toNuovoMedia, &QPushButton::clicked, this, [=]() {
+        listaMedia->setCurrentItem(NULL);
+        selettoreMedia->setCurrentIndex(0); // !!! Resettare form
+        MainWindow::showPaginaNuovoMedia();
     });
+
+    connect(salvaNuovoMediaButton, &QPushButton::clicked, this, [=]() {
+        if (selettoreMedia->currentIndex() == 0) {
+            QMessageBox::warning(nullptr, "Attenzione", "Per favore seleziona un tipo di media.");
+        }
+
+        int indiceSelezionato = -1;
+
+        if (listaMedia->currentItem()) {
+            // Modifica esistente
+            indiceSelezionato = listaMedia->row(listaMedia->currentItem());
+            gestore->salvaMediaDaForm(selettoreMedia->currentText(), indiceSelezionato);
+        } else {
+            // Nuovo media
+            gestore->salvaMediaDaForm(selettoreMedia->currentText());
+            indiceSelezionato = listaMedia->count(); // sarà l’ultimo
+        }
+
+        gestore->caricaBiblioteca();
+
+        // Reimposta il current row correttamente dopo il reload
+        if (indiceSelezionato >= 0 && indiceSelezionato < listaMedia->count()) {
+            listaMedia->setCurrentRow(indiceSelezionato);
+            mostraInfo(listaMedia->currentItem());
+        }
+
+        stackedWidget->setCurrentWidget(paginaPrincipale);
+    });
+
 
     connect(modificaButton, &QPushButton::clicked, this, [=]() {
         stackedWidget->setCurrentWidget(paginaNuovoMedia);
@@ -281,7 +299,7 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent) {
         else if (typeid(*media) == typeid(Rivista)) selettoreMedia->setCurrentIndex(4);
         else if (typeid(*media) == typeid(Vinile)) selettoreMedia->setCurrentIndex(5);
 
-        //gestore.modificaMedia(indice);
+        gestore->caricaFormDaMedia(listaMedia->row(listaMedia->currentItem()));
     });
 }
 
@@ -294,7 +312,7 @@ void MainWindow::eliminaMedia() {
     QMessageBox msgBox(this);
     msgBox.setWindowTitle("Conferma eliminazione");
     msgBox.setText("Sei sicuro di voler eliminare questo elemento?");
-    msgBox.setIcon(QMessageBox::Question);
+    msgBox.setIcon(QMessageBox::Warning);
 
     QPushButton* confermaButton = msgBox.addButton(tr("Conferma"), QMessageBox::AcceptRole);
     QPushButton* annullaButton = msgBox.addButton(tr("Annulla"), QMessageBox::RejectRole);
@@ -324,20 +342,15 @@ void MainWindow::showPaginaPrincipale() {
     msgBox.setText("Vuoi salvare la bozza prima di uscire?");
     msgBox.setIcon(QMessageBox::Warning);
 
-    // Aggiungi i pulsanti personalizzati
-    QPushButton *annullaButton = msgBox.addButton("Annulla", QMessageBox::RejectRole);
-    QPushButton *nonSalvareButton = msgBox.addButton("Non salvare", QMessageBox::DestructiveRole);
-    QPushButton *salvaBozzaButton = msgBox.addButton("Salva bozza", QMessageBox::AcceptRole);
+    QPushButton* confermaButton = msgBox.addButton(tr("Conferma"), QMessageBox::AcceptRole);
+    QPushButton* annullaButton = msgBox.addButton(tr("Annulla"), QMessageBox::RejectRole);
 
-    // Mostra la finestra di dialogo
     msgBox.exec();
 
-    // Controlla il pulsante premuto
-    if (msgBox.clickedButton() == salvaBozzaButton) {
-         stackedWidget->setCurrentWidget(paginaPrincipale);
-    } else if (msgBox.clickedButton() == nonSalvareButton) {
-        stackedWidget->setCurrentWidget(paginaPrincipale); // !!! da implementare: senza salvare
-    } else if (msgBox.clickedButton() == annullaButton) {
+    if (msgBox.clickedButton() == confermaButton) {
+        stackedWidget->setCurrentWidget(paginaPrincipale);
+    }
+    else if (msgBox.clickedButton() == annullaButton) {
         msgBox.close();
     }
 }
@@ -357,7 +370,8 @@ void MainWindow::mostraInfo(QListWidgetItem *item) {
         labelPrezzo->setText("Prezzo: " + QString::number(media->getPrezzo()) + "€");
         labelData->setText("Data: " + media->getData());
         labelGenere->setText("Genere: " + media->getGenere());
-        labelDisponibilita->setText("Disponibilità: " + media->getTitolo());
+        if (media->getDisponibilita()) labelDisponibilita->setText("Disponibilità: Disponibile");
+        else labelDisponibilita->setText("Disponibilità: Non disponibile");
         labelCopie->setText("Copie: " + QString::number(media->getCopie()));
         labelDurata->setVisible(false);
         labelProduzione->setVisible(false);

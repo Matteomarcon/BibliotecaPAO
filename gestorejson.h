@@ -18,7 +18,7 @@ class GestoreJson: public QObject
 {
 Q_OBJECT
 private:
-    QList<Media*> media;
+    QList<Media*> listaMedia;
     QString percorsoFile;
 public:
 
@@ -26,7 +26,7 @@ public:
     GestoreJson(const QString& nomeFile);
     QList<Media*> caricaBiblioteca();
     void eliminaMedia(int indice);
-    void salvaNuovoMedia(Media* media);
+    void salvaMedia(Media* media, int indice);
     void salvaMedia(Media* media, QJsonObject& oggetto);
     void salvaMedia(Audiovisivo* audiovisivo, QJsonObject& oggetto);
     void salvaMedia(Cartaceo* cartaceo, QJsonObject& oggetto);

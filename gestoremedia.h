@@ -18,7 +18,9 @@ public:
     static QStringList getTipiDisponibili();
 
     //Gestione Media
-    void salvaMediaDaForm(const QString& tipo);
+    void salvaMediaDaForm(const QString& tipo, int indice = -1);
+    void caricaFormDaMedia(int indice);
+    void modificaMedia(int indice);
     void caricaBiblioteca();
 
     //Creazione Form

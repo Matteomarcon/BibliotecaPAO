@@ -36,24 +36,24 @@ void GestoreJson::eliminaMedia(int indice) {
 }
 
 
-void GestoreJson::salvaNuovoMedia(Media* nuovoMedia) {
-    media.append(nuovoMedia);
+void GestoreJson::salvaMedia(Media* media, int indice) {
+    if (indice == -1) {
+        listaMedia.append(media);
+    }
+    else {
+        qDebug() << indice << " " << listaMedia.size();
+        delete listaMedia[indice];
+        listaMedia.replace(indice, media);
+        qDebug() << "aoaoaoao";
+    }
+
     QJsonObject nuovoOggetto;
-    if (typeid(*nuovoMedia)==typeid(Libro)) {
-        nuovoOggetto = salvaMedia(static_cast<Libro*>(nuovoMedia));
-    }
-    else if (typeid(*nuovoMedia)==typeid(Giornale)) {
-        nuovoOggetto = salvaMedia(static_cast<Giornale*>(nuovoMedia));
-    }
-    else if (typeid(*nuovoMedia)==typeid(Vinile)) {
-        nuovoOggetto = salvaMedia(static_cast<Vinile*>(nuovoMedia));
-    }
-    else if (typeid(*nuovoMedia)==typeid(Film)) {
-        nuovoOggetto = salvaMedia(static_cast<Film*>(nuovoMedia));
-    }
-    else if (typeid(*nuovoMedia)==typeid(Rivista)) {
-        nuovoOggetto = salvaMedia(static_cast<Rivista*>(nuovoMedia));
-    }
+    if (typeid(*media)==typeid(Libro)) nuovoOggetto = salvaMedia(static_cast<Libro*>(media));
+    else if (typeid(*media)==typeid(Giornale)) nuovoOggetto = salvaMedia(static_cast<Giornale*>(media));
+    else if (typeid(*media)==typeid(Vinile)) nuovoOggetto = salvaMedia(static_cast<Vinile*>(media));
+    else if (typeid(*media)==typeid(Film)) nuovoOggetto = salvaMedia(static_cast<Film*>(media));
+    else if (typeid(*media)==typeid(Rivista)) nuovoOggetto = salvaMedia(static_cast<Rivista*>(media));
+
     QFile file(percorsoFile);
     if (!file.open(QIODevice::ReadOnly)) {
         throw std::runtime_error("Impossibile aprire 1 dati.json");
@@ -65,7 +65,13 @@ void GestoreJson::salvaNuovoMedia(Media* nuovoMedia) {
         return;
     }
     QJsonArray jsonArray = documento.array();
-    jsonArray.append(nuovoOggetto);
+
+    if (indice == -1) {
+        jsonArray.append(nuovoOggetto);
+    }
+    else {
+        jsonArray.replace(indice, nuovoOggetto);
+    }
 
     QFile outputFile(percorsoFile);
     QJsonDocument aggiornaDocumento(jsonArray);
@@ -135,7 +141,7 @@ QJsonObject GestoreJson::salvaMedia(Film* film){
     salvaMedia(static_cast<Audiovisivo*>(film), oggetto);
     oggetto["Regista"] = film->getRegista();
     oggetto["Lingua originale"] = film->getLinguaOriginale();
-    oggetto["Paese di produzione"] = film->getPaeseProduzione();
+    oggetto["Paese produzione"] = film->getPaeseProduzione();
     return oggetto;
 }
 
@@ -149,9 +155,9 @@ QJsonObject GestoreJson::salvaMedia(Giornale* giornale){
 }
 
 QList<Media*> GestoreJson::caricaBiblioteca() {
-    QList<Media*> listaMedia;
-
     QFile file(percorsoFile);
+
+    listaMedia.clear();
 
     if (!file.open(QIODevice::ReadOnly | QIODevice::Text)) {
         qWarning() << "Impossibile aprire il file per la lettura:" << file.errorString();
@@ -193,7 +199,7 @@ Film* GestoreJson::caricaFilm(const QJsonObject& jsonObject) {
 
     return new Film(jsonObject["Immagine"].toString(), jsonObject["Titolo"].toString(), static_cast<float>(jsonObject["Prezzo"].toDouble()),
                        data, jsonObject["Genere"].toString(), jsonObject["Disponibilita"].toBool(),
-                    jsonObject["Copie"].toInt(), jsonObject["Duarata"].toInt(), jsonObject["Produzione"].toString(), jsonObject["Regista"].toString(),
+                    jsonObject["Copie"].toInt(), jsonObject["Durata"].toInt(), jsonObject["Produzione"].toString(), jsonObject["Regista"].toString(),
                        jsonObject["Lingua originale"].toString(), jsonObject["Paese produzione"].toString());
 }
 Vinile* GestoreJson::caricaVinile(const QJsonObject& jsonObject) {
@@ -201,7 +207,7 @@ Vinile* GestoreJson::caricaVinile(const QJsonObject& jsonObject) {
 
     return new Vinile(jsonObject["Immagine"].toString(), jsonObject["Titolo"].toString(), static_cast<float>(jsonObject["Prezzo"].toDouble()),
                        data, jsonObject["Genere"].toString(), jsonObject["Disponibilita"].toBool(),
-                       jsonObject["Copie"].toInt(), jsonObject["Duarata"].toInt(), jsonObject["Produzione"].toString(),
+                       jsonObject["Copie"].toInt(), jsonObject["Durata"].toInt(), jsonObject["Produzione"].toString(),
                        jsonObject["Artista"].toString(), jsonObject["Numero tracce"].toInt());
 }
 Giornale* GestoreJson::caricaGiornale(const QJsonObject& jsonObject) {
