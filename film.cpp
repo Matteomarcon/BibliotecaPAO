@@ -23,10 +23,3 @@ QIcon Film::getIcon() const {
     QIcon icona(":/icone/film.png");
     return icona;
 }
-
-void Film::creaForm(QFormLayout* layout) {
-    Audiovisivo::creaForm(layout);
-    layout->addRow("Regista", new QLineEdit());
-    layout->addRow("Lingua Originale", new QLineEdit());
-    layout->addRow("Paese Produzione", new QLineEdit());
-}

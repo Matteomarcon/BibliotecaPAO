@@ -16,7 +16,6 @@ QString regista, QString linguaOriginale, QString paeseProduzione);
     QString getPaeseProduzione() const;
 
     QIcon getIcon() const override;
-    static void creaForm(QFormLayout *layout);
 };
 
 #endif // FILM_H

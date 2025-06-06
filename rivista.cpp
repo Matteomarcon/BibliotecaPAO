@@ -21,13 +21,3 @@ QIcon Rivista::getIcon() const {
     return icona;
 }
 
-void Rivista::creaForm(QFormLayout* layout) {
-    Cartaceo::creaForm(layout);
-    layout->addRow("Numero", new QSpinBox());
-    QComboBox* periodicita = new QComboBox();
-    periodicita->addItems({"Seleziona periocità...", "Settimanale", "Mensile", "Trimestrale", "Quadrimestrale", "Semestrale", "Annuale"});
-    periodicita->setItemData(0, 0, Qt::UserRole - 1); //Disabilita la voce
-    periodicita->setCurrentIndex(-1);
-    layout->addRow("Periodicità", periodicita);
-}
-

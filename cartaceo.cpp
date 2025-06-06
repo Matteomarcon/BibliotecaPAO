@@ -15,9 +15,3 @@ QString Cartaceo::getAutore() const {
 QString Cartaceo::getEditore() const {
     return editore;
 }
-
-void Cartaceo::creaForm(QFormLayout* layout) {
-    Media::creaForm(layout);
-    layout->addRow("Autore", new QLineEdit());
-    layout->addRow("Editore", new QLineEdit());
-}

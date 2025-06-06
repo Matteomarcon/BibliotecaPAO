@@ -13,7 +13,7 @@ class MainWindow : public QMainWindow {
 private slots:
     void showPaginaPrincipale();
     void showPaginaNuovoMedia();
-    void onItemClicked(QListWidgetItem *item);
+    void mostraInfo(QListWidgetItem *item);
     void caricaBiblioteca();
     void eliminaMedia();
 

@@ -1,4 +1,10 @@
 #include "mainwindow.h"
+#include "media.h"
+#include "film.h"
+#include "giornale.h"
+#include "libro.h"
+#include "rivista.h"
+#include "vinile.h"
 
 #include <QPushButton>
 #include <QHBoxLayout>
@@ -18,6 +24,10 @@
 #include <QCoreApplication>
 #include <QPalette>
 #include <QApplication>
+#include <QToolTip>
+#include <QTimer>
+#include <QStatusBar>
+#include <typeinfo>
 
 MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent) {
     this->setMinimumSize(400,300);
@@ -61,10 +71,12 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent) {
 
     QString percorsoBase = QCoreApplication::applicationDirPath();
     QString percorsoFile = QDir(percorsoBase).filePath("../../../BibliotecaDefault.json");
+    QWidget* formContainer = new QWidget();
+    formLayout = new QFormLayout(formContainer);
 
     QFileInfo checkFile(percorsoFile);
     if (!checkFile.exists() || !checkFile.isFile()) {
-        gestore = new GestoreMedia(listaMedia, percorsoFile); // !!! Da creare il file se non presente
+        gestore = new GestoreMedia(listaMedia, formLayout, percorsoFile); // !!! Da creare il file se non presente
         QFile file(percorsoFile);
         if (file.open(QIODevice::WriteOnly | QIODevice::Truncate)) {
             QTextStream out(&file);
@@ -74,10 +86,10 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent) {
     }
 
     // !!! cosa succede se non crea il file?
-    gestore = new GestoreMedia(listaMedia, percorsoFile);
+    gestore = new GestoreMedia(listaMedia, formLayout, percorsoFile);
     gestore->caricaBiblioteca();
 
-    connect(listaMedia, &QListWidget::itemClicked, this, &MainWindow::onItemClicked);
+    connect(listaMedia, &QListWidget::itemClicked, this, &MainWindow::mostraInfo);
 
     layoutLeftPanel->addWidget(searchBar);
     layoutLeftPanel->addWidget(leftLabel);
@@ -200,12 +212,10 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent) {
     QComboBox *selettoreMedia = new QComboBox();
     selettoreMedia->addItem("Scegli media...");
     selettoreMedia->setItemData(0, 0, Qt::UserRole - 1); //Disabilita la voce
-    selettoreMedia->addItems(gestore->getTipiDisponibili());
+    selettoreMedia->addItems(GestoreMedia::getTipiDisponibili());
     selettoreMedia->setCurrentIndex(0);
     layoutNuovoMedia->addWidget(selettoreMedia);
 
-    QWidget* formContainer = new QWidget();
-    formLayout = new QFormLayout(formContainer);
     layoutNuovoMedia->addWidget(formContainer);
 
     connect(selettoreMedia, &QComboBox::currentTextChanged, this, [=](const QString& tipoSelezionato) {
@@ -220,7 +230,7 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent) {
             formLayout->removeRow(0);
         }
 
-        gestore->creaForm(tipoSelezionato, formLayout);
+        gestore->creaForm(tipoSelezionato);
     });
 
     // Bottom Bar
@@ -247,10 +257,31 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent) {
     connect(salvaNuovoMediaButton, &QPushButton::clicked, this, [=]() {
         if (selettoreMedia->currentIndex() == 0) QMessageBox::warning(nullptr, "Attenzione", "Per favore seleziona un tipo di media.");
         else  {
-            gestore->salvaMediaDaForm(selettoreMedia->currentText(), formLayout);
+            gestore->salvaMediaDaForm(selettoreMedia->currentText());
             gestore->caricaBiblioteca();
-            //showPaginaPrincipale();
+            stackedWidget->setCurrentWidget(paginaPrincipale);
+            /*QPoint globalPos = salvaNuovoMediaButton->mapToGlobal(QPoint(0, 0));
+            QToolTip::showText(globalPos, "Salvataggio completato", salvaNuovoMediaButton);
+
+            // Nascondi il tooltip dopo 3 secondi (opzionale, in genere scompare da solo)
+            QTimer::singleShot(3000, this, []() {
+                QToolTip::hideText();
+            });*/
         }
+    });
+
+    connect(modificaButton, &QPushButton::clicked, this, [=]() {
+        stackedWidget->setCurrentWidget(paginaNuovoMedia);
+
+        Media* media = listaMedia->currentItem()->data(Qt::UserRole).value<Media*>();
+
+        if (typeid(*media) == typeid(Film)) selettoreMedia->setCurrentIndex(1);
+        else if (typeid(*media) == typeid(Giornale)) selettoreMedia->setCurrentIndex(2);
+        else if (typeid(*media) == typeid(Libro)) selettoreMedia->setCurrentIndex(3);
+        else if (typeid(*media) == typeid(Rivista)) selettoreMedia->setCurrentIndex(4);
+        else if (typeid(*media) == typeid(Vinile)) selettoreMedia->setCurrentIndex(5);
+
+        //gestore.modificaMedia(indice);
     });
 }
 
@@ -282,16 +313,12 @@ void MainWindow::eliminaMedia() {
 void MainWindow::caricaBiblioteca() {
     QString percorsoFile = QFileDialog::getOpenFileName(nullptr, "Scegli Biblioteca", "", "Documento (*.json)");
     if (!percorsoFile.isEmpty()) {
-        gestore = new GestoreMedia(listaMedia, percorsoFile); // !!! Distruzione funziona????
+        gestore = new GestoreMedia(listaMedia, formLayout, percorsoFile); // !!! Distruzione funziona????
         gestore->caricaBiblioteca();
     }
 }
 
-
 void MainWindow::showPaginaPrincipale() {
-
-    // !!! Dividi pulsante annulla e salva
-
     QMessageBox msgBox;
     msgBox.setWindowTitle("Modifiche non salvate");
     msgBox.setText("Vuoi salvare la bozza prima di uscire?");
@@ -319,160 +346,93 @@ void MainWindow::showPaginaNuovoMedia() {
     stackedWidget->setCurrentWidget(paginaNuovoMedia);
 }
 
-void MainWindow::onItemClicked(QListWidgetItem *item) {
+void MainWindow::mostraInfo(QListWidgetItem *item) {
     if (item) {
         labelIcona->setPixmap(item->icon().pixmap(44,44));
         labelTitoloTopBar->setText(item->text());
 
-        QVariant val;
-        val = item->data(Qt::UserRole);
-        if (val.isValid() && !val.toString().isEmpty()) {
-            labelCategoria->setText("Categoria: " + val.toString());
-            labelCategoria->show();
-        }
-        else labelCategoria->hide();
+        Media* media = item->data(Qt::UserRole).value<Media*>();
 
-        val = item->data(Qt::UserRole + 2);
-        if (val.isValid() && !val.toString().isEmpty()) {
-            labelTitolo->setText("Titolo: " + val.toString());
-            labelTitolo->show();
-        }
-        else labelTitolo->hide();
+        labelTitolo->setText("Titolo: " + media->getTitolo());
+        labelPrezzo->setText("Prezzo: " + QString::number(media->getPrezzo()) + "€");
+        labelData->setText("Data: " + media->getData());
+        labelGenere->setText("Genere: " + media->getGenere());
+        labelDisponibilita->setText("Disponibilità: " + media->getTitolo());
+        labelCopie->setText("Copie: " + QString::number(media->getCopie()));
+        labelDurata->setVisible(false);
+        labelProduzione->setVisible(false);
+        labelRegista->setVisible(false);
+        labelLinguaOriginale->setVisible(false);
+        labelPaese->setVisible(false);
+        labelAutore->setVisible(false);
+        labelEditore->setVisible(false);
+        labelLingua->setVisible(false);
+        labelFormato->setVisible(false);
+        labelTestata->setVisible(false);
+        labelNumero->setVisible(false);
+        labelPeriodicita->setVisible(false);
+        labelArtista->setVisible(false);
+        labelNumeroTracce->setVisible(false);
 
-        val = item->data(Qt::UserRole + 3);
-        if (val.isValid() && !val.toString().isEmpty()) {
-            labelPrezzo->setText("Prezzo: " + val.toString() + "€");
-            labelPrezzo->show();
+        if (Film* film = dynamic_cast<Film*>(media)) {
+            labelCategoria->setText("Categoria: Film");
+            labelDurata->setText("Durata: " + QString::number(film->getDurata()) + " minuti");
+            labelProduzione->setText("Produzione: " + film->getProduzione());
+            labelRegista->setText("Regista: " + film->getRegista());
+            labelLinguaOriginale->setText("Lingua originale: " + film->getLinguaOriginale());
+            labelPaese->setText("Paese di produzione: " + film->getPaeseProduzione());
+            labelDurata->setVisible(true);
+            labelProduzione->setVisible(true);
+            labelRegista->setVisible(true);
+            labelLinguaOriginale->setVisible(true);
+            labelPaese->setVisible(true);
         }
-        else labelPrezzo->hide();
 
-        val = item->data(Qt::UserRole + 4);
-        if (val.isValid() && !val.toString().isEmpty()) {
-            labelData->setText("Data di Pubblicazione: " + val.toString());
-            labelData->show();
+        else if (Giornale* giornale = dynamic_cast<Giornale*>(media)) {
+            labelCategoria->setText("Categoria: Giornale");
+            labelAutore->setText("Autore: " + giornale->getAutore());
+            labelEditore->setText("Editore: " + giornale->getEditore());
+            labelRegista->setText("Testata: " + giornale->getTestata());
+            labelAutore->setVisible(true);
+            labelEditore->setVisible(true);
+            labelRegista->setVisible(true);
         }
-        else labelData->hide();
 
-        val = item->data(Qt::UserRole + 5);
-        if (val.isValid() && !val.toString().isEmpty()) {
-            labelGenere->setText("Genere: " + val.toString());
-            labelGenere->show();
+        else if (Libro* libro = dynamic_cast<Libro*>(media)) {
+            labelCategoria->setText("Categoria: Libro");
+            labelAutore->setText("Autore: " + libro->getAutore());
+            labelEditore->setText("Editore: " + libro->getEditore());
+            labelLingua->setText("Lingua: " + libro->getLingua());
+            labelFormato->setText("Formato: " + libro ->getFormato());
+            labelAutore->setVisible(true);
+            labelEditore->setVisible(true);
+            labelLingua->setVisible(true);
+            labelFormato->setVisible(true);
         }
-        else labelGenere->hide();
 
-        val = item->data(Qt::UserRole + 6);
-        if (val.isValid() && !val.toString().isEmpty()) {
-            if (val.toString() == "true") labelDisponibilita->setText("Disponibilità: Disponibile");
-            else labelDisponibilita->setText("Disponibilità: Non disponibile");
-            labelDisponibilita->show();
+        else if (Rivista* rivista = dynamic_cast<Rivista*>(media)) {
+            labelCategoria->setText("Categoria: Rivista");
+            labelAutore->setText("Autore: " + rivista->getAutore());
+            labelEditore->setText("Editore: " + rivista->getEditore());
+            labelNumero->setText("Numero: " + QString::number(rivista->getNumero()));
+            labelPeriodicita->setText("Periodicità: " + rivista->getPeriodicita());
+            labelAutore->setVisible(true);
+            labelEditore->setVisible(true);
+            labelNumero->setVisible(true);
+            labelPeriodicita->setVisible(true);
         }
-        else labelDisponibilita->hide();
 
-        val = item->data(Qt::UserRole + 7);
-        if (val.isValid() && !val.toString().isEmpty()) {
-            labelCopie->setText("Copie: " + val.toString());
-            labelCopie->show();
+        else if (Vinile* vinile = dynamic_cast<Vinile*>(media)) {
+            labelCategoria->setText("Categoria: Vinile");
+            labelDurata->setText("Durata: " + QString::number(vinile->getDurata()) + " minuti");
+            labelProduzione->setText("Produzione: " + vinile->getProduzione());
+            labelArtista->setText("Artista: " + vinile->getArtista());
+            labelNumeroTracce->setText("Numero tracce: " + QString::number(vinile->getNumeroTracce()));
+            labelDurata->setVisible(true);
+            labelProduzione->setVisible(true);
+            labelArtista->setVisible(true);
+            labelNumeroTracce->setVisible(true);
         }
-        else labelCopie->hide();
-
-        val = item->data(Qt::UserRole + 8);
-        if (val.isValid() && !val.toString().isEmpty()) {
-            labelDurata->setText("Durata: " + val.toString() + " minuti");
-            labelDurata->show();
-        }
-        else labelDurata->hide();
-
-        val = item->data(Qt::UserRole + 9);
-        if (val.isValid() && !val.toString().isEmpty()) {
-            labelProduzione->setText("Produzione: " + val.toString());
-            labelProduzione->show();
-        }
-        else labelProduzione->hide();
-
-        val = item->data(Qt::UserRole + 10);
-        if (val.isValid() && !val.toString().isEmpty()) {
-            labelAutore->setText("Autore: " + val.toString());
-            labelAutore->show();
-        }
-        else labelAutore->hide();
-
-        val = item->data(Qt::UserRole + 11);
-        if (val.isValid() && !val.toString().isEmpty()) {
-            labelEditore->setText("Editore: " + val.toString());
-            labelEditore->show();
-        }
-        else labelEditore->hide();
-
-        val = item->data(Qt::UserRole + 12);
-        if (val.isValid() && !val.toString().isEmpty()) {
-            labelRegista->setText("Regista: " + val.toString());
-            labelRegista->show();
-        }
-        else labelRegista->hide();
-
-        val = item->data(Qt::UserRole + 13);
-        if (val.isValid() && !val.toString().isEmpty()) {
-            labelLinguaOriginale->setText("Lingua Originale: " + val.toString());
-            labelLinguaOriginale->show();
-        }
-        else labelLinguaOriginale->hide();
-
-        val = item->data(Qt::UserRole + 14);
-        if (val.isValid() && !val.toString().isEmpty()) {
-            labelPaese->setText("Paese di Produzione: " + val.toString());
-            labelPaese->show();
-        }
-        else labelPaese->hide();
-
-        val = item->data(Qt::UserRole + 15);
-        if (val.isValid() && !val.toString().isEmpty()) {
-            labelTestata->setText("Testata: " + val.toString());
-            labelTestata->show();
-        }
-        else labelTestata->hide();
-
-        val = item->data(Qt::UserRole + 16);
-        if (val.isValid() && !val.toString().isEmpty()) {
-            labelFormato->setText("Formato: " + val.toString());
-            labelFormato->show();
-        }
-        else labelFormato->hide();
-
-        val = item->data(Qt::UserRole + 17);
-        if (val.isValid() && !val.toString().isEmpty()) {
-            labelLingua->setText("Lingua: " + val.toString());
-            labelLingua->show();
-        }
-        else labelLingua->hide();
-
-        val = item->data(Qt::UserRole + 18);
-        if (val.isValid() && !val.toString().isEmpty()) {
-            labelNumero->setText("Numero: " + val.toString());
-            labelNumero->show();
-        }
-        else labelNumero->hide();
-
-        val = item->data(Qt::UserRole + 19);
-        if (val.isValid() && !val.toString().isEmpty()) {
-            labelPeriodicita->setText("Periodicità: " + val.toString());
-            labelPeriodicita->show();
-        }
-        else labelPeriodicita->hide();
-
-        val = item->data(Qt::UserRole + 20);
-        if (val.isValid() && !val.toString().isEmpty()) {
-            labelArtista->setText("Artista: " + val.toString());
-            labelArtista->show();
-        }
-        else labelArtista->hide();
-
-        val = item->data(Qt::UserRole + 21);
-        if (val.isValid() && !val.toString().isEmpty()) {
-            labelNumeroTracce->setText("Numero Tracce: " + val.toString());
-            labelNumeroTracce->show();
-        }
-        else labelNumeroTracce->hide();
-
 
         /*QString base64 = item->data(Qt::UserRole).toString();
         QByteArray byteArray = QByteArray::fromBase64(base64.toLatin1());

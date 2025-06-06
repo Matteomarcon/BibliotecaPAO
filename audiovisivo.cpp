@@ -17,9 +17,3 @@ int Audiovisivo::getDurata() const {
 QString Audiovisivo::getProduzione() const {
     return produzione;
 }
-
-void Audiovisivo::creaForm(QFormLayout* layout) {
-    Media::creaForm(layout);
-    layout->addRow("Durata (min)", new QSpinBox());
-    layout->addRow("Produzione", new QLineEdit());
-}

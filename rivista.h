@@ -13,7 +13,6 @@ public:
     QString getPeriodicita() const;
 
     QIcon getIcon() const override;
-    static void creaForm(QFormLayout *layout);
 };
 
 #endif // RIVISTA_H

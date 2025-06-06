@@ -9,22 +9,37 @@ class GestoreMedia {
 private:
     GestoreJson gestoreJson;
     QListWidget* listaMedia;
-public:
-    GestoreMedia(QListWidget* lista, QString percorso = "dati.json");
+    QFormLayout* formLayout;
 
-    QStringList getTipiDisponibili() const;
-    void salvaMediaDaForm(QString tipo, QFormLayout *layout);
+public:
+    GestoreMedia(QListWidget* listaMedia, QFormLayout* formLayout, QString percorsoJson = "BibliotecaDefault.json");
+
+    //Utilità
+    static QStringList getTipiDisponibili();
+
+    //Gestione Media
+    void salvaMediaDaForm(const QString& tipo);
     void caricaBiblioteca();
 
+    //Creazione Form
+    void creaForm(const QString& tipo);
+    void creaFormAudiovisivo();
+    void creaFormCartaceo();
+    void creaFormFilm();
+    void creaFormGiornale();
+    void creaFormLibro();
+    void creaFormRivista();
+    void creaFormVinile();
 
+    //Creazione Media
+    Media* creaFilm();
+    Media* creaGiornale();
+    Media* creaLibro();
+    Media* creaRivista();
+    Media* creaVinile();
+
+    //Eliminazione Media
     void eliminaMedia(int indice);
-
-    void creaForm(const QString& tipo, QFormLayout *layout) const;
-    Media* creaFilm(QFormLayout* layout);
-    Media* creaGiornale(QFormLayout* layout);
-    Media* creaLibro(QFormLayout* layout);
-    Media* creaRivista(QFormLayout* layout);
-    Media* creaVinile(QFormLayout* layout);
 };
 
 #endif // GESTOREMEDIA_H

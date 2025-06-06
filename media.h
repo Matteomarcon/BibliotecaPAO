@@ -27,7 +27,6 @@ public:
     int getCopie() const;
 
     virtual QIcon getIcon() const = 0;
-    static void creaForm(QFormLayout* layout);
 };
 
 #endif // MEDIA_H

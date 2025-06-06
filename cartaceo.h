@@ -18,7 +18,6 @@ public:
     QString getEditore() const;
 
     virtual QIcon getIcon() const = 0;
-    static void creaForm(QFormLayout *layout);
 };
 
 #endif // CARTACEO_H

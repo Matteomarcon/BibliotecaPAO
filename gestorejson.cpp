@@ -79,7 +79,6 @@ void GestoreJson::salvaNuovoMedia(Media* nuovoMedia) {
 
 void GestoreJson::salvaMedia(Media* media, QJsonObject& oggetto){
     oggetto["Immagine"] = media->getImmagine();
-
     oggetto["Titolo"] = media->getTitolo();
     oggetto["Prezzo"] = media->getPrezzo();
     oggetto["Data di pubblicazione"] = media->getData();
