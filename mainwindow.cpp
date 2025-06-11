@@ -66,17 +66,36 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent) {
 
     QLineEdit *searchBar = new QLineEdit();
     searchBar->setPlaceholderText("Cerca...");
-    QLabel *leftLabel = new QLabel("Risultati:");
+    risultatiLabel = new QLabel("Risultati:");
     listaMedia = new QListWidget();
+
+    connect(searchBar, &QLineEdit::textChanged, this, [=](const QString &text) {
+        int visibili = 0;
+        for (int i = 0; i < listaMedia->count(); ++i) {
+            QListWidgetItem *item = listaMedia->item(i);
+            bool match = item->text().contains(text, Qt::CaseInsensitive);
+            item->setHidden(!match);
+            if (match) ++visibili;
+        }
+        risultatiLabel->setText(QString("Risultati: %1").arg(visibili));
+    });
+
 
     QString percorsoBase = QCoreApplication::applicationDirPath();
     QString percorsoFile = QDir(percorsoBase).filePath("../../../BibliotecaDefault.json");
     QWidget* formContainer = new QWidget();
     formLayout = new QFormLayout(formContainer);
 
+    // Label per preview immagine a destra
+    imagePreview = new QLabel("Anteprima immagine");
+    imagePreview->setFixedSize(200, 300); // Dimensioni fisse opzionali
+    imagePreview->setStyleSheet("border: 1px solid gray;"); // Bordi visivi
+    imagePreview->setAlignment(Qt::AlignCenter);
+    imagePreview->setScaledContents(true);
+
     QFileInfo checkFile(percorsoFile);
     if (!checkFile.exists() || !checkFile.isFile()) {
-        gestore = new GestoreMedia(listaMedia, formLayout, percorsoFile); // !!! Da creare il file se non presente
+        gestore = new GestoreMedia(listaMedia, formLayout, imagePreview, percorsoFile); // !!! Da creare il file se non presente
         QFile file(percorsoFile);
         if (file.open(QIODevice::WriteOnly | QIODevice::Truncate)) {
             QTextStream out(&file);
@@ -85,14 +104,16 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent) {
         }
     }
 
+
+
     // !!! cosa succede se non crea il file?
-    gestore = new GestoreMedia(listaMedia, formLayout, percorsoFile);
-    gestore->caricaBiblioteca();
+    gestore = new GestoreMedia(listaMedia, formLayout, imagePreview, percorsoFile);
+    gestore->caricaBiblioteca(risultatiLabel);
 
     connect(listaMedia, &QListWidget::itemClicked, this, &MainWindow::mostraInfo);
 
     layoutLeftPanel->addWidget(searchBar);
-    layoutLeftPanel->addWidget(leftLabel);
+    layoutLeftPanel->addWidget(risultatiLabel);
     layoutLeftPanel->addWidget(listaMedia);
 
     QWidget *leftPanel = new QWidget();
@@ -101,6 +122,26 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent) {
     // Right Panel
     rightPanel = new QWidget(this);
     QVBoxLayout *rightLayout = new QVBoxLayout(rightPanel);
+
+    // Info Panel
+    QWidget *infoPanel = new QWidget(rightPanel);
+    QHBoxLayout *infoPanelLayout = new QHBoxLayout(infoPanel);
+    labelImmagine = new QLabel(infoPanel);
+    QWidget *labelContainer = new QWidget(infoPanel);
+    QVBoxLayout *labelLayout = new QVBoxLayout(labelContainer);
+    labelImmagine->setFixedSize(300, 400); // Dimensioni fisse opzionali
+    labelImmagine->setStyleSheet("border: 1px solid gray;"); // Bordi visivi
+    labelImmagine->setAlignment(Qt::AlignCenter);
+    labelImmagine->setScaledContents(true);
+    labelImmagine->hide();
+
+    infoPanelLayout->addWidget(labelImmagine, 0, Qt::AlignTop);
+    infoPanelLayout->addWidget(labelContainer);
+
+    infoPanelLayout->setStretch(0, 1);
+    infoPanelLayout->setStretch(1, 2);
+
+    labelContainer->setStyleSheet("QLabel { font-size: 14pt; }");
 
     // ---------- Top Bar ----------
     QWidget *topBar = new QWidget(rightPanel);
@@ -144,54 +185,57 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent) {
     topBarLayout->addWidget(modificaButton);
     topBarLayout->addWidget(eliminaButton);
     // ---------- Contenuto inferiore ----------
-    labelCategoria = new QLabel(rightPanel);
-    labelTitolo = new QLabel(rightPanel);
-    labelAutore = new QLabel(rightPanel);
-    labelEditore = new QLabel(rightPanel);
-    labelTestata = new QLabel(rightPanel);
-    labelTitolo = new QLabel(rightPanel);
-    labelPrezzo = new QLabel(rightPanel);
-    labelGenere = new QLabel(rightPanel);
-    labelData = new QLabel(rightPanel);
-    labelDisponibilita = new QLabel(rightPanel);
-    labelCopie = new QLabel(rightPanel);
-    labelFormato = new QLabel(rightPanel);
-    labelLingua = new QLabel(rightPanel);
-    labelLinguaOriginale = new QLabel(rightPanel);
-    labelRegista = new QLabel(rightPanel);
-    labelProduzione = new QLabel(rightPanel);
-    labelDurata = new QLabel(rightPanel);
-    labelPaese = new QLabel(rightPanel);
-    labelNumero = new QLabel(rightPanel);
-    labelPeriodicita = new QLabel(rightPanel);
-    labelArtista = new QLabel(rightPanel);
-    labelNumeroTracce = new QLabel(rightPanel);
-    labelImmagine = new QLabel(rightPanel);
+    labelCategoria = new QLabel(labelContainer);
+    labelTitolo = new QLabel(labelContainer);
+    labelAutore = new QLabel(labelContainer);
+    labelEditore = new QLabel(labelContainer);
+    labelTestata = new QLabel(labelContainer);
+    labelTitolo = new QLabel(labelContainer);
+    labelPrezzo = new QLabel(labelContainer);
+    labelGenere = new QLabel(labelContainer);
+    labelData = new QLabel(labelContainer);
+    labelDisponibilita = new QLabel(labelContainer);
+    labelCopie = new QLabel(labelContainer);
+    labelFormato = new QLabel(labelContainer);
+    labelLingua = new QLabel(labelContainer);
+    labelLinguaOriginale = new QLabel(labelContainer);
+    labelRegista = new QLabel(labelContainer);
+    labelProduzione = new QLabel(labelContainer);
+    labelDurata = new QLabel(labelContainer);
+    labelPaese = new QLabel(labelContainer);
+    labelNumero = new QLabel(labelContainer);
+    labelPeriodicita = new QLabel(labelContainer);
+    labelArtista = new QLabel(labelContainer);
+    labelNumeroTracce = new QLabel(labelContainer);
+
+    labelLayout->addWidget(labelCategoria);
+    labelLayout->addWidget(labelTitolo);
+    labelLayout->addWidget(labelAutore);
+    labelLayout->addWidget(labelEditore);
+    labelLayout->addWidget(labelTestata);
+    labelLayout->addWidget(labelPrezzo);
+    labelLayout->addWidget(labelGenere);
+    labelLayout->addWidget(labelData);
+    labelLayout->addWidget(labelDisponibilita);
+    labelLayout->addWidget(labelCopie);
+    labelLayout->addWidget(labelFormato);
+    labelLayout->addWidget(labelLingua);
+    labelLayout->addWidget(labelLinguaOriginale);
+    labelLayout->addWidget(labelRegista);
+    labelLayout->addWidget(labelProduzione);
+    labelLayout->addWidget(labelDurata);
+    labelLayout->addWidget(labelPaese);
+    labelLayout->addWidget(labelNumero);
+    labelLayout->addWidget(labelPeriodicita);
+    labelLayout->addWidget(labelArtista);
+    labelLayout->addWidget(labelNumeroTracce);
+    labelLayout->addStretch();
+
     // ---------- Layout finale ----------
     rightLayout->addWidget(topBar);
-    rightLayout->addWidget(labelCategoria);
-    rightLayout->addWidget(labelTitolo);
-    rightLayout->addWidget(labelAutore);
-    rightLayout->addWidget(labelEditore);
-    rightLayout->addWidget(labelTestata);
-    rightLayout->addWidget(labelPrezzo);
-    rightLayout->addWidget(labelGenere);
-    rightLayout->addWidget(labelData);
-    rightLayout->addWidget(labelDisponibilita);
-    rightLayout->addWidget(labelCopie);
-    rightLayout->addWidget(labelFormato);
-    rightLayout->addWidget(labelLingua);
-    rightLayout->addWidget(labelLinguaOriginale);
-    rightLayout->addWidget(labelRegista);
-    rightLayout->addWidget(labelProduzione);
-    rightLayout->addWidget(labelDurata);
-    rightLayout->addWidget(labelPaese);
-    rightLayout->addWidget(labelNumero);
-    rightLayout->addWidget(labelPeriodicita);
-    rightLayout->addWidget(labelArtista);
-    rightLayout->addWidget(labelNumeroTracce);
-    rightLayout->addWidget(labelImmagine);
+    rightLayout->addWidget(infoPanel);
     rightLayout->setAlignment(Qt::AlignTop);
+
 
     //Layout left e right panel
     QHBoxLayout *LayoutLeftRightPanel = new QHBoxLayout();
@@ -208,6 +252,7 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent) {
     // Layout seconda pagina
     QVBoxLayout *layoutNuovoMedia = new QVBoxLayout(paginaNuovoMedia);
 
+
     //Combo box per selezione tipo
     QComboBox *selettoreMedia = new QComboBox();
     selettoreMedia->addItem("Scegli media...");
@@ -217,6 +262,21 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent) {
     layoutNuovoMedia->addWidget(selettoreMedia);
 
     layoutNuovoMedia->addWidget(formContainer);
+
+    // Contenitore orizzontale per la sezione sotto (form + preview)
+    QHBoxLayout *contenitoreFormPreview = new QHBoxLayout();
+
+    // Form a sinistra
+    contenitoreFormPreview->addWidget(formContainer);
+
+    contenitoreFormPreview->addWidget(imagePreview);
+
+    // Imposta proporzioni se vuoi metà e metà (o altro rapporto)
+    contenitoreFormPreview->setStretch(0, 2); // Form
+    contenitoreFormPreview->setStretch(1, 1); // Immagine
+
+    // Aggiungi il contenitore orizzontale al layout verticale
+    layoutNuovoMedia->addLayout(contenitoreFormPreview);
 
     connect(selettoreMedia, &QComboBox::currentTextChanged, this, [=](const QString& tipoSelezionato) {
         // Pulisce tutti i widget dal formLayout
@@ -276,7 +336,7 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent) {
             indiceSelezionato = listaMedia->count(); // sarà l’ultimo
         }
 
-        gestore->caricaBiblioteca();
+        gestore->caricaBiblioteca(risultatiLabel);
 
         // Reimposta il current row correttamente dopo il reload
         if (indiceSelezionato >= 0 && indiceSelezionato < listaMedia->count()) {
@@ -331,8 +391,8 @@ void MainWindow::eliminaMedia() {
 void MainWindow::caricaBiblioteca() {
     QString percorsoFile = QFileDialog::getOpenFileName(nullptr, "Scegli Biblioteca", "", "Documento (*.json)");
     if (!percorsoFile.isEmpty()) {
-        gestore = new GestoreMedia(listaMedia, formLayout, percorsoFile); // !!! Distruzione funziona????
-        gestore->caricaBiblioteca();
+        gestore = new GestoreMedia(listaMedia, formLayout, imagePreview, percorsoFile); // !!! Distruzione funziona????
+        gestore->caricaBiblioteca(risultatiLabel);
     }
 }
 
@@ -448,16 +508,17 @@ void MainWindow::mostraInfo(QListWidgetItem *item) {
             labelNumeroTracce->setVisible(true);
         }
 
-        /*QString base64 = item->data(Qt::UserRole).toString();
+        QString base64 = media->getImmagine();
         QByteArray byteArray = QByteArray::fromBase64(base64.toLatin1());
 
         QPixmap pixmap;
         if (pixmap.loadFromData(byteArray)) {
-            labelImmagine->setPixmap(pixmap.scaled(500, 500, Qt::KeepAspectRatio, Qt::SmoothTransformation));
+            labelImmagine->setPixmap(pixmap.scaled(500, 500, Qt::KeepAspectRatio, Qt::SmoothTransformation));    
         }
         else {
+            labelImmagine->show();
             labelImmagine->clear();
-            labelImmagine->setText("Immagine:");
-        }*/
+            labelImmagine->setText("Immagine");
+        }
     }
 }

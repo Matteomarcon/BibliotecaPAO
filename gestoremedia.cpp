@@ -16,9 +16,10 @@
 #include <QBuffer>
 #include <QPushButton>
 #include <QFileDialog>
+#include <QDebug>
 
-GestoreMedia::GestoreMedia(QListWidget* listaMedia, QFormLayout* formLayout, QString percorso)
-    : gestoreJson(percorso), listaMedia(listaMedia), formLayout(formLayout) {}
+GestoreMedia::GestoreMedia(QListWidget* listaMedia, QFormLayout* formLayout, QLabel* imagePreview, QString percorso)
+    : gestoreJson(percorso), listaMedia(listaMedia), imagePreview(imagePreview), formLayout(formLayout) {}
 
 //Utilità
 QStringList GestoreMedia::getTipiDisponibili() {
@@ -96,7 +97,7 @@ void GestoreMedia::salvaMediaDaForm(const QString& tipo, int indice) {
     gestoreJson.salvaMedia(media, indice);
 }
 
-void GestoreMedia::caricaBiblioteca() {
+void GestoreMedia::caricaBiblioteca(QLabel* risultatiLabel) {
 
     listaMedia->clear();
     QList<Media*> lista = gestoreJson.caricaBiblioteca();
@@ -113,6 +114,17 @@ void GestoreMedia::caricaBiblioteca() {
 
         listaMedia->setIconSize(QSize(48, 48));
     }
+
+
+    // Aggiorna conteggio all’avvio (tutti visibili)
+    int visibili = 0;
+    for (int i = 0; i < listaMedia->count(); ++i) {
+        QListWidgetItem *item = listaMedia->item(i);
+        item->setHidden(false);  // Mostra tutto
+        ++visibili;
+    }
+    risultatiLabel->setText(QString("Risultati: %1").arg(visibili));
+
 }
 
 //Creazione Form
@@ -149,6 +161,8 @@ void GestoreMedia::creaForm(const QString& tipo) {
         if (!saved) {
             QMessageBox::warning(nullptr, "Errore", "Errore nel salvataggio dell'immagine in memoria.");
             return;
+        } else {
+            imagePreview->setPixmap(pixmap);
         }
 
         QString base64 = QString::fromLatin1(byteArray.toBase64());

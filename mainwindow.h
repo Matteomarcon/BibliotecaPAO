@@ -20,6 +20,8 @@ private slots:
 private:
     GestoreMedia *gestore;
     QFormLayout* formLayout;
+    QLabel* imagePreview;
+    QLabel* risultatiLabel;
 
     QStackedWidget *stackedWidget;
     QWidget *paginaPrincipale;
