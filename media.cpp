@@ -44,3 +44,9 @@ bool Media::getDisponibilita() const {
 int Media::getCopie() const {
     return copie;
 }
+void Media::setCopie(int copie) {
+    this->copie=copie;
+}
+void Media::setDisponibilita(bool disponibilita) {
+    this->disponibilita=disponibilita;
+}

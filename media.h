@@ -25,6 +25,8 @@ public:
     QString getGenere() const;
     bool getDisponibilita() const;
     int getCopie() const;
+    void setCopie(int copie);
+    void setDisponibilita(bool disponibilita);
 
     virtual QIcon getIcon() const = 0;
 };

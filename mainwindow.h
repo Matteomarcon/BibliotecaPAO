@@ -20,8 +20,10 @@ private:
     void inizializzaGUI();
     void creaPaginaPrincipale();
     void creaPaginaForm();
+    void creaPaginaPrestiti();
     void mostraPaginaPrincipale();
     void mostraPaginaForm();
+    void mostraPaginaPrestiti();
     void mostraInfo(QListWidgetItem *item);
     QLabel* creaLabel(QWidget *parent, QVBoxLayout *layout);
     void caricaBiblioteca();
@@ -31,7 +33,11 @@ private:
     QStackedWidget *stackPagine;
     QWidget *paginaPrincipale;
     QWidget *paginaForm;
+    QWidget *paginaPrestiti;
     QWidget *pannelloInfo;
+
+    //prestiti
+    QListWidget *listaPrestiti;
 
     //pannelloSinistro
     QListWidget *listaMedia;

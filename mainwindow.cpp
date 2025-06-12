@@ -27,6 +27,7 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent) {
     inizializzaGUI();
     creaPaginaPrincipale();
     creaPaginaForm();
+    creaPaginaPrestiti();
     stackPagine->setCurrentIndex(0);
 }
 
@@ -38,9 +39,11 @@ void MainWindow::inizializzaGUI() {
     setCentralWidget(stackPagine);
 
     paginaPrincipale = new QWidget(this);
+    paginaPrestiti = new QWidget(this);
     paginaForm = new QWidget(this);
 
     labelRisultati = new QLabel("Risultati:");
+    listaPrestiti = new QListWidget();
     listaMedia = new QListWidget();
     connect(listaMedia, &QListWidget::itemClicked, this, &MainWindow::mostraInfo);
     formLayout = new QFormLayout();
@@ -117,10 +120,13 @@ void MainWindow::creaPaginaPrincipale() {
         labelRisultati->setText(QString("Risultati: %1").arg(visibili));
     });
 
+    QPushButton *bottoneMostraPrestiti = new QPushButton("Mostra prestiti");
+
     layoutPannelloSinistra->addWidget(topBarSinistra);
     layoutPannelloSinistra->addWidget(barraRicerca);
     layoutPannelloSinistra->addWidget(labelRisultati);
     layoutPannelloSinistra->addWidget(listaMedia);
+    layoutPannelloSinistra->addWidget(bottoneMostraPrestiti);
 
     //PANNELLO DESTRA
     QWidget *pannelloDestra = new QWidget();
@@ -189,6 +195,8 @@ void MainWindow::creaPaginaPrincipale() {
     labelPeriodicita = creaLabel(this, labelContainerLayout);
     labelArtista = creaLabel(this, labelContainerLayout);
     labelNumeroTracce = creaLabel(this, labelContainerLayout);
+    QPushButton *bottonePrestiti = new QPushButton("Inserisci nuovo prestito");
+    labelContainerLayout->addWidget(bottonePrestiti);
     labelContainerLayout->addStretch();
 
     layoutPannelloInfo->addWidget(labelImmagine, 0, Qt::AlignTop);
@@ -217,6 +225,37 @@ void MainWindow::creaPaginaPrincipale() {
 
         gestore->caricaFormDaMedia(listaMedia->row(listaMedia->currentItem()));
     });
+    connect(bottonePrestiti, &QPushButton::clicked, this, [=]() {
+        Media* media = listaMedia->currentItem()->data(Qt::UserRole).value<Media*>();
+        if (media->getDisponibilita()) {
+            media->setCopie(media->getCopie()-1);
+            if (media->getCopie()==0) media->setDisponibilita(false);
+            QDialog dialog;
+            dialog.setWindowTitle("Inserimento nuovo prestito");
+
+            QLabel *label = new QLabel("Inserisci nome e cognome:");
+            QLineEdit *edit = new QLineEdit();
+            QPushButton *okButton = new QPushButton("OK");
+
+            QObject::connect(okButton, &QPushButton::clicked, &dialog, &QDialog::accept);
+
+            QVBoxLayout *layout = new QVBoxLayout();
+            layout->addWidget(label);
+            layout->addWidget(edit);
+            layout->addWidget(okButton);
+
+            dialog.setLayout(layout);
+
+            if (dialog.exec() == QDialog::Accepted) {
+                QListWidgetItem *item = new QListWidgetItem(edit->text());
+                listaPrestiti->addItem(item);
+            }
+        }
+        else {
+            QMessageBox::warning(nullptr, "Errore", "Il media selezionato non e' disponibile nella biblioteca.");
+        }
+    });
+    connect(bottoneMostraPrestiti, &QPushButton::clicked, this, &MainWindow::mostraPaginaPrestiti);
 }
 
 
@@ -415,5 +454,21 @@ void MainWindow::eliminaMedia() {
     else if (msgBox.clickedButton() == annullaButton) {
         msgBox.close();
     }
+}
+
+void MainWindow::creaPaginaPrestiti() {
+    QVBoxLayout *layoutPaginaPrestiti = new QVBoxLayout(paginaPrestiti);
+    stackPagine->addWidget(paginaPrestiti);
+    QPushButton *bottoneIndietro = new QPushButton("Torna indietro");
+    layoutPaginaPrestiti->addWidget(listaPrestiti);
+    layoutPaginaPrestiti->addStretch();
+    layoutPaginaPrestiti->addWidget(bottoneIndietro);
+    connect(bottoneIndietro, &QPushButton::clicked, this, [=]() {
+        stackPagine->setCurrentWidget(paginaPrincipale);
+    });
+}
+
+void MainWindow::mostraPaginaPrestiti() {
+    stackPagine->setCurrentWidget(paginaPrestiti);
 }
 
