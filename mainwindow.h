@@ -1,12 +1,14 @@
 #ifndef MAINWINDOW_H
 #define MAINWINDOW_H
 
+#include "GestoreMedia.h"
+
 #include <QMainWindow>
 #include <QStackedWidget>
 #include <QListWidgetItem>
 #include <QLabel>
 #include <QComboBox>
-#include "GestoreMedia.h"
+#include <QPushButton>
 
 class MainWindow : public QMainWindow {
     Q_OBJECT
@@ -24,7 +26,7 @@ private:
     void mostraPaginaPrincipale();
     void mostraPaginaForm();
     void mostraPaginaPrestiti();
-    void mostraInfo(QListWidgetItem *item);
+    void mostraInfo();
     QLabel* creaLabel(QWidget *parent, QVBoxLayout *layout);
     void caricaBiblioteca();
     void eliminaMedia();
@@ -36,13 +38,25 @@ private:
     QWidget *paginaPrestiti;
     QWidget *pannelloInfo;
 
+    // Bottoni pagina principale
+    QPushButton *bottoneModifica;
+    QPushButton *bottoneElimina;
+    QPushButton *bottoneNuovoPrestito;
+
+    // Bottoni pagina form
+    QPushButton *bottoneSalva;
+
+    // Bottoni pagina prestiti
+    QPushButton *bottoneRestituzione;
+
     //prestiti
     QListWidget *listaPrestiti;
 
     //pannelloSinistro
     QListWidget *listaMedia;
     QFormLayout *formLayout;
-    QLabel *labelRisultati;
+    QLabel *labelRisultatiMedia;
+    QLabel *labelRisultatiPrestiti;
     QComboBox *selettoreMedia;
     QLabel *labelImmagine;
 
@@ -74,53 +88,6 @@ private:
 
     //Backend
     GestoreMedia *gestore;
-
-
-/*private slots:
-    void showPaginaPrincipale();
-    void showPaginaNuovoMedia();
-    void mostraInfo(QListWidgetItem *item);
-    void caricaBiblioteca();
-    void eliminaMedia();
-
-private:
-    GestoreMedia *gestore;
-    QFormLayout* formLayout;
-    QLabel* imagePreview;
-    QLabel* risultatiLabel;
-
-    QStackedWidget *stackedWidget;
-    QWidget *paginaPrincipale;
-    QWidget *paginaNuovoMedia;
-
-    QListWidget *listaMedia;
-
-    QWidget *rightPanel;
-    QLabel *labelIcona;
-    QLabel *labelCategoria;
-    QLabel *labelAutore;
-    QLabel *labelEditore;
-    QLabel *labelTestata;
-    QLabel *labelNumeroTracce;
-    QLabel *labelArtista;
-    QLabel *labelProduzione;
-    QLabel *labelDurata;
-    QLabel *labelCopie;
-    QLabel *labelDisponibilita;
-    QLabel *labelGenere;
-    QLabel *labelData;
-    QLabel *labelPrezzo;
-    QLabel *labelNumero;
-    QLabel *labelPeriodicita;
-    QLabel *labelLingua;
-    QLabel *labelLinguaOriginale;
-    QLabel *labelFormato;
-    QLabel *labelTitoloTopBar;
-    QLabel *labelTitolo;
-    QLabel *labelDescrizione;
-    QLabel *labelPaese;
-    QLabel *labelRegista;
-    QLabel *labelImmagine;*/
 };
 
 #endif // MAINWINDOW_H

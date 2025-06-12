@@ -42,10 +42,16 @@ void MainWindow::inizializzaGUI() {
     paginaPrestiti = new QWidget(this);
     paginaForm = new QWidget(this);
 
-    labelRisultati = new QLabel("Risultati:");
+    labelRisultatiMedia = new QLabel();
+    labelRisultatiPrestiti = new QLabel("Risultati:");
     listaPrestiti = new QListWidget();
     listaMedia = new QListWidget();
-    connect(listaMedia, &QListWidget::itemClicked, this, &MainWindow::mostraInfo);
+
+    connect(listaMedia, &QListWidget::itemClicked, this, [this]() {
+        mostraInfo();
+        bottoneModifica->show();
+        bottoneElimina->show();
+    });
     formLayout = new QFormLayout();
     labelAnteprimaImmagine = new QLabel("Anteprima Immagine");
 
@@ -53,6 +59,7 @@ void MainWindow::inizializzaGUI() {
     labelAnteprimaImmagine->setAlignment(Qt::AlignCenter);
     labelAnteprimaImmagine->setScaledContents(true);
     labelAnteprimaImmagine->setStyleSheet("border: 1px solid gray;");
+    labelAnteprimaImmagine->hide();
 
     QString percorsoFile = QDir(QCoreApplication::applicationDirPath()).filePath("../../../BibliotecaDefault.json");
     QFileInfo checkFile(percorsoFile);
@@ -66,7 +73,7 @@ void MainWindow::inizializzaGUI() {
     }
 
     gestore = new GestoreMedia(listaMedia, formLayout, labelAnteprimaImmagine, percorsoFile);
-    gestore->caricaBiblioteca(labelRisultati);
+    gestore->caricaBiblioteca(labelRisultatiMedia);
 }
 
 QLabel* MainWindow::creaLabel(QWidget *parent, QVBoxLayout *layout) {
@@ -87,7 +94,7 @@ void MainWindow::creaPaginaPrincipale() {
     QWidget *topBarSinistra = new QWidget(this);
     QHBoxLayout *layoutTopBar = new QHBoxLayout(topBarSinistra);
 
-    QPushButton *bottoneNuovaBiblioteca = new QPushButton("  Apri Biblioteca");
+    QPushButton *bottoneNuovaBiblioteca = new QPushButton("  Apri\n  Biblioteca");
     bottoneNuovaBiblioteca->setIcon(QIcon(":/icone/folder.png"));
     bottoneNuovaBiblioteca->setIconSize(QSize(36, 36));
     bottoneNuovaBiblioteca->setCursor(Qt::PointingHandCursor);
@@ -95,7 +102,7 @@ void MainWindow::creaPaginaPrincipale() {
     bottoneNuovaBiblioteca->setFlat(true);
     bottoneNuovaBiblioteca->setToolTip("Carica una nuova biblioteca (*.json)");
 
-    QPushButton *bottoneForm = new QPushButton("Nuovo Media");
+    QPushButton *bottoneForm = new QPushButton("Nuovo\nMedia");
     bottoneForm->setIcon(QIcon(":/icone/add.png"));
     bottoneForm->setIconSize(QSize(48, 48));
     bottoneForm->setCursor(Qt::PointingHandCursor);
@@ -103,12 +110,21 @@ void MainWindow::creaPaginaPrincipale() {
     bottoneForm->setFlat(true);
     bottoneForm->setToolTip("Inserisci un nuovo media nella biblioteca");
 
+    QPushButton *bottonePrestiti = new QPushButton("Visualizza\nPrestiti");
+    bottonePrestiti->setIcon(QIcon(":/icone/listaprestiti.png"));
+    bottonePrestiti->setIconSize(QSize(48, 48));
+    bottonePrestiti->setCursor(Qt::PointingHandCursor);
+    bottonePrestiti->setFixedHeight(50);
+    bottonePrestiti->setFlat(true);
+    bottonePrestiti->setToolTip("Visualizza i prestiti attivi");
+
     layoutTopBar->addWidget(bottoneNuovaBiblioteca);
     layoutTopBar->addWidget(bottoneForm);
+    layoutTopBar->addWidget(bottonePrestiti);
 
     //Barra di ricerca
     QLineEdit *barraRicerca = new QLineEdit();
-    barraRicerca->setPlaceholderText("Cerca...");
+    barraRicerca->setPlaceholderText("Cerca media...");
     connect(barraRicerca, &QLineEdit::textChanged, this, [=](const QString &text) {
         int visibili = 0;
         for (int i = 0; i < listaMedia->count(); ++i) {
@@ -117,16 +133,18 @@ void MainWindow::creaPaginaPrincipale() {
             item->setHidden(!match);
             if (match) ++visibili;
         }
-        labelRisultati->setText(QString("Risultati: %1").arg(visibili));
+        labelRisultatiMedia->setText(QString("Risultati: %1").arg(visibili));
     });
-
-    QPushButton *bottoneMostraPrestiti = new QPushButton("Mostra prestiti");
 
     layoutPannelloSinistra->addWidget(topBarSinistra);
     layoutPannelloSinistra->addWidget(barraRicerca);
-    layoutPannelloSinistra->addWidget(labelRisultati);
+    layoutPannelloSinistra->addWidget(labelRisultatiMedia);
     layoutPannelloSinistra->addWidget(listaMedia);
-    layoutPannelloSinistra->addWidget(bottoneMostraPrestiti);
+
+    //DIVISORE
+    QFrame *line = new QFrame();
+    line->setFrameShape(QFrame::VLine);
+    line->setFrameShadow(QFrame::Sunken);
 
     //PANNELLO DESTRA
     QWidget *pannelloDestra = new QWidget();
@@ -138,26 +156,39 @@ void MainWindow::creaPaginaPrincipale() {
 
     labelIconaTopBar = new QLabel(topBarDestra);
     labelTitoloTopBar = new QLabel(topBarDestra);
-    QPushButton *bottoneModifica = new QPushButton(topBarDestra);
-    QPushButton *bottoneElimina = new QPushButton(topBarDestra);
+    bottoneNuovoPrestito = new QPushButton("Inserisci\nPrestito");
+    bottoneModifica = new QPushButton("Modifica\nMedia");
+    bottoneElimina = new QPushButton("Elimina\nMedia");
 
     QFont font = labelTitoloTopBar->font();
     font.setBold(true);
     labelTitoloTopBar->setFont(font);
+
+    bottoneNuovoPrestito->setIcon(QIcon(":/icone/prestito.png"));
+    bottoneNuovoPrestito->setFlat(true);
+    bottoneNuovoPrestito->setCursor(Qt::PointingHandCursor);
+    bottoneNuovoPrestito->setIconSize(QSize(48, 48));
+    bottoneNuovoPrestito->setToolTip("Inserisci Prestito");
+    bottoneNuovoPrestito->hide();
+
     bottoneModifica->setIcon(QIcon(":/icone/modifica.png"));
     bottoneModifica->setFlat(true);
     bottoneModifica->setCursor(Qt::PointingHandCursor);
     bottoneModifica->setIconSize(QSize(48, 48));
-    bottoneModifica->setToolTip("Modifica media");
+    bottoneModifica->setToolTip("Modifica Media");
+    bottoneModifica->hide();
+
     bottoneElimina->setIcon(QIcon(":/icone/elimina.png"));
     bottoneElimina->setFlat(true);
     bottoneElimina->setCursor(Qt::PointingHandCursor);
     bottoneElimina->setIconSize(QSize(48, 48));
-    bottoneElimina->setToolTip("Elimina media");
+    bottoneElimina->setToolTip("Elimina Media");
+    bottoneElimina->hide();
 
     layoutTopBarDestra->addWidget(labelIconaTopBar);
     layoutTopBarDestra->addWidget(labelTitoloTopBar);
     layoutTopBarDestra->addStretch();
+    layoutTopBarDestra->addWidget(bottoneNuovoPrestito);
     layoutTopBarDestra->addWidget(bottoneModifica);
     layoutTopBarDestra->addWidget(bottoneElimina);
 
@@ -195,8 +226,6 @@ void MainWindow::creaPaginaPrincipale() {
     labelPeriodicita = creaLabel(this, labelContainerLayout);
     labelArtista = creaLabel(this, labelContainerLayout);
     labelNumeroTracce = creaLabel(this, labelContainerLayout);
-    QPushButton *bottonePrestiti = new QPushButton("Inserisci nuovo prestito");
-    labelContainerLayout->addWidget(bottonePrestiti);
     labelContainerLayout->addStretch();
 
     layoutPannelloInfo->addWidget(labelImmagine, 0, Qt::AlignTop);
@@ -206,6 +235,7 @@ void MainWindow::creaPaginaPrincipale() {
     layoutPannelloDestra->addWidget(pannelloInfo);
 
     layoutPaginaPrincipale->addWidget(pannelloSinistra, 1);
+    layoutPaginaPrincipale->addWidget(line);
     layoutPaginaPrincipale->addWidget(pannelloDestra, 3);
 
     //Connect
@@ -225,7 +255,7 @@ void MainWindow::creaPaginaPrincipale() {
 
         gestore->caricaFormDaMedia(listaMedia->row(listaMedia->currentItem()));
     });
-    connect(bottonePrestiti, &QPushButton::clicked, this, [=]() {
+    connect(bottoneNuovoPrestito, &QPushButton::clicked, this, [=]() {
         Media* media = listaMedia->currentItem()->data(Qt::UserRole).value<Media*>();
         if (media->getDisponibilita()) {
             media->setCopie(media->getCopie()-1);
@@ -247,21 +277,48 @@ void MainWindow::creaPaginaPrincipale() {
             dialog.setLayout(layout);
 
             if (dialog.exec() == QDialog::Accepted) {
-                QListWidgetItem *item = new QListWidgetItem(edit->text());
+                QListWidgetItem *item = new QListWidgetItem("Prestito di: " + edit->text() + ", Titolo: "+ media->getTitolo());
                 listaPrestiti->addItem(item);
+                mostraInfo();
             }
         }
         else {
             QMessageBox::warning(nullptr, "Errore", "Il media selezionato non e' disponibile nella biblioteca.");
         }
     });
-    connect(bottoneMostraPrestiti, &QPushButton::clicked, this, &MainWindow::mostraPaginaPrestiti);
+    connect(bottonePrestiti, &QPushButton::clicked, this, &MainWindow::mostraPaginaPrestiti);
 }
 
 
 void MainWindow::creaPaginaForm() {
     QVBoxLayout *layoutPaginaForm = new QVBoxLayout(paginaForm);
     stackPagine->addWidget(paginaForm);
+
+    //Top Bar
+    QWidget *topBar = new QWidget();
+    QHBoxLayout *layoutTopBar = new QHBoxLayout(topBar);
+
+    QPushButton *bottoneIndietro = new QPushButton("Torna\nIndietro");
+    bottoneSalva = new QPushButton("Salva\nMedia");
+
+    bottoneIndietro->setIcon(QIcon(":/icone/indietro.png"));
+    bottoneIndietro->setIconSize(QSize(36, 36));
+    bottoneIndietro->setCursor(Qt::PointingHandCursor);
+    bottoneIndietro->setFixedHeight(50);
+    bottoneIndietro->setFlat(true);
+    bottoneIndietro->setToolTip("Torna alla pagina principale");
+
+    bottoneSalva->setIcon(QIcon(":/icone/salva.png"));
+    bottoneSalva->setIconSize(QSize(36, 36));
+    bottoneSalva->setCursor(Qt::PointingHandCursor);
+    bottoneSalva->setFixedHeight(50);
+    bottoneSalva->setFlat(true);
+    bottoneSalva->setToolTip("Salva media");
+    bottoneSalva->hide();
+
+    layoutTopBar->addWidget(bottoneIndietro);
+    layoutTopBar->addStretch();
+    layoutTopBar->addWidget(bottoneSalva);
 
     //Selettore Media
     selettoreMedia = new QComboBox();
@@ -279,23 +336,15 @@ void MainWindow::creaPaginaForm() {
     layoutForm->setStretch(0, 2);
     layoutForm->setStretch(1, 1);
 
-    //Bottom Bar
-    QWidget *bottomBar = new QWidget(this);
-    QHBoxLayout *bottomBarLayout = new QHBoxLayout(bottomBar);
-
-    QPushButton *toPrincipale = new QPushButton("Annulla");
-    QPushButton *salvaNuovoMediaButton = new QPushButton("Salva");
-
-    bottomBarLayout->addWidget(toPrincipale);
-    bottomBarLayout->addWidget(salvaNuovoMediaButton);
-    bottomBarLayout->setAlignment(Qt::AlignBottom);
-
+    layoutPaginaForm->setAlignment(Qt::AlignTop);
+    layoutPaginaForm->addWidget(topBar);
     layoutPaginaForm->addWidget(selettoreMedia);
     layoutPaginaForm->addWidget(form);
-    layoutPaginaForm->addWidget(bottomBar);
 
     //Connect
     connect(selettoreMedia, &QComboBox::currentTextChanged, this, [=](const QString &tipoSelezionato) {
+        bottoneSalva->show();
+        labelAnteprimaImmagine->show();
         while (formLayout->rowCount() > 0) {
             QLayoutItem* labelItem = formLayout->itemAt(0, QFormLayout::LabelRole);
             QLayoutItem* fieldItem = formLayout->itemAt(0, QFormLayout::FieldRole);
@@ -305,8 +354,8 @@ void MainWindow::creaPaginaForm() {
         }
         gestore->creaForm(tipoSelezionato);
     });
-    connect(toPrincipale, &QPushButton::clicked, this, &MainWindow::mostraPaginaPrincipale);
-    connect(salvaNuovoMediaButton, &QPushButton::clicked, this, [=]() {
+    connect(bottoneIndietro, &QPushButton::clicked, this, &MainWindow::mostraPaginaPrincipale);
+    connect(bottoneSalva, &QPushButton::clicked, this, [=]() {
         if (selettoreMedia->currentIndex() == 0) {
             QMessageBox::warning(nullptr, "Attenzione", "Per favore seleziona un tipo di media.");
             return;
@@ -320,21 +369,24 @@ void MainWindow::creaPaginaForm() {
             gestore->salvaMediaDaForm(selettoreMedia->currentText());
             indiceSelezionato = listaMedia->count();
         }
-        gestore->caricaBiblioteca(labelRisultati);
+        gestore->caricaBiblioteca(labelRisultatiMedia);
 
         if (indiceSelezionato >= 0 && indiceSelezionato < listaMedia->count()) {
             listaMedia->setCurrentRow(indiceSelezionato);
-            mostraInfo(listaMedia->currentItem());
+            mostraInfo();
         }
         stackPagine->setCurrentWidget(paginaPrincipale);
     });
 }
 
-void MainWindow::mostraInfo(QListWidgetItem *item) {
-    Media* media = item->data(Qt::UserRole).value<Media*>();
+void MainWindow::mostraInfo() {
+    Media* media = listaMedia->currentItem()->data(Qt::UserRole).value<Media*>();
 
-    labelIconaTopBar->setPixmap(item->icon().pixmap(44,44));
-    labelTitoloTopBar->setText(item->text());
+    if (media->getDisponibilita()) bottoneNuovoPrestito->show();
+    else bottoneNuovoPrestito->hide();
+
+    labelIconaTopBar->setPixmap(listaMedia->currentItem()->icon().pixmap(44,44));
+    labelTitoloTopBar->setText(media->getTitolo());
     labelTitolo->setText("Titolo: " + media->getTitolo());
     labelPrezzo->setText("Prezzo: " + QString::number(media->getPrezzo()) + "€");
     labelData->setText("Data: " + media->getData());
@@ -404,8 +456,8 @@ void MainWindow::mostraInfo(QListWidgetItem *item) {
 
 void MainWindow::mostraPaginaPrincipale() {
     QMessageBox msgBox;
-    msgBox.setWindowTitle("Modifiche non salvate");
-    msgBox.setText("Vuoi salvare la bozza prima di uscire?");
+    msgBox.setWindowTitle("Attenzione");
+    msgBox.setText("Sei sicuro di voler annullare?");
     msgBox.setIcon(QMessageBox::Warning);
 
     QPushButton* confermaButton = msgBox.addButton(tr("Conferma"), QMessageBox::AcceptRole);
@@ -422,6 +474,7 @@ void MainWindow::mostraPaginaPrincipale() {
 }
 
 void MainWindow::mostraPaginaForm() {
+    listaMedia->setCurrentItem(nullptr);
     stackPagine->setCurrentWidget(paginaForm);
 }
 
@@ -429,7 +482,7 @@ void MainWindow::caricaBiblioteca() {
     QString percorsoFile = QFileDialog::getOpenFileName(nullptr, "Scegli Biblioteca", "", "Documento (*.json)");
     if (!percorsoFile.isEmpty()) {
         gestore = new GestoreMedia(listaMedia, formLayout, labelAnteprimaImmagine, percorsoFile); // !!! Distruzione funziona????
-        gestore->caricaBiblioteca(labelRisultati);
+        gestore->caricaBiblioteca(labelRisultatiMedia);
     }
 }
 
@@ -450,6 +503,7 @@ void MainWindow::eliminaMedia() {
     if (msgBox.clickedButton() == confermaButton) {
         delete listaMedia->takeItem(indice);
         gestore->eliminaMedia(indice);
+        mostraInfo();
     }
     else if (msgBox.clickedButton() == annullaButton) {
         msgBox.close();
@@ -459,12 +513,57 @@ void MainWindow::eliminaMedia() {
 void MainWindow::creaPaginaPrestiti() {
     QVBoxLayout *layoutPaginaPrestiti = new QVBoxLayout(paginaPrestiti);
     stackPagine->addWidget(paginaPrestiti);
-    QPushButton *bottoneIndietro = new QPushButton("Torna indietro");
+
+    //Top bar
+    QWidget *topBar= new QWidget(this);
+    QHBoxLayout *layoutTopBar = new QHBoxLayout(topBar);
+
+    QPushButton *bottoneIndietro = new QPushButton("Torna\nIndietro");
+    bottoneRestituzione = new QPushButton("Restituisci\nPrestito");
+
+    bottoneIndietro->setIcon(QIcon(":/icone/indietro.png"));
+    bottoneIndietro->setIconSize(QSize(36, 36));
+    bottoneIndietro->setCursor(Qt::PointingHandCursor);
+    bottoneIndietro->setFixedHeight(50);
+    bottoneIndietro->setFlat(true);
+    bottoneIndietro->setToolTip("Torna alla pagina principale");
+
+    bottoneRestituzione->setIcon(QIcon(":/icone/restituzione.png"));
+    bottoneRestituzione->setFlat(true);
+    bottoneRestituzione->setCursor(Qt::PointingHandCursor);
+    bottoneRestituzione->setIconSize(QSize(48, 48));
+    bottoneRestituzione->setToolTip("Restituzione media");
+    bottoneRestituzione->hide();
+
+    layoutTopBar->addWidget(bottoneIndietro);
+    layoutTopBar->addStretch();
+    layoutTopBar->addWidget(bottoneRestituzione);
+
+    //Barra di ricerca
+    QLineEdit *barraRicerca = new QLineEdit();
+    barraRicerca->setPlaceholderText("Cerca prestiti...");
+    connect(barraRicerca, &QLineEdit::textChanged, this, [=](const QString &text) {
+        int visibili = 0;
+        for (int i = 0; i < listaPrestiti->count(); ++i) {
+            QListWidgetItem *item = listaPrestiti->item(i);
+            bool match = item->text().contains(text, Qt::CaseInsensitive);
+            item->setHidden(!match);
+            if (match) ++visibili;
+        }
+        labelRisultatiPrestiti->setText(QString("Risultati: %1").arg(visibili));
+    });
+
+    layoutPaginaPrestiti->addWidget(topBar);
+    layoutPaginaPrestiti->addWidget(barraRicerca);
+    layoutPaginaPrestiti->addWidget(labelRisultatiPrestiti);
     layoutPaginaPrestiti->addWidget(listaPrestiti);
-    layoutPaginaPrestiti->addStretch();
-    layoutPaginaPrestiti->addWidget(bottoneIndietro);
+
     connect(bottoneIndietro, &QPushButton::clicked, this, [=]() {
         stackPagine->setCurrentWidget(paginaPrincipale);
+    });
+
+    connect(listaPrestiti, &QListWidget::itemSelectionChanged, this, [=]() {
+        bottoneRestituzione->show();
     });
 }
 

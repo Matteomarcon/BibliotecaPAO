@@ -10,5 +10,10 @@
         <file>icone/modifica.png</file>
         <file>icone/elimina.png</file>
         <file>icone/biblioteca.png</file>
+        <file>icone/prestito.png</file>
+        <file>icone/indietro.png</file>
+        <file>icone/salva.png</file>
+        <file>icone/restituzione.png</file>
+        <file>icone/listaprestiti.png</file>
     </qresource>
 </RCC>

@@ -44,7 +44,6 @@ void GestoreMedia::caricaFormDaMedia(int indice) {
     if (QDoubleSpinBox* prezzo = qobject_cast<QDoubleSpinBox*>(findWidgetByLabel("Prezzo"))) prezzo->setValue(media->getPrezzo());
     if (QDateEdit* data = qobject_cast<QDateEdit*>(findWidgetByLabel("Data"))) data->setDate(QDate::fromString(media->getData(), "dd-MM-yyyy"));
     if (QLineEdit* genere = qobject_cast<QLineEdit*>(findWidgetByLabel("Genere"))) genere->setText(media->getGenere());
-    if (QCheckBox* disp = qobject_cast<QCheckBox*>(findWidgetByLabel("Disponibilita"))) disp->setChecked(media->getDisponibilita());
     if (QSpinBox* copie = qobject_cast<QSpinBox*>(findWidgetByLabel("Copie"))) copie->setValue(media->getCopie());
 
     if (Film* film = dynamic_cast<Film*>(media)) {
@@ -98,11 +97,8 @@ void GestoreMedia::salvaMediaDaForm(const QString& tipo, int indice) {
 }
 
 void GestoreMedia::caricaBiblioteca(QLabel* risultatiLabel) {
-
     listaMedia->clear();
     QList<Media*> lista = gestoreJson.caricaBiblioteca();
-
-    qDebug() << lista;
 
     for (Media* media : lista) {
         QListWidgetItem* item = new QListWidgetItem(media->getIcon(), media->getTitolo(), listaMedia);
@@ -173,7 +169,6 @@ void GestoreMedia::creaForm(const QString& tipo) {
     formLayout->addRow("Prezzo", new QDoubleSpinBox());
     formLayout->addRow("Data", new QDateEdit());
     formLayout->addRow("Genere", new QLineEdit());
-    formLayout->addRow("Disponibilita", new QCheckBox());
     formLayout->addRow("Copie", new QSpinBox());
 
     if (tipo == "Film") creaFormFilm();
@@ -261,13 +256,11 @@ Media* GestoreMedia::creaFilm() {
             if (auto lineEdit = qobject_cast<QLineEdit*>(field)) {
                 genereStr = lineEdit->text();
             }
-        } else if (labelText == "Disponibilita") {
-            if (auto checkBox = qobject_cast<QCheckBox*>(field)) {
-                disponibilitaVal = checkBox->isChecked();
-            }
         } else if (labelText == "Copie") {
             if (auto spinBox = qobject_cast<QSpinBox*>(field)) {
                 copieVal = spinBox->value();
+                if (copieVal) disponibilitaVal = true;
+                else disponibilitaVal = false;
             }
         } else if (labelText == "Durata (min)") {
             if (auto spinBox = qobject_cast<QSpinBox*>(field)) {
@@ -332,13 +325,11 @@ Media* GestoreMedia::creaGiornale() {
             if (auto lineEdit = qobject_cast<QLineEdit*>(field)) {
                 genereStr = lineEdit->text();
             }
-        } else if (labelText == "Disponibilita") {
-            if (auto checkBox = qobject_cast<QCheckBox*>(field)) {
-                disponibilitaVal = checkBox->isChecked();
-            }
         } else if (labelText == "Copie") {
             if (auto spinBox = qobject_cast<QSpinBox*>(field)) {
                 copieVal = spinBox->value();
+                if (copieVal) disponibilitaVal = true;
+                else disponibilitaVal = false;
             }
         } else if (labelText == "Autore") {
             if (auto lineEdit = qobject_cast<QLineEdit*>(field)) {
@@ -396,13 +387,11 @@ Media* GestoreMedia::creaLibro() {
             if (auto lineEdit = qobject_cast<QLineEdit*>(field)) {
                 genereStr = lineEdit->text();
             }
-        } else if (labelText == "Disponibilita") {
-            if (auto checkBox = qobject_cast<QCheckBox*>(field)) {
-                disponibilitaVal = checkBox->isChecked();
-            }
         } else if (labelText == "Copie") {
             if (auto spinBox = qobject_cast<QSpinBox*>(field)) {
                 copieVal = spinBox->value();
+                if (copieVal) disponibilitaVal = true;
+                else disponibilitaVal = false;
             }
         } else if (labelText == "Autore") {
             if (auto lineEdit = qobject_cast<QLineEdit*>(field)) {
@@ -464,13 +453,11 @@ Media* GestoreMedia::creaRivista() {
             if (auto lineEdit = qobject_cast<QLineEdit*>(field)) {
                 genereStr = lineEdit->text();
             }
-        } else if (labelText == "Disponibilita") {
-            if (auto checkBox = qobject_cast<QCheckBox*>(field)) {
-                disponibilitaVal = checkBox->isChecked();
-            }
         } else if (labelText == "Copie") {
             if (auto spinBox = qobject_cast<QSpinBox*>(field)) {
                 copieVal = spinBox->value();
+                if (copieVal) disponibilitaVal = true;
+                else disponibilitaVal = false;
             }
         } else if (labelText == "Autore") {
             if (auto lineEdit = qobject_cast<QLineEdit*>(field)) {
@@ -530,13 +517,11 @@ Media* GestoreMedia::creaVinile() {
             if (auto lineEdit = qobject_cast<QLineEdit*>(field)) {
                 genereStr = lineEdit->text();
             }
-        } else if (labelText == "Disponibilita") {
-            if (auto checkBox = qobject_cast<QCheckBox*>(field)) {
-                disponibilitaVal = checkBox->isChecked();
-            }
         } else if (labelText == "Copie") {
             if (auto spinBox = qobject_cast<QSpinBox*>(field)) {
                 copieVal = spinBox->value();
+                if (copieVal) disponibilitaVal = true;
+                else disponibilitaVal = false;
             }
         } else if (labelText == "Durata (min)") {
             if (auto spinBox = qobject_cast<QSpinBox*>(field)) {

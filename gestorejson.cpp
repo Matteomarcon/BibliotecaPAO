@@ -41,10 +41,8 @@ void GestoreJson::salvaMedia(Media* media, int indice) {
         listaMedia.append(media);
     }
     else {
-        qDebug() << indice << " " << listaMedia.size();
         delete listaMedia[indice];
         listaMedia.replace(indice, media);
-        qDebug() << "aoaoaoao";
     }
 
     QJsonObject nuovoOggetto;
