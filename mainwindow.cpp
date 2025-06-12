@@ -96,7 +96,7 @@ void MainWindow::creaPaginaPrincipale() {
     bottoneForm->setIcon(QIcon(":/icone/add.png"));
     bottoneForm->setIconSize(QSize(48, 48));
     bottoneForm->setCursor(Qt::PointingHandCursor);
-    bottoneForm->setFixedHeight(60);
+    bottoneForm->setFixedHeight(50);
     bottoneForm->setFlat(true);
     bottoneForm->setToolTip("Inserisci un nuovo media nella biblioteca");
 
