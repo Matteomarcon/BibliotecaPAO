@@ -33,4 +33,6 @@ public:
     virtual QIcon getIcon() const = 0;
 };
 
+Q_DECLARE_METATYPE(Media*);
+
 #endif // MEDIA_H

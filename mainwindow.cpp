@@ -24,6 +24,8 @@
 #include <QPixmap>
 #include <QDateEdit>
 #include <QDate>
+#include <QList>
+#include <QDoubleSpinBox>
 
 MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent) {
     inizializzaGUI();
@@ -36,7 +38,7 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent) {
 MainWindow::~MainWindow() {}
 
 void MainWindow::inizializzaGUI() {
-    this->setMinimumSize(400, 300);
+    this->setMinimumSize(1000, 550);
     stackPagine = new QStackedWidget(this);
     setCentralWidget(stackPagine);
 
@@ -87,6 +89,64 @@ void MainWindow::inizializzaGUI() {
     gestore = new GestoreMedia(listaMedia, listaPrestiti, formLayout, labelAnteprimaImmagine, percorsoFile);
     gestore->caricaBiblioteca(labelRisultatiMedia);
     gestore->caricaPrestiti(labelRisultatiPrestiti);
+
+
+    dialogFiltri = new QDialog(this);
+    spinPrezzoMin = new QDoubleSpinBox(dialogFiltri);
+    spinPrezzoMax = new QDoubleSpinBox(dialogFiltri);
+    comboCategoria = new QComboBox(dialogFiltri);
+    comboDisponibilita = new QComboBox(dialogFiltri);
+
+    dialogFiltri->setWindowTitle("Filtra ricerca");
+
+    QLabel* labelPrezzoMin = new QLabel("Prezzo minimo:");
+    spinPrezzoMin->setRange(0, 1000);
+    spinPrezzoMin->setDecimals(2);
+
+    QLabel* labelPrezzoMax = new QLabel("Prezzo massimo:");
+    spinPrezzoMax->setRange(0, 1000);
+    spinPrezzoMax->setDecimals(2);
+    spinPrezzoMax->setValue(1000);
+
+    QLabel* labelDisponibilita = new QLabel("Disponibilità:");
+    comboDisponibilita->addItem("Tutti");
+    comboDisponibilita->addItem("Disponibili");
+    comboDisponibilita->addItem("Non disponibili");
+
+    QLabel* labelCategoria = new QLabel("Categoria:");
+    comboCategoria->addItem("Tutti");
+    comboCategoria->addItems(GestoreMedia::getTipiDisponibili());
+
+    QPushButton* bottoneOk = new QPushButton("Applica filtri");
+    QPushButton* bottoneAnnulla = new QPushButton("Annulla");
+    QPushButton* bottonePulisci = new QPushButton("Pulisci");
+
+    QHBoxLayout* buttonLayout = new QHBoxLayout();
+    buttonLayout->addStretch();
+    buttonLayout->addWidget(bottoneOk);
+    buttonLayout->addWidget(bottoneAnnulla);
+    buttonLayout->addWidget(bottonePulisci);
+
+    QFormLayout* formLayout = new QFormLayout();
+    formLayout->addRow(labelPrezzoMin, spinPrezzoMin);
+    formLayout->addRow(labelPrezzoMax, spinPrezzoMax);
+    formLayout->addRow(labelDisponibilita, comboDisponibilita);
+    formLayout->addRow(labelCategoria, comboCategoria);
+
+    QVBoxLayout* mainLayout = new QVBoxLayout();
+    mainLayout->addLayout(formLayout);
+    mainLayout->addLayout(buttonLayout);
+    dialogFiltri->setLayout(mainLayout);
+
+    // Connect pulsanti
+    connect(bottoneOk, &QPushButton::clicked, dialogFiltri, &QDialog::accept);
+    connect(bottoneAnnulla, &QPushButton::clicked, dialogFiltri, &QDialog::reject);
+    connect(bottonePulisci, &QPushButton::clicked, dialogFiltri, [=]() {
+        spinPrezzoMin->setValue(0);
+        spinPrezzoMax->setValue(1000);
+        comboCategoria->setCurrentIndex(0);
+        comboDisponibilita->setCurrentIndex(0);
+    });
 }
 
 QLabel* MainWindow::creaLabel(QWidget *parent, QVBoxLayout *layout) {
@@ -135,22 +195,45 @@ void MainWindow::creaPaginaPrincipale() {
     layoutTopBar->addWidget(bottoneForm);
     layoutTopBar->addWidget(bottonePrestiti);
 
+    QWidget* ricerca = new QWidget();
+    QHBoxLayout* ricercaLayout = new QHBoxLayout(ricerca);
+    ricercaLayout->setContentsMargins(0,0,0,0);
+
     //Barra di ricerca
     QLineEdit *barraRicerca = new QLineEdit();
     barraRicerca->setPlaceholderText("Cerca media...");
-    connect(barraRicerca, &QLineEdit::textChanged, this, [=](const QString &text) {
-        int visibili = 0;
-        for (int i = 0; i < listaMedia->count(); ++i) {
-            QListWidgetItem *item = listaMedia->item(i);
-            bool match = item->text().contains(text, Qt::CaseInsensitive);
-            item->setHidden(!match);
-            if (match) ++visibili;
-        }
-        labelRisultatiMedia->setText(QString("Risultati: %1").arg(visibili));
+
+    // Bottone filtri
+    QPushButton* bottoneFiltri = new QPushButton("Filtri");
+
+    ricercaLayout->addWidget(barraRicerca);
+    ricercaLayout->addWidget(bottoneFiltri);
+    ricercaLayout->setStretch(0, 2);
+    ricercaLayout->setStretch(1, 1);
+
+    // Connect barra di ricerca
+    connect(barraRicerca, &QLineEdit::textChanged, this, [=]() {
+        aggiornaFiltroMedia(barraRicerca->text(), comboCategoria->currentText(), comboDisponibilita->currentText(), spinPrezzoMin->value(), spinPrezzoMax->value());
     });
 
+    // Connect bottone filtri
+
+    connect(bottoneFiltri, &QPushButton::clicked, this, [=]() {
+    if (dialogFiltri->exec() == QDialog::Accepted) {
+        double minPrezzo = spinPrezzoMin->value();
+        double maxPrezzo = spinPrezzoMax->value();
+        if (minPrezzo > maxPrezzo) {
+            QMessageBox::warning(dialogFiltri, "Intervallo di prezzo non valido", "Hai inserito un prezzo minimo maggiore del prezzo massimo");
+            return;
+        } else {
+            aggiornaFiltroMedia(barraRicerca->text(), comboCategoria->currentText(), comboDisponibilita->currentText(), minPrezzo, maxPrezzo);
+        }
+    }
+    });
+
+
     layoutPannelloSinistra->addWidget(topBarSinistra);
-    layoutPannelloSinistra->addWidget(barraRicerca);
+    layoutPannelloSinistra->addWidget(ricerca);
     layoutPannelloSinistra->addWidget(labelRisultatiMedia);
     layoutPannelloSinistra->addWidget(listaMedia);
 
@@ -322,7 +405,7 @@ void MainWindow::creaPaginaPrincipale() {
                     " al " + dataFine.toString("dd/MM/yyyy")
                     );
 
-                item->setData(Qt::UserRole, QVariant::fromValue<Media*>(media));
+                item->setData(Qt::UserRole, media->getId());
                 listaPrestiti->addItem(item);
                 mostraInfo();
                 gestore->salvaPrestito(new Prestito(nome, cognome, dataInizio, dataFine, media->getId()));  // eventualmente aggiorna se vuoi passare anche nome/cognome/date
@@ -427,7 +510,6 @@ void MainWindow::creaPaginaForm() {
 
 void MainWindow::mostraInfo() {
     Media* media = listaMedia->currentItem()->data(Qt::UserRole).value<Media*>();
-
     if (media->getDisponibilita()) bottoneNuovoPrestito->show();
     else bottoneNuovoPrestito->hide();
 
@@ -616,9 +698,7 @@ void MainWindow::creaPaginaPrestiti() {
     connect(bottoneRestituzione, &QPushButton::clicked, this, [=]() {
         QListWidgetItem* item = listaPrestiti->currentItem();
         int indice = listaPrestiti->row(item);
-        Media* media = item->data(Qt::UserRole).value<Media*>();
-
-        qDebug() << media;
+        qDebug()<<item->data(Qt::UserRole).toString();
 
         QMessageBox msgBox(this);
         msgBox.setWindowTitle("Conferma restituzione");
@@ -631,10 +711,18 @@ void MainWindow::creaPaginaPrestiti() {
         msgBox.exec();
 
         if (msgBox.clickedButton() == confermaButton) {
-            if (!media->getCopie()) media->setDisponibilita(true);
+            Media* media = listaMedia->item(0)->data(Qt::UserRole).value<Media*>();
+            for (int i=0; media->getId()!=item->data(Qt::UserRole).toInt(); i++) {
+                media = listaMedia->item(i)->data(Qt::UserRole).value<Media*>();
+
+            }
+            if (!media->getCopie()) {
+
+                media->setDisponibilita(true);
+            }
             media->setCopie(media->getCopie()+1);
             delete listaPrestiti->takeItem(indice);
-            //gestore->eliminaPrestito(indice);
+            gestore->eliminaPrestito(indice);
 
             if (!listaPrestiti->count()) bottoneRestituzione->hide();
         }
@@ -648,3 +736,34 @@ void MainWindow::mostraPaginaPrestiti() {
     stackPagine->setCurrentWidget(paginaPrestiti);
 }
 
+void MainWindow::aggiornaFiltroMedia(QString testoRicerca, QString categoriaSelezionata, QString disponibilitaSelezionata, double minPrezzo, double maxPrezzo) {
+    int visibili = 0;
+
+    for (int i = 0; i < listaMedia->count(); ++i) {
+        QListWidgetItem *item = listaMedia->item(i);
+        Media* media = item->data(Qt::UserRole).value<Media*>();
+
+        if (!media) continue;
+
+        bool matchTesto = item->text().contains(testoRicerca, Qt::CaseInsensitive);
+        bool matchPrezzo = media->getPrezzo() >= minPrezzo && media->getPrezzo() <= maxPrezzo;
+
+        bool matchDisp = (disponibilitaSelezionata == "Tutti" ||
+                          (disponibilitaSelezionata == "Disponibili" && media->getDisponibilita()) ||
+                          (disponibilitaSelezionata == "Non disponibili" && !media->getDisponibilita()));
+
+        bool matchCategoria = false;
+        if (categoriaSelezionata == "Tutti") matchCategoria = true;
+        else if (categoriaSelezionata == "Libro" && dynamic_cast<Libro*>(media)) matchCategoria = true;
+        else if (categoriaSelezionata == "Film" && dynamic_cast<Film*>(media)) matchCategoria = true;
+        else if (categoriaSelezionata == "Rivista" && dynamic_cast<Rivista*>(media)) matchCategoria = true;
+        else if (categoriaSelezionata == "Giornale" && dynamic_cast<Giornale*>(media)) matchCategoria = true;
+        else if (categoriaSelezionata == "Vinile" && dynamic_cast<Vinile*>(media)) matchCategoria = true;
+
+        bool visibile = matchTesto && matchPrezzo && matchDisp && matchCategoria;
+        item->setHidden(!visibile);
+        if (visibile) ++visibili;
+    }
+
+    labelRisultatiMedia->setText(QString("Risultati: %1").arg(visibili));
+}

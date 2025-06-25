@@ -38,6 +38,29 @@ void GestoreJson::eliminaMedia(int indice) {
     file.close();
 }
 
+void GestoreJson::eliminaPrestito(int indice) {
+    QFileInfo info(percorsoFile);
+    QString nuovaBase = "prestiti" + info.fileName();
+    QString percorsoPrestiti = info.dir().absoluteFilePath(nuovaBase);
+    QFile file(percorsoPrestiti);
+    if (!file.open(QIODevice::ReadOnly)) return;
+
+    QJsonDocument doc = QJsonDocument::fromJson(file.readAll());
+    file.close();
+
+    if (!doc.isArray()) return;
+
+    QJsonArray array = doc.array();
+    if (indice >= 0 && indice < array.size()) {
+        array.removeAt(indice);
+    }
+
+    if (!file.open(QIODevice::WriteOnly | QIODevice::Truncate)) return;
+
+    file.write(QJsonDocument(array).toJson());
+    file.close();
+}
+
 
 void GestoreJson::salvaMedia(Media* media, int indice) {
     if (indice == -1) {

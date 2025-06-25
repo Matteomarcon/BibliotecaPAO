@@ -24,6 +24,7 @@ public:
     GestoreJson(const QString& nomeFile);
     QList<Media*> caricaBiblioteca();
     void eliminaMedia(int indice);
+    void eliminaPrestito(int indice);
     void salvaMedia(Media* media, int indice);
     void salvaMedia(Media* media, QJsonObject& oggetto);
     void salvaMedia(Audiovisivo* audiovisivo, QJsonObject& oggetto);

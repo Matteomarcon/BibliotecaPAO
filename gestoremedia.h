@@ -51,6 +51,7 @@ public:
     void creaPrestito();
     void caricaPrestiti(QLabel* labelRisultatiPrestiti);
     void salvaPrestito(Prestito* prestito);
+    void eliminaPrestito(int indice);
 };
 
 #endif // GESTOREMEDIA_H

@@ -10,5 +10,6 @@ int main(int argc, char *argv[])
     QIcon appIcon(":/icone/biblioteca.png");  // Se usi le risorse Qt (qrc)
     w.setWindowIcon(appIcon);
     w.showMaximized();
+    qRegisterMetaType<Media*>();
     return a.exec();
 }

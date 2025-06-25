@@ -9,6 +9,7 @@
 #include <QLabel>
 #include <QComboBox>
 #include <QPushButton>
+#include <QDoubleSpinBox>
 
 class MainWindow : public QMainWindow {
     Q_OBJECT
@@ -30,6 +31,14 @@ private:
     QLabel* creaLabel(QWidget *parent, QVBoxLayout *layout);
     void caricaBiblioteca();
     void eliminaMedia();
+
+    //filtri
+    QDialog* dialogFiltri;
+    QDoubleSpinBox* spinPrezzoMin;
+    QDoubleSpinBox* spinPrezzoMax;
+    QComboBox* comboCategoria;
+    QComboBox* comboDisponibilita;
+    void aggiornaFiltroMedia(QString testoRicerca, QString categoriaSelezionata, QString disponibilitaSelezionata, double minPrezzo, double maxPrezzo);
 
     //GUI
     QStackedWidget *stackPagine;

@@ -575,6 +575,9 @@ void GestoreMedia::eliminaMedia(int indice) {
     gestoreJson.eliminaMedia(indice);
 }
 
+void GestoreMedia::eliminaPrestito(int indice) {
+    gestoreJson.eliminaPrestito(indice);
+}
 void GestoreMedia::salvaPrestito(Prestito* prestito) {
     gestoreJson.salvaPrestito(prestito);
 }

@@ -32,6 +32,7 @@ bool Media::getDisponibilita() const {
     return disponibilita;
 }
 int Media::getCopie() const {
+
     return copie;
 }
 void Media::setCopie(int copie) {
