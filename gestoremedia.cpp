@@ -9,6 +9,8 @@
 #include <QHBoxLayout>
 #include <QCheckBox>
 #include <QDateEdit>
+#include <QDoubleSpinBox>
+#include <QLineEdit>
 #include <QTextEdit>
 #include <QLabel>
 #include <QComboBox>
@@ -18,8 +20,8 @@
 #include <QFileDialog>
 #include <QDebug>
 
-GestoreMedia::GestoreMedia(QListWidget* listaMedia, QFormLayout* formLayout, QLabel* imagePreview, QString percorso)
-    : gestoreJson(percorso), listaMedia(listaMedia), imagePreview(imagePreview), formLayout(formLayout) {}
+GestoreMedia::GestoreMedia(QListWidget* listaMedia, QListWidget* listaPrestiti, QFormLayout* formLayout, QLabel* imagePreview, QString percorso)
+    : listaMedia(listaMedia), listaPrestiti(listaPrestiti), formLayout(formLayout), imagePreview(imagePreview), gestoreJson(percorso) {}
 
 //Utilità
 QStringList GestoreMedia::getTipiDisponibili() {
@@ -42,7 +44,7 @@ void GestoreMedia::caricaFormDaMedia(int indice) {
 
     if (QLineEdit* titolo = qobject_cast<QLineEdit*>(findWidgetByLabel("Titolo"))) titolo->setText(media->getTitolo());
     if (QDoubleSpinBox* prezzo = qobject_cast<QDoubleSpinBox*>(findWidgetByLabel("Prezzo"))) prezzo->setValue(media->getPrezzo());
-    if (QDateEdit* data = qobject_cast<QDateEdit*>(findWidgetByLabel("Data"))) data->setDate(QDate::fromString(media->getData(), "dd-MM-yyyy"));
+    if (QDateEdit* data = qobject_cast<QDateEdit*>(findWidgetByLabel("Data"))) data->setDate(media->getData());
     if (QLineEdit* genere = qobject_cast<QLineEdit*>(findWidgetByLabel("Genere"))) genere->setText(media->getGenere());
     if (QSpinBox* copie = qobject_cast<QSpinBox*>(findWidgetByLabel("Copie"))) copie->setValue(media->getCopie());
 
@@ -285,9 +287,13 @@ Media* GestoreMedia::creaFilm() {
         }
     }
 
-    Data dataPubblicazione(dataVal.day(), dataVal.month(), dataVal.year());
+    int idMedia = 0;
+    if (listaMedia->count()) {
+        Media* media = listaMedia->item(listaMedia->count()-1)->data(Qt::UserRole).value<Media*>();
+        idMedia = media->getId()+1;
+    }
 
-    return new Film(immagineStr, titoloStr, static_cast<float>(prezzoVal), dataPubblicazione, genereStr, disponibilitaVal, copieVal,
+    return new Film(idMedia, immagineStr, titoloStr, static_cast<float>(prezzoVal), dataVal, genereStr, disponibilitaVal, copieVal,
                     durataVal, produzioneStr, registaStr, linguaOriginaleStr, paeseProduzioneStr);
 }
 
@@ -346,9 +352,13 @@ Media* GestoreMedia::creaGiornale() {
         }
     }
 
-    Data dataPubblicazione(dataVal.day(), dataVal.month(), dataVal.year());
+    int idMedia = 0;
+    if (listaMedia->count()) {
+        Media* media = listaMedia->item(listaMedia->count()-1)->data(Qt::UserRole).value<Media*>();
+        idMedia = media->getId()+1;
+    }
 
-    return new Giornale(immagineStr, titoloStr, static_cast<float>(prezzoVal), dataPubblicazione, genereStr, disponibilitaVal, copieVal,
+    return new Giornale(idMedia, immagineStr, titoloStr, static_cast<float>(prezzoVal), dataVal, genereStr, disponibilitaVal, copieVal,
                         autoreStr, editoreStr, testataStr);
 }
 
@@ -412,9 +422,13 @@ Media* GestoreMedia::creaLibro() {
         }
     }
 
-    Data dataPubblicazione(dataVal.day(), dataVal.month(), dataVal.year());
+    int idMedia = 0;
+    if (listaMedia->count()) {
+        Media* media = listaMedia->item(listaMedia->count()-1)->data(Qt::UserRole).value<Media*>();
+        idMedia = media->getId()+1;
+    }
 
-    return new Libro(immagineStr, titoloStr, static_cast<float>(prezzoVal), dataPubblicazione, genereStr, disponibilitaVal, copieVal,
+    return new Libro(idMedia, immagineStr, titoloStr, static_cast<float>(prezzoVal), dataVal, genereStr, disponibilitaVal, copieVal,
                      autoreStr, editoreStr, linguaStr, formatoStr);
 }
 
@@ -479,9 +493,13 @@ Media* GestoreMedia::creaRivista() {
 
     }
 
-    Data dataPubblicazione(dataVal.day(), dataVal.month(), dataVal.year());
+    int idMedia = 0;
+    if (listaMedia->count()) {
+        Media* media = listaMedia->item(listaMedia->count()-1)->data(Qt::UserRole).value<Media*>();
+        idMedia = media->getId()+1;
+    }
 
-    return new Rivista(immagineStr, titoloStr, static_cast<float>(prezzoVal), dataPubblicazione, genereStr, disponibilitaVal, copieVal,
+    return new Rivista(idMedia, immagineStr, titoloStr, static_cast<float>(prezzoVal), dataVal, genereStr, disponibilitaVal, copieVal,
                        autoreStr, editoreStr, numeroVal, periodicitaStr);
 }
 Media* GestoreMedia::creaVinile() {
@@ -542,14 +560,48 @@ Media* GestoreMedia::creaVinile() {
         }
     }
 
-    Data dataPubblicazione(dataVal.day(), dataVal.month(), dataVal.year());
+    int idMedia = 0;
+    if (listaMedia->count()) {
+        Media* media = listaMedia->item(listaMedia->count()-1)->data(Qt::UserRole).value<Media*>();
+        idMedia = media->getId()+1;
+    }
 
-    return new Vinile(immagineStr, titoloStr, static_cast<float>(prezzoVal), dataPubblicazione, genereStr, disponibilitaVal, copieVal,
+    return new Vinile(idMedia, immagineStr, titoloStr, static_cast<float>(prezzoVal), dataVal, genereStr, disponibilitaVal, copieVal,
                       durataVal, produzioneStr, artistaStr, tracceVal);
 }
 
 //Eliminazione Media
 void GestoreMedia::eliminaMedia(int indice) {
     gestoreJson.eliminaMedia(indice);
+}
+
+void GestoreMedia::salvaPrestito(Prestito* prestito) {
+    gestoreJson.salvaPrestito(prestito);
+}
+
+
+void GestoreMedia::caricaPrestiti(QLabel* labelRisultatiPrestiti) {
+    listaPrestiti->clear();
+    QList<Prestito*> lista = gestoreJson.caricaPrestiti();
+
+    for (Prestito* prestito : lista) {
+        QListWidgetItem* item = new QListWidgetItem("Prestito: " + prestito->getNome() + " " + prestito->getCognome() + ", Titolo: " + listaMedia->item(prestito->getIdMedia())->data(Qt::UserRole).value<Media*>()->getTitolo() +
+                                                        ", dal " + prestito->getDataInizio().toString("dd/MM/yyyy") +
+                                                        " al " + prestito->getDataFine().toString("dd/MM/yyyy"), listaPrestiti);
+
+        QFont font;
+        font.setBold(true);
+        item->setFont(font);
+    }
+
+    // Aggiorna conteggio all’avvio (tutti visibili)
+    int visibili = 0;
+    for (int i = 0; i < listaPrestiti->count(); ++i) {
+        QListWidgetItem *item = listaPrestiti->item(i);
+        item->setHidden(false);  // Mostra tutto
+        ++visibili;
+    }
+    labelRisultatiPrestiti->setText(QString("Risultati: %1").arg(visibili));
+
 }
 

@@ -2,19 +2,21 @@
 #define GESTOREMEDIA_H
 
 #include "gestorejson.h"
+
 #include <QListWidget>
 #include <QFormLayout>
 #include <QLabel>
 
 class GestoreMedia {
 private:
-    GestoreJson gestoreJson;
     QListWidget* listaMedia;
+    QListWidget* listaPrestiti;
     QFormLayout* formLayout;
     QLabel* imagePreview;
+    GestoreJson gestoreJson;
 
 public:
-    GestoreMedia(QListWidget* listaMedia, QFormLayout* formLayout, QLabel* imagePreview, QString percorsoJson = "BibliotecaDefault.json");
+    GestoreMedia(QListWidget* listaMedia, QListWidget* listaPrestiti, QFormLayout* formLayout, QLabel* imagePreview, QString percorsoJson = "BibliotecaDefault.json");
 
     //Utilità
     static QStringList getTipiDisponibili();
@@ -44,6 +46,11 @@ public:
 
     //Eliminazione Media
     void eliminaMedia(int indice);
+
+    //Prestiti
+    void creaPrestito();
+    void caricaPrestiti(QLabel* labelRisultatiPrestiti);
+    void salvaPrestito(Prestito* prestito);
 };
 
 #endif // GESTOREMEDIA_H

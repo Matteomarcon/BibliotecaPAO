@@ -1,10 +1,8 @@
 #include "cartaceo.h"
 
-Cartaceo::Cartaceo(QString immagine, QString titolo, float prezzo, Data dataPubblicazione, QString genere, bool disponibilita,
+Cartaceo::Cartaceo(int idMedia, QString immagine, QString titolo, float prezzo, QDate dataPubblicazione, QString genere, bool disponibilita,
                    int copie, QString autore, QString editore):
-    Media(immagine, titolo, prezzo, dataPubblicazione, genere, disponibilita, copie), autore(autore), editore(editore) {
-
-}
+    Media(idMedia, immagine, titolo, prezzo, dataPubblicazione, genere, disponibilita, copie), autore(autore), editore(editore) {}
 
 Cartaceo::~Cartaceo() {}
 

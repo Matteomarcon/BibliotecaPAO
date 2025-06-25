@@ -1,8 +1,8 @@
 #include "vinile.h"
 
-Vinile::Vinile(QString immagine, QString titolo, float prezzo, Data dataPubblicazione, QString genere, bool disponibilita, int copie, int durata, QString produzione,
+Vinile::Vinile(int idMedia, QString immagine, QString titolo, float prezzo, QDate dataPubblicazione, QString genere, bool disponibilita, int copie, int durata, QString produzione,
                QString artista, int numeroTracce):
-    Audiovisivo(immagine, titolo, prezzo, dataPubblicazione, genere, disponibilita, copie, durata, produzione),
+    Audiovisivo(idMedia, immagine, titolo, prezzo, dataPubblicazione, genere, disponibilita, copie, durata, produzione),
     artista(artista), numeroTracce(numeroTracce){
 
 }

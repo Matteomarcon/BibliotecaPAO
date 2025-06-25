@@ -22,6 +22,8 @@
 #include <QTextStream>
 #include <QDir>
 #include <QPixmap>
+#include <QDateEdit>
+#include <QDate>
 
 MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent) {
     inizializzaGUI();
@@ -71,9 +73,20 @@ void MainWindow::inizializzaGUI() {
             file.close();
         }
     }
+    QString percorsoPrestiti = QDir(QCoreApplication::applicationDirPath()).filePath("../../../prestitiBibliotecaDefault.json");
+    QFileInfo checkPrestiti(percorsoPrestiti);
+    if (!checkPrestiti.exists()) {
+        QFile file(percorsoPrestiti);
+        if (file.open(QIODevice::WriteOnly | QIODevice::Truncate)) {
+            QTextStream out(&file);
+            out << "[]";
+            file.close();
+        }
+    }
 
-    gestore = new GestoreMedia(listaMedia, formLayout, labelAnteprimaImmagine, percorsoFile);
+    gestore = new GestoreMedia(listaMedia, listaPrestiti, formLayout, labelAnteprimaImmagine, percorsoFile);
     gestore->caricaBiblioteca(labelRisultatiMedia);
+    gestore->caricaPrestiti(labelRisultatiPrestiti);
 }
 
 QLabel* MainWindow::creaLabel(QWidget *parent, QVBoxLayout *layout) {
@@ -258,34 +271,67 @@ void MainWindow::creaPaginaPrincipale() {
     connect(bottoneNuovoPrestito, &QPushButton::clicked, this, [=]() {
         Media* media = listaMedia->currentItem()->data(Qt::UserRole).value<Media*>();
         if (media->getDisponibilita()) {
-            media->setCopie(media->getCopie()-1);
-            if (media->getCopie()==0) media->setDisponibilita(false);
+            media->setCopie(media->getCopie() - 1);
+            if (media->getCopie() == 0) media->setDisponibilita(false);
+
             QDialog dialog;
             dialog.setWindowTitle("Inserimento nuovo prestito");
 
-            QLabel *label = new QLabel("Inserisci nome e cognome:");
-            QLineEdit *edit = new QLineEdit();
+            // Campi del form
+            QLabel *labelNome = new QLabel("Nome:");
+            QLineEdit *editNome = new QLineEdit();
+
+            QLabel *labelCognome = new QLabel("Cognome:");
+            QLineEdit *editCognome = new QLineEdit();
+
+            QLabel *labelInizio = new QLabel("Data inizio:");
+            QDateEdit *editInizio = new QDateEdit(QDate::currentDate());
+            editInizio->setCalendarPopup(true);
+
+            QLabel *labelFine = new QLabel("Data fine:");
+            QDateEdit *editFine = new QDateEdit(QDate::currentDate().addDays(7));
+            editFine->setCalendarPopup(true);
+
             QPushButton *okButton = new QPushButton("OK");
 
             QObject::connect(okButton, &QPushButton::clicked, &dialog, &QDialog::accept);
 
+            // Layout
             QVBoxLayout *layout = new QVBoxLayout();
-            layout->addWidget(label);
-            layout->addWidget(edit);
+            layout->addWidget(labelNome);
+            layout->addWidget(editNome);
+            layout->addWidget(labelCognome);
+            layout->addWidget(editCognome);
+            layout->addWidget(labelInizio);
+            layout->addWidget(editInizio);
+            layout->addWidget(labelFine);
+            layout->addWidget(editFine);
             layout->addWidget(okButton);
 
             dialog.setLayout(layout);
 
             if (dialog.exec() == QDialog::Accepted) {
-                QListWidgetItem *item = new QListWidgetItem("Prestito di: " + edit->text() + ", Titolo: "+ media->getTitolo());
+                QString nome = editNome->text();
+                QString cognome = editCognome->text();
+                QDate dataInizio = editInizio->date();
+                QDate dataFine = editFine->date();
+
+                QListWidgetItem *item = new QListWidgetItem(
+                    "Prestito: " + nome + " " + cognome + ", Titolo: " + media->getTitolo() +
+                    ", dal " + dataInizio.toString("dd/MM/yyyy") +
+                    " al " + dataFine.toString("dd/MM/yyyy")
+                    );
+
+                item->setData(Qt::UserRole, QVariant::fromValue<Media*>(media));
                 listaPrestiti->addItem(item);
                 mostraInfo();
+                gestore->salvaPrestito(new Prestito(nome, cognome, dataInizio, dataFine, media->getId()));  // eventualmente aggiorna se vuoi passare anche nome/cognome/date
             }
-        }
-        else {
-            QMessageBox::warning(nullptr, "Errore", "Il media selezionato non e' disponibile nella biblioteca.");
+        } else {
+            QMessageBox::warning(nullptr, "Errore", "Il media selezionato non è disponibile nella biblioteca.");
         }
     });
+
     connect(bottonePrestiti, &QPushButton::clicked, this, &MainWindow::mostraPaginaPrestiti);
 }
 
@@ -389,7 +435,7 @@ void MainWindow::mostraInfo() {
     labelTitoloTopBar->setText(media->getTitolo());
     labelTitolo->setText("Titolo: " + media->getTitolo());
     labelPrezzo->setText("Prezzo: " + QString::number(media->getPrezzo()) + "€");
-    labelData->setText("Data: " + media->getData());
+    labelData->setText("Data: " + media->getData().toString("dd/MM/yyyy"));
     labelGenere->setText("Genere: " + media->getGenere());
     labelDisponibilita->setText(media->getDisponibilita() ? "Disponibilità: Disponibile" : "Disponibilità: Non disponibile");
     labelCopie->setText("Copie: " + QString::number(media->getCopie()));
@@ -481,7 +527,7 @@ void MainWindow::mostraPaginaForm() {
 void MainWindow::caricaBiblioteca() {
     QString percorsoFile = QFileDialog::getOpenFileName(nullptr, "Scegli Biblioteca", "", "Documento (*.json)");
     if (!percorsoFile.isEmpty()) {
-        gestore = new GestoreMedia(listaMedia, formLayout, labelAnteprimaImmagine, percorsoFile); // !!! Distruzione funziona????
+        gestore = new GestoreMedia(listaMedia, listaPrestiti, formLayout, labelAnteprimaImmagine, percorsoFile); // !!! Distruzione funziona????
         gestore->caricaBiblioteca(labelRisultatiMedia);
     }
 }
@@ -560,10 +606,41 @@ void MainWindow::creaPaginaPrestiti() {
 
     connect(bottoneIndietro, &QPushButton::clicked, this, [=]() {
         stackPagine->setCurrentWidget(paginaPrincipale);
+        if (listaMedia->currentItem()) mostraInfo();
     });
 
     connect(listaPrestiti, &QListWidget::itemSelectionChanged, this, [=]() {
         bottoneRestituzione->show();
+    });
+
+    connect(bottoneRestituzione, &QPushButton::clicked, this, [=]() {
+        QListWidgetItem* item = listaPrestiti->currentItem();
+        int indice = listaPrestiti->row(item);
+        Media* media = item->data(Qt::UserRole).value<Media*>();
+
+        qDebug() << media;
+
+        QMessageBox msgBox(this);
+        msgBox.setWindowTitle("Conferma restituzione");
+        msgBox.setText("Sei sicuro di voler restituire questo prestito?");
+        msgBox.setIcon(QMessageBox::Warning);
+
+        QPushButton* confermaButton = msgBox.addButton(tr("Conferma"), QMessageBox::AcceptRole);
+        QPushButton* annullaButton = msgBox.addButton(tr("Annulla"), QMessageBox::RejectRole);
+
+        msgBox.exec();
+
+        if (msgBox.clickedButton() == confermaButton) {
+            if (!media->getCopie()) media->setDisponibilita(true);
+            media->setCopie(media->getCopie()+1);
+            delete listaPrestiti->takeItem(indice);
+            //gestore->eliminaPrestito(indice);
+
+            if (!listaPrestiti->count()) bottoneRestituzione->hide();
+        }
+        else if (msgBox.clickedButton() == annullaButton) {
+            msgBox.close();
+        }
     });
 }
 

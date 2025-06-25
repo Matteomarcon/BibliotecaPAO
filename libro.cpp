@@ -1,8 +1,8 @@
 #include "libro.h"
 
-Libro::Libro(QString immagine, QString titolo, float prezzo, Data dataPubblicazione, QString genere, bool disponibilita,
+Libro::Libro(int idMedia, QString immagine, QString titolo, float prezzo, QDate dataPubblicazione, QString genere, bool disponibilita,
              int copie, QString autore, QString editore, QString lingua, QString formato) :
-    Cartaceo(immagine, titolo, prezzo, dataPubblicazione, genere, disponibilita,
+    Cartaceo(idMedia, immagine, titolo, prezzo, dataPubblicazione, genere, disponibilita,
                copie, autore, editore), formato(formato), lingua(lingua) {
 
 }

@@ -1,9 +1,7 @@
 #ifndef AUDIOVISIVO_H
 #define AUDIOVISIVO_H
+
 #include "media.h"
-#include <QLineEdit>
-#include <QSpinBox>
-#include <QFormLayout>
 
 class Audiovisivo: public Media {
 private:
@@ -12,7 +10,7 @@ private:
 public:
     virtual ~Audiovisivo();
 
-    Audiovisivo(QString immagine, QString titolo, float prezzo, Data dataPubblicazione, QString genere, bool disponibilita, int copie, int durata, QString produzione);
+    Audiovisivo(int idMedia, QString immagine, QString titolo, float prezzo, QDate dataPubblicazione, QString genere, bool disponibilita, int copie, int durata, QString produzione);
     Audiovisivo();
     int getDurata() const;
     QString getProduzione() const;

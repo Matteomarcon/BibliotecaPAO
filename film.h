@@ -1,5 +1,6 @@
 #ifndef FILM_H
 #define FILM_H
+
 #include "audiovisivo.h"
 
 class Film: public Audiovisivo {
@@ -8,7 +9,7 @@ private:
     QString linguaOriginale;
     QString paeseProduzione;
 public:
-    Film(QString immagine, QString titolo, float prezzo, Data dataPubblicazione, QString genere, bool disponibilita, int copie, int durata, QString produzione,
+    Film(int idMedia, QString immagine, QString titolo, float prezzo, QDate dataPubblicazione, QString genere, bool disponibilita, int copie, int durata, QString produzione,
 QString regista, QString linguaOriginale, QString paeseProduzione);
     Film();
     QString getRegista() const;

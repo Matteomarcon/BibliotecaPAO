@@ -1,27 +1,17 @@
 #include "media.h"
-#include <QFormLayout>
-#include <QLineEdit>
-#include <QPushButton>
-#include <QSpinBox>
-#include <QDoubleSpinBox>
-#include <QDateEdit>
-#include <QCheckBox>
-#include <QFileDialog>
-#include <QBuffer>
-#include <QLabel>
-#include <QMessageBox>
-#include <QTextEdit>
 
 using std::string;
 
-Media::Media(QString immagine, QString titolo, float prezzo, Data dataPubblicazione, QString genere, bool disponibilita, int copie):
-    immagine(immagine), titolo(titolo), prezzo(prezzo), dataPubblicazione(dataPubblicazione), genere(genere), disponibilita(disponibilita), copie(copie){
-
-}
+Media::Media(int idMedia, QString immagine, QString titolo, float prezzo, QDate dataPubblicazione, QString genere, bool disponibilita, int copie):
+    idMedia(idMedia), immagine(immagine), titolo(titolo), prezzo(prezzo), dataPubblicazione(dataPubblicazione), genere(genere), disponibilita(disponibilita), copie(copie){}
 
 Media::Media() {}
 
 Media::~Media() {}
+
+int Media::getId() const {
+    return idMedia;
+}
 
 QString Media::getImmagine() const {
     return immagine;
@@ -32,8 +22,8 @@ QString Media::getTitolo() const {
 float Media::getPrezzo() const {
     return prezzo;
 }
-QString Media::getData() const {
-    return QString::fromStdString(dataPubblicazione.toString());
+QDate Media::getData() const {
+    return dataPubblicazione;
 }
 QString Media::getGenere() const {
     return genere;

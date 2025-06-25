@@ -1,28 +1,26 @@
 #ifndef GESTOREJSON_H
 #define GESTOREJSON_H
 
+#include <prestito.h>
+#include <media.h>
+#include <audiovisivo.h>
+#include <cartaceo.h>
+#include <film.h>
+#include <giornale.h>
+#include <libro.h>
+#include <rivista.h>
+#include <vinile.h>
+
 #include <QJsonObject>
 #include <QString>
 #include <QObject>
 
-class Media;
-class Audiovisivo;
-class Cartaceo;
-class Giornale;
-class Libro;
-class Rivista;
-class Vinile;
-class Film;
-
-class GestoreJson: public QObject
-{
-Q_OBJECT
+class GestoreJson: public QObject {
 private:
     QList<Media*> listaMedia;
+    QList<Prestito*> listaPrestiti;
     QString percorsoFile;
 public:
-
-
     GestoreJson(const QString& nomeFile);
     QList<Media*> caricaBiblioteca();
     void eliminaMedia(int indice);
@@ -41,6 +39,10 @@ public:
     Vinile* caricaVinile(const QJsonObject& jsonObject);
     Giornale* caricaGiornale(const QJsonObject& jsonObject);
     Libro* caricaLibro(const QJsonObject& jsonObject);
+
+    QList<Prestito*> caricaPrestiti();
+    void salvaPrestito(Prestito* prestito);
+    Prestito* caricaPrestito (const QJsonObject& jsonObject);
 };
 
 #endif // GESTOREJSON_H

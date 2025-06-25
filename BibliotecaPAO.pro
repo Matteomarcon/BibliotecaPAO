@@ -20,6 +20,7 @@ SOURCES += \
     main.cpp \
     mainwindow.cpp \
     media.cpp \
+    prestito.cpp \
     rivista.cpp \
     vinile.cpp
 
@@ -34,6 +35,7 @@ HEADERS += \
     libro.h \
     mainwindow.h \
     media.h \
+    prestito.h \
     rivista.h \
     vinile.h
 

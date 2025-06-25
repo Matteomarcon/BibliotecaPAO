@@ -1,4 +1,11 @@
 #include "gestorejson.h"
+#include "prestito.h"
+#include "film.h"
+#include "libro.h"
+#include "giornale.h"
+#include "rivista.h"
+#include "vinile.h"
+
 #include <QJsonDocument>
 #include <QJsonArray>
 #include <QStringList>
@@ -6,12 +13,8 @@
 #include "media.h"
 #include <QFile>
 #include <QBuffer>
-
-#include "film.h"
-#include "libro.h"
-#include "giornale.h"
-#include "rivista.h"
-#include "vinile.h"
+#include <QFileInfo>
+#include <QDir>
 
 GestoreJson::GestoreJson(const QString& nomeFile) : percorsoFile(nomeFile) {}
 
@@ -82,10 +85,11 @@ void GestoreJson::salvaMedia(Media* media, int indice) {
 }
 
 void GestoreJson::salvaMedia(Media* media, QJsonObject& oggetto){
+    oggetto["idMedia"] = media->getId();
     oggetto["Immagine"] = media->getImmagine();
     oggetto["Titolo"] = media->getTitolo();
     oggetto["Prezzo"] = media->getPrezzo();
-    oggetto["Data di pubblicazione"] = media->getData();
+    oggetto["Data di pubblicazione"] = media->getData().toString("dd/MM/yyyy");
     oggetto["Genere"] = media->getGenere();
     oggetto["Disponibilita"] = media->getDisponibilita();
     oggetto["Copie"] = media->getCopie();
@@ -185,46 +189,102 @@ QList<Media*> GestoreJson::caricaBiblioteca() {
 }
 
 Rivista* GestoreJson::caricaRivista(const QJsonObject& jsonObject) {
-    Data data;
-
-    return new Rivista(jsonObject["Immagine"].toString(), jsonObject["Titolo"].toString(), static_cast<float>(jsonObject["Prezzo"].toDouble()),
-                       data, jsonObject["Genere"].toString(), jsonObject["Disponibilita"].toBool(),
+    return new Rivista(jsonObject["idMedia"].toInt(), jsonObject["Immagine"].toString(), jsonObject["Titolo"].toString(), static_cast<float>(jsonObject["Prezzo"].toDouble()),
+                       QDate::fromString(jsonObject["Data di pubblicazione"].toString(), "dd/MM/yyyy"), jsonObject["Genere"].toString(), jsonObject["Disponibilita"].toBool(),
                        jsonObject["Copie"].toInt(), jsonObject["Autore"].toString(), jsonObject["Editore"].toString(),
                        jsonObject["Numero"].toInt(), jsonObject["Periodicita"].toString());
 }
 Film* GestoreJson::caricaFilm(const QJsonObject& jsonObject) {
-    Data data;
-
-    return new Film(jsonObject["Immagine"].toString(), jsonObject["Titolo"].toString(), static_cast<float>(jsonObject["Prezzo"].toDouble()),
-                       data, jsonObject["Genere"].toString(), jsonObject["Disponibilita"].toBool(),
+    return new Film(jsonObject["idMedia"].toInt(), jsonObject["Immagine"].toString(), jsonObject["Titolo"].toString(), static_cast<float>(jsonObject["Prezzo"].toDouble()),
+                       QDate::fromString(jsonObject["Data di pubblicazione"].toString(), "dd/MM/yyyy"), jsonObject["Genere"].toString(), jsonObject["Disponibilita"].toBool(),
                     jsonObject["Copie"].toInt(), jsonObject["Durata"].toInt(), jsonObject["Produzione"].toString(), jsonObject["Regista"].toString(),
                        jsonObject["Lingua originale"].toString(), jsonObject["Paese produzione"].toString());
 }
 Vinile* GestoreJson::caricaVinile(const QJsonObject& jsonObject) {
-    Data data;
-
-    return new Vinile(jsonObject["Immagine"].toString(), jsonObject["Titolo"].toString(), static_cast<float>(jsonObject["Prezzo"].toDouble()),
-                       data, jsonObject["Genere"].toString(), jsonObject["Disponibilita"].toBool(),
+    return new Vinile(jsonObject["idMedia"].toInt(), jsonObject["Immagine"].toString(), jsonObject["Titolo"].toString(), static_cast<float>(jsonObject["Prezzo"].toDouble()),
+                       QDate::fromString(jsonObject["Data di pubblicazione"].toString(), "dd/MM/yyyy"), jsonObject["Genere"].toString(), jsonObject["Disponibilita"].toBool(),
                        jsonObject["Copie"].toInt(), jsonObject["Durata"].toInt(), jsonObject["Produzione"].toString(),
                        jsonObject["Artista"].toString(), jsonObject["Numero tracce"].toInt());
 }
 Giornale* GestoreJson::caricaGiornale(const QJsonObject& jsonObject) {
-    Data data;
-
-    return new Giornale(jsonObject["Immagine"].toString(), jsonObject["Titolo"].toString(), static_cast<float>(jsonObject["Prezzo"].toDouble()),
-                    data, jsonObject["Genere"].toString(), jsonObject["Disponibilita"].toBool(),
+    return new Giornale(jsonObject["idMedia"].toInt(), jsonObject["Immagine"].toString(), jsonObject["Titolo"].toString(), static_cast<float>(jsonObject["Prezzo"].toDouble()),
+                    QDate::fromString(jsonObject["Data di pubblicazione"].toString(), "dd/MM/yyyy"), jsonObject["Genere"].toString(), jsonObject["Disponibilita"].toBool(),
                     jsonObject["Copie"].toInt(), jsonObject["Autore"].toString(), jsonObject["Editore"].toString(),
                     jsonObject["Testata"].toString());
 }
 Libro* GestoreJson::caricaLibro(const QJsonObject& jsonObject) {
-    Data data;
-
-    return new Libro(jsonObject["Immagine"].toString(), jsonObject["Titolo"].toString(), static_cast<float>(jsonObject["Prezzo"].toDouble()),
-                      data, jsonObject["Genere"].toString(), jsonObject["Disponibilita"].toBool(),
+    return new Libro(jsonObject["idMedia"].toInt(), jsonObject["Immagine"].toString(), jsonObject["Titolo"].toString(), static_cast<float>(jsonObject["Prezzo"].toDouble()),
+                      QDate::fromString(jsonObject["Data di pubblicazione"].toString(), "dd/MM/yyyy"), jsonObject["Genere"].toString(), jsonObject["Disponibilita"].toBool(),
                       jsonObject["Copie"].toInt(), jsonObject["Autore"].toString(), jsonObject["Editore"].toString(),
                       jsonObject["Lingua"].toString(), jsonObject["Formato"].toString());
 }
 
+QList<Prestito*> GestoreJson::caricaPrestiti() {
+    QFileInfo info(percorsoFile);
+    QString nuovaBase = "prestiti" + info.fileName();
+    QString percorsoPrestiti = info.dir().absoluteFilePath(nuovaBase);
+    QFile file(percorsoPrestiti);
+
+    listaPrestiti.clear();
+
+    if (!file.open(QIODevice::ReadOnly | QIODevice::Text)) {
+        qWarning() << "Impossibile aprire il file per la lettura:" << file.errorString();
+        return {};
+    }
+
+    // Leggi il contenuto del file
+    QByteArray data = file.readAll();
+    QJsonDocument doc = QJsonDocument::fromJson(data);
+    QJsonArray array = doc.array();
+
+    for (const QJsonValue& value : array) {
+        if (value.isObject()) {
+            QJsonObject jsonObject = value.toObject();
+            Prestito* prestito = caricaPrestito(jsonObject);
+            listaPrestiti.append(prestito);
+        }
+    }
+    return listaPrestiti;
+}
+
+void GestoreJson::salvaPrestito(Prestito* prestito) {
+    QJsonObject oggetto;
+    oggetto["Nome"] = prestito->getNome();
+    oggetto["Cognome"] = prestito->getCognome();
+    oggetto["DataInizio"] = prestito->getDataInizio().toString("dd/MM/yyyy");
+    oggetto["DataFine"] = prestito->getDataFine().toString("dd/MM/yyyy");
+    oggetto["IdMedia"] = prestito->getIdMedia();
+
+    QFileInfo info(percorsoFile);
+    QString nuovaBase = "prestiti" + info.fileName();
+    QString percorsoPrestiti = info.dir().absoluteFilePath(nuovaBase);
+    QFile file(percorsoPrestiti);
+
+    if (!file.open(QIODevice::ReadOnly)) {
+        throw std::runtime_error("Impossibile aprire 1 dati.json");
+    }
+    QJsonDocument documento = QJsonDocument::fromJson(file.readAll());
+    file.close();
+    if (!documento.isArray()) {
+        throw std::runtime_error("Non c'è nessun array in dati.json");
+        return;
+    }
+    QJsonArray jsonArray = documento.array();
+
+    jsonArray.append(oggetto);
+
+    QFile outputFile(percorsoPrestiti);
+    QJsonDocument aggiornaDocumento(jsonArray);
+    if (!outputFile.open(QIODevice::WriteOnly)) {
+        throw std::runtime_error("Impossibile aprire 2 dati.json");
+        return;
+    }
+    outputFile.write(aggiornaDocumento.toJson());
+    outputFile.close();
+}
+Prestito* GestoreJson::caricaPrestito (const QJsonObject& jsonObject) {
+    return new Prestito(jsonObject["Nome"].toString(), jsonObject["Cognome"].toString(), QDate::fromString(jsonObject["DataInizio"].toString(), "dd/MM/yyyy"), QDate::fromString(jsonObject["DataFine"].toString(), "dd/MM/yyyy"), jsonObject["idMedia"].toInt());
+}
 
 
 

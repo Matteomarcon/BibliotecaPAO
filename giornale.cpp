@@ -1,8 +1,8 @@
 #include "giornale.h"
 
-Giornale::Giornale(QString immagine, QString titolo, float prezzo, Data dataPubblicazione, QString genere, bool disponibilita, int copie, QString autore, QString editore,
+Giornale::Giornale(int idMedia, QString immagine, QString titolo, float prezzo, QDate dataPubblicazione, QString genere, bool disponibilita, int copie, QString autore, QString editore,
                    QString testata):
-    Cartaceo(immagine, titolo, prezzo, dataPubblicazione, genere, disponibilita, copie, autore, editore), testata(testata) {
+    Cartaceo(idMedia, immagine, titolo, prezzo, dataPubblicazione, genere, disponibilita, copie, autore, editore), testata(testata) {
 
 }
 

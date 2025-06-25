@@ -1,13 +1,9 @@
 #include "rivista.h"
-#include <QSpinBox>
-#include <QComboBox>
 
-Rivista::Rivista(QString immagine, QString titolo, float prezzo, Data dataPubblicazione, QString genere,
+Rivista::Rivista(int idMedia, QString immagine, QString titolo, float prezzo, QDate dataPubblicazione, QString genere,
                  bool disponibilita, int copie, QString autore, QString editore, int numero, QString periodicita):
-    Cartaceo(immagine, titolo, prezzo, dataPubblicazione, genere, disponibilita, copie, autore, editore),
-    numero(numero), periodicita(periodicita){
-
-}
+    Cartaceo(idMedia, immagine, titolo, prezzo, dataPubblicazione, genere, disponibilita, copie, autore, editore),
+    numero(numero), periodicita(periodicita){}
 
 int Rivista::getNumero() const {
     return numero;
