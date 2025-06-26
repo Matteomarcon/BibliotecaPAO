@@ -540,6 +540,7 @@ void MainWindow::creaPaginaForm() {
             listaMedia->setCurrentRow(indiceSelezionato);
             mostraInfo();
         }
+
         stackPagine->setCurrentWidget(paginaPrincipale);
     });
 }
@@ -556,6 +557,8 @@ void MainWindow::mostraPaginaPrincipale() {
     msgBox.exec();
 
     if (msgBox.clickedButton() == confermaButton) {
+        pulisciInfo();
+        listaMedia->scrollToTop();
         stackPagine->setCurrentWidget(paginaPrincipale);
     }
     else if (msgBox.clickedButton() == annullaButton) {
