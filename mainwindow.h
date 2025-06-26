@@ -28,11 +28,13 @@ private:
     void mostraPaginaForm();
     void mostraPaginaPrestiti();
     void mostraInfo();
+    void pulisciInfo();
     QLabel* creaLabel(QWidget *parent, QVBoxLayout *layout);
     void caricaBiblioteca();
     void eliminaMedia();
 
     //filtri
+    QLineEdit* barraRicerca;
     QDialog* dialogFiltri;
     QDoubleSpinBox* spinPrezzoMin;
     QDoubleSpinBox* spinPrezzoMax;

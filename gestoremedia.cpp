@@ -42,6 +42,21 @@ void GestoreMedia::caricaFormDaMedia(int indice) {
         return nullptr;
     };
 
+    QString base64 = media->getImmagine();
+    QByteArray byteArray = QByteArray::fromBase64(base64.toLatin1());
+
+    QPixmap pixmap;
+    if (pixmap.loadFromData(byteArray)) {
+        imagePreview->setPixmap(pixmap.scaled(500, 500, Qt::KeepAspectRatio, Qt::SmoothTransformation));
+        imagePreview->show();
+    }
+    else {
+        imagePreview->show();
+        imagePreview->clear();
+        imagePreview->setText("Anteprima Immagine");
+    }
+
+    if (QLineEdit* base64Edit = qobject_cast<QLineEdit*>(findWidgetByLabel("Immagine"))) base64Edit->setText(media->getImmagine());
     if (QLineEdit* titolo = qobject_cast<QLineEdit*>(findWidgetByLabel("Titolo"))) titolo->setText(media->getTitolo());
     if (QDoubleSpinBox* prezzo = qobject_cast<QDoubleSpinBox*>(findWidgetByLabel("Prezzo"))) prezzo->setValue(media->getPrezzo());
     if (QDateEdit* data = qobject_cast<QDateEdit*>(findWidgetByLabel("Data"))) data->setDate(media->getData());
@@ -129,7 +144,7 @@ void GestoreMedia::caricaBiblioteca(QLabel* risultatiLabel) {
 void GestoreMedia::creaForm(const QString& tipo) {
     QPushButton* caricaImmagine = new QPushButton("Carica Immagine");
     caricaImmagine->setObjectName("BottoneImmagine");
-    formLayout->addRow("Immagine", caricaImmagine);
+    formLayout->addRow("BottoneImmagine", caricaImmagine);
 
     QTextEdit* base64Edit = new QTextEdit();
     base64Edit->setObjectName("Immagine");
@@ -588,13 +603,47 @@ void GestoreMedia::caricaPrestiti(QLabel* labelRisultatiPrestiti) {
     QList<Prestito*> lista = gestoreJson.caricaPrestiti();
 
     for (Prestito* prestito : lista) {
-        QListWidgetItem* item = new QListWidgetItem("Prestito: " + prestito->getNome() + " " + prestito->getCognome() + ", Titolo: " + listaMedia->item(prestito->getIdMedia())->data(Qt::UserRole).value<Media*>()->getTitolo() +
-                                                        ", dal " + prestito->getDataInizio().toString("dd/MM/yyyy") +
-                                                        " al " + prestito->getDataFine().toString("dd/MM/yyyy"), listaPrestiti);
+        Media* media = listaMedia->item(0)->data(Qt::UserRole).value<Media*>();
+        for (int i=0; media->getId()!=prestito->getIdMedia(); i++) {
+            media = listaMedia->item(i)->data(Qt::UserRole).value<Media*>();
+        }
+        QString nome = prestito->getNome();
+        QString cognome = prestito->getCognome();
+        QDate dataInizio = prestito->getDataInizio();
+        QDate dataFine = prestito->getDataFine();
 
-        QFont font;
-        font.setBold(true);
-        item->setFont(font);
+        // Costruisci il contenitore grafico
+        QWidget* container = new QWidget;
+        QVBoxLayout* layout = new QVBoxLayout(container);
+        layout->setContentsMargins(10, 6, 10, 6);
+        layout->setSpacing(2);
+
+        // Etichette
+        QLabel* labelPrestito = new QLabel("Prestito Nr. " + QString::number(listaPrestiti->count()));
+        QLabel* labelUtente = new QLabel("🧑 Richiedente: " + nome + " " + cognome);
+        QLabel* labelTitolo = new QLabel("📘 Titolo media: " + media->getTitolo());
+        QLabel* labelDataInizio = new QLabel("📅 Data inizio: " + dataInizio.toString("dd/MM/yyyy"));
+        QLabel* labelDataFine = new QLabel("📅 Data fine: " + dataFine.toString("dd/MM/yyyy"));
+
+        // Font più evidente per il nome
+        QFont boldFont = labelPrestito->font();
+        boldFont.setBold(true);
+        labelPrestito->setFont(boldFont);
+
+        // Componi
+        layout->addWidget(labelPrestito);
+        layout->addWidget(labelUtente);
+        layout->addWidget(labelTitolo);
+        layout->addWidget(labelDataInizio);
+        layout->addWidget(labelDataFine);
+
+        // Crea item invisibile e collega il widget
+        QListWidgetItem* item = new QListWidgetItem;
+        item->setSizeHint(container->sizeHint());
+        item->setData(Qt::UserRole, prestito->getIdMedia());
+        item->setText(nome + cognome + dataInizio.toString("dd/MM/yyy") + dataFine.toString("dd/MM/yyyy"));
+        listaPrestiti->addItem(item);
+        listaPrestiti->setItemWidget(item, container);
     }
 
     // Aggiorna conteggio all’avvio (tutti visibili)

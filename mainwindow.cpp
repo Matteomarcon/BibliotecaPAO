@@ -53,8 +53,6 @@ void MainWindow::inizializzaGUI() {
 
     connect(listaMedia, &QListWidget::itemClicked, this, [this]() {
         mostraInfo();
-        bottoneModifica->show();
-        bottoneElimina->show();
     });
     formLayout = new QFormLayout();
     labelAnteprimaImmagine = new QLabel("Anteprima Immagine");
@@ -138,8 +136,31 @@ void MainWindow::inizializzaGUI() {
     mainLayout->addLayout(buttonLayout);
     dialogFiltri->setLayout(mainLayout);
 
+    connect(spinPrezzoMin, &QDoubleSpinBox::valueChanged, [=]() {
+        spinPrezzoMin->setPalette(QPalette());
+        spinPrezzoMax->setPalette(QPalette());
+    });
+    connect(spinPrezzoMax, &QDoubleSpinBox::valueChanged, [=]() {
+        spinPrezzoMin->setPalette(QPalette());
+        spinPrezzoMax->setPalette(QPalette());
+    });
     // Connect pulsanti
-    connect(bottoneOk, &QPushButton::clicked, dialogFiltri, &QDialog::accept);
+    connect(bottoneOk, &QPushButton::clicked, dialogFiltri, [=](){
+        double prezzoMin = spinPrezzoMin->value();
+        double prezzoMax = spinPrezzoMax->value();
+
+
+        if (prezzoMin > prezzoMax) {
+            QPalette palette = spinPrezzoMin->palette();
+            palette.setColor(QPalette::Base, QColor(255, 0, 0));
+            spinPrezzoMin->setPalette(palette);
+            spinPrezzoMax->setPalette(palette);
+        }
+        else {
+            aggiornaFiltroMedia(barraRicerca->text(), comboCategoria->currentText(), comboDisponibilita->currentText(), prezzoMin, prezzoMax);
+            dialogFiltri->close();
+        }
+    });
     connect(bottoneAnnulla, &QPushButton::clicked, dialogFiltri, &QDialog::reject);
     connect(bottonePulisci, &QPushButton::clicked, dialogFiltri, [=]() {
         spinPrezzoMin->setValue(0);
@@ -200,7 +221,7 @@ void MainWindow::creaPaginaPrincipale() {
     ricercaLayout->setContentsMargins(0,0,0,0);
 
     //Barra di ricerca
-    QLineEdit *barraRicerca = new QLineEdit();
+    barraRicerca = new QLineEdit();
     barraRicerca->setPlaceholderText("Cerca media...");
 
     // Bottone filtri
@@ -219,16 +240,7 @@ void MainWindow::creaPaginaPrincipale() {
     // Connect bottone filtri
 
     connect(bottoneFiltri, &QPushButton::clicked, this, [=]() {
-    if (dialogFiltri->exec() == QDialog::Accepted) {
-        double minPrezzo = spinPrezzoMin->value();
-        double maxPrezzo = spinPrezzoMax->value();
-        if (minPrezzo > maxPrezzo) {
-            QMessageBox::warning(dialogFiltri, "Intervallo di prezzo non valido", "Hai inserito un prezzo minimo maggiore del prezzo massimo");
-            return;
-        } else {
-            aggiornaFiltroMedia(barraRicerca->text(), comboCategoria->currentText(), comboDisponibilita->currentText(), minPrezzo, maxPrezzo);
-        }
-    }
+        dialogFiltri->exec();
     });
 
 
@@ -399,14 +411,38 @@ void MainWindow::creaPaginaPrincipale() {
                 QDate dataInizio = editInizio->date();
                 QDate dataFine = editFine->date();
 
-                QListWidgetItem *item = new QListWidgetItem(
-                    "Prestito: " + nome + " " + cognome + ", Titolo: " + media->getTitolo() +
-                    ", dal " + dataInizio.toString("dd/MM/yyyy") +
-                    " al " + dataFine.toString("dd/MM/yyyy")
-                    );
+                // Costruisci il contenitore grafico
+                QWidget* container = new QWidget;
+                QVBoxLayout* layout = new QVBoxLayout(container);
+                layout->setContentsMargins(10, 6, 10, 6);
+                layout->setSpacing(2);
 
+                // Etichette
+                QLabel* labelPrestito = new QLabel("Prestito Nr. " + QString::number(listaPrestiti->count()));
+                QLabel* labelUtente = new QLabel("🧑 Richiedente: " + nome + " " + cognome);
+                QLabel* labelTitolo = new QLabel("📘 Titolo media: " + media->getTitolo());
+                QLabel* labelDataInizio = new QLabel("📅 Data inizio: " + dataInizio.toString("dd/MM/yyyy"));
+                QLabel* labelDataFine = new QLabel("📅 Data fine: " + dataFine.toString("dd/MM/yyyy"));
+
+                // Font più evidente per il nome
+                QFont boldFont = labelPrestito->font();
+                boldFont.setBold(true);
+                labelPrestito->setFont(boldFont);
+
+                // Componi
+                layout->addWidget(labelPrestito);
+                layout->addWidget(labelUtente);
+                layout->addWidget(labelTitolo);
+                layout->addWidget(labelDataInizio);
+                layout->addWidget(labelDataFine);
+
+                // Crea item invisibile e collega il widget
+                QListWidgetItem* item = new QListWidgetItem;
+                item->setSizeHint(container->sizeHint());
                 item->setData(Qt::UserRole, media->getId());
+                item->setText(nome + cognome + dataInizio.toString("dd/MM/yyy") + dataFine.toString("dd/MM/yyyy"));
                 listaPrestiti->addItem(item);
+                listaPrestiti->setItemWidget(item, container);
                 mostraInfo();
                 gestore->salvaPrestito(new Prestito(nome, cognome, dataInizio, dataFine, media->getId()));  // eventualmente aggiorna se vuoi passare anche nome/cognome/date
             }
@@ -506,80 +542,6 @@ void MainWindow::creaPaginaForm() {
         }
         stackPagine->setCurrentWidget(paginaPrincipale);
     });
-}
-
-void MainWindow::mostraInfo() {
-    Media* media = listaMedia->currentItem()->data(Qt::UserRole).value<Media*>();
-    if (media->getDisponibilita()) bottoneNuovoPrestito->show();
-    else bottoneNuovoPrestito->hide();
-
-    labelIconaTopBar->setPixmap(listaMedia->currentItem()->icon().pixmap(44,44));
-    labelTitoloTopBar->setText(media->getTitolo());
-    labelTitolo->setText("Titolo: " + media->getTitolo());
-    labelPrezzo->setText("Prezzo: " + QString::number(media->getPrezzo()) + "€");
-    labelData->setText("Data: " + media->getData().toString("dd/MM/yyyy"));
-    labelGenere->setText("Genere: " + media->getGenere());
-    labelDisponibilita->setText(media->getDisponibilita() ? "Disponibilità: Disponibile" : "Disponibilità: Non disponibile");
-    labelCopie->setText("Copie: " + QString::number(media->getCopie()));
-
-    QList<QLabel*> allLabels = {labelAutore, labelEditore, labelTestata, labelFormato, labelLingua, labelLinguaOriginale,
-                                 labelRegista, labelProduzione, labelDurata, labelPaese, labelNumero, labelPeriodicita,
-                                 labelArtista, labelNumeroTracce};
-    for (QLabel* l : allLabels) l->hide();
-
-    if (auto* film = dynamic_cast<Film*>(media)) {
-        labelCategoria->setText("Categoria: Film");
-        labelDurata->setText("Durata: " + QString::number(film->getDurata()));
-        labelProduzione->setText("Produzione: " + film->getProduzione());
-        labelRegista->setText("Regista: " + film->getRegista());
-        labelLinguaOriginale->setText("Lingua originale: " + film->getLinguaOriginale());
-        labelPaese->setText("Paese: " + film->getPaeseProduzione());
-        labelDurata->show(); labelProduzione->show(); labelRegista->show(); labelLinguaOriginale->show(); labelPaese->show();
-    }
-    else if (auto* giornale = dynamic_cast<Giornale*>(media)) {
-        labelCategoria->setText("Categoria: Giornale");
-        labelAutore->setText("Autore: " + giornale->getAutore());
-        labelEditore->setText("Editore: " + giornale->getEditore());
-        labelTestata->setText("Testata: " + giornale->getTestata());
-        labelAutore->show(); labelEditore->show(); labelTestata->show();
-    }
-    else if (auto* libro = dynamic_cast<Libro*>(media)) {
-        labelCategoria->setText("Categoria: Libro");
-        labelAutore->setText("Autore: " + libro->getAutore());
-        labelEditore->setText("Editore: " + libro->getEditore());
-        labelLingua->setText("Lingua: " + libro->getLingua());
-        labelFormato->setText("Formato: " + libro->getFormato());
-        labelAutore->show(); labelEditore->show(); labelLingua->show(); labelFormato->show();
-    }
-    else if (auto* rivista = dynamic_cast<Rivista*>(media)) {
-        labelCategoria->setText("Categoria: Rivista");
-        labelAutore->setText("Autore: " + rivista->getAutore());
-        labelEditore->setText("Editore: " + rivista->getEditore());
-        labelNumero->setText("Numero: " + QString::number(rivista->getNumero()));
-        labelPeriodicita->setText("Periodicità: " + rivista->getPeriodicita());
-        labelAutore->show(); labelEditore->show(); labelNumero->show(); labelPeriodicita->show();
-    }
-    else if (auto* vinile = dynamic_cast<Vinile*>(media)) {
-        labelCategoria->setText("Categoria: Vinile");
-        labelDurata->setText("Durata: " + QString::number(vinile->getDurata()));
-        labelProduzione->setText("Produzione: " + vinile->getProduzione());
-        labelArtista->setText("Artista: " + vinile->getArtista());
-        labelNumeroTracce->setText("Numero tracce: " + QString::number(vinile->getNumeroTracce()));
-        labelDurata->show(); labelProduzione->show(); labelArtista->show(); labelNumeroTracce->show();
-    }
-
-    QString base64 = media->getImmagine();
-    QByteArray byteArray = QByteArray::fromBase64(base64.toLatin1());
-
-    QPixmap pixmap;
-    if (pixmap.loadFromData(byteArray)) {
-        labelImmagine->setPixmap(pixmap.scaled(500, 500, Qt::KeepAspectRatio, Qt::SmoothTransformation));
-    }
-    else {
-        labelImmagine->show();
-        labelImmagine->clear();
-        labelImmagine->setText("Immagine");
-    }
 }
 
 void MainWindow::mostraPaginaPrincipale() {
@@ -739,6 +701,9 @@ void MainWindow::mostraPaginaPrestiti() {
 void MainWindow::aggiornaFiltroMedia(QString testoRicerca, QString categoriaSelezionata, QString disponibilitaSelezionata, double minPrezzo, double maxPrezzo) {
     int visibili = 0;
 
+
+    QListWidgetItem* currentItem = listaMedia->currentItem();
+
     for (int i = 0; i < listaMedia->count(); ++i) {
         QListWidgetItem *item = listaMedia->item(i);
         Media* media = item->data(Qt::UserRole).value<Media*>();
@@ -762,8 +727,110 @@ void MainWindow::aggiornaFiltroMedia(QString testoRicerca, QString categoriaSele
 
         bool visibile = matchTesto && matchPrezzo && matchDisp && matchCategoria;
         item->setHidden(!visibile);
+
         if (visibile) ++visibili;
     }
 
     labelRisultatiMedia->setText(QString("Risultati: %1").arg(visibili));
+
+    if (currentItem && currentItem->isHidden()) {
+        pulisciInfo();
+    }
+    else mostraInfo();
+}
+
+void MainWindow::pulisciInfo() {
+    QList<QLabel*> allLabels = {labelIconaTopBar, labelTitoloTopBar, labelTitolo, labelPrezzo, labelData, labelGenere,
+                                 labelAutore, labelEditore, labelTestata, labelFormato, labelLingua, labelLinguaOriginale,
+                                 labelRegista, labelProduzione, labelDurata, labelPaese, labelNumero, labelPeriodicita,
+                                 labelArtista, labelNumeroTracce, labelImmagine, labelDisponibilita, labelCopie, labelCategoria};
+    for (QLabel* l : allLabels) l->hide();
+
+    bottoneNuovoPrestito->hide();
+    bottoneModifica->hide();
+    bottoneElimina->hide();
+}
+
+void MainWindow::mostraInfo() {
+    Media* media = listaMedia->currentItem()->data(Qt::UserRole).value<Media*>();
+
+    pulisciInfo();
+
+    bottoneModifica->show();
+    bottoneElimina->show();
+    if (media->getDisponibilita()) bottoneNuovoPrestito->show();
+
+    labelIconaTopBar->setPixmap(listaMedia->currentItem()->icon().pixmap(44,44));
+    labelIconaTopBar->show();
+    labelTitoloTopBar->setText(media->getTitolo());
+    labelTitoloTopBar->show();
+    labelTitolo->setText("Titolo: " + media->getTitolo());
+    labelTitolo->show();
+    labelPrezzo->setText("Prezzo: " + QString::number(media->getPrezzo()) + "€");
+    labelPrezzo->show();
+    labelData->setText("Data: " + media->getData().toString("dd/MM/yyyy"));
+    labelData->show();
+    labelGenere->setText("Genere: " + media->getGenere());
+    labelGenere->show();
+    labelDisponibilita->setText(media->getDisponibilita() ? "Disponibilità: Disponibile" : "Disponibilità: Non disponibile");
+    labelDisponibilita->show();
+    labelCopie->setText("Copie: " + QString::number(media->getCopie()));
+    labelCopie->show();
+    labelCategoria->show();
+
+
+    if (auto* film = dynamic_cast<Film*>(media)) {
+        labelCategoria->setText("Categoria: Film");
+        labelDurata->setText("Durata: " + QString::number(film->getDurata()));
+        labelProduzione->setText("Produzione: " + film->getProduzione());
+        labelRegista->setText("Regista: " + film->getRegista());
+        labelLinguaOriginale->setText("Lingua originale: " + film->getLinguaOriginale());
+        labelPaese->setText("Paese: " + film->getPaeseProduzione());
+        labelDurata->show(); labelProduzione->show(); labelRegista->show(); labelLinguaOriginale->show(); labelPaese->show();
+    }
+    else if (auto* giornale = dynamic_cast<Giornale*>(media)) {
+        labelCategoria->setText("Categoria: Giornale");
+        labelAutore->setText("Autore: " + giornale->getAutore());
+        labelEditore->setText("Editore: " + giornale->getEditore());
+        labelTestata->setText("Testata: " + giornale->getTestata());
+        labelAutore->show(); labelEditore->show(); labelTestata->show();
+    }
+    else if (auto* libro = dynamic_cast<Libro*>(media)) {
+        labelCategoria->setText("Categoria: Libro");
+        labelAutore->setText("Autore: " + libro->getAutore());
+        labelEditore->setText("Editore: " + libro->getEditore());
+        labelLingua->setText("Lingua: " + libro->getLingua());
+        labelFormato->setText("Formato: " + libro->getFormato());
+        labelAutore->show(); labelEditore->show(); labelLingua->show(); labelFormato->show();
+    }
+    else if (auto* rivista = dynamic_cast<Rivista*>(media)) {
+        labelCategoria->setText("Categoria: Rivista");
+        labelAutore->setText("Autore: " + rivista->getAutore());
+        labelEditore->setText("Editore: " + rivista->getEditore());
+        labelNumero->setText("Numero: " + QString::number(rivista->getNumero()));
+        labelPeriodicita->setText("Periodicità: " + rivista->getPeriodicita());
+        labelAutore->show(); labelEditore->show(); labelNumero->show(); labelPeriodicita->show();
+    }
+    else if (auto* vinile = dynamic_cast<Vinile*>(media)) {
+        labelCategoria->setText("Categoria: Vinile");
+        labelDurata->setText("Durata: " + QString::number(vinile->getDurata()));
+        labelProduzione->setText("Produzione: " + vinile->getProduzione());
+        labelArtista->setText("Artista: " + vinile->getArtista());
+        labelNumeroTracce->setText("Numero tracce: " + QString::number(vinile->getNumeroTracce()));
+        labelDurata->show(); labelProduzione->show(); labelArtista->show(); labelNumeroTracce->show();
+    }
+
+    QString base64 = media->getImmagine();
+    QByteArray byteArray = QByteArray::fromBase64(base64.toLatin1());
+
+    QPixmap pixmap;
+    if (pixmap.loadFromData(byteArray)) {
+        labelImmagine->setPixmap(pixmap.scaled(500, 500, Qt::KeepAspectRatio, Qt::SmoothTransformation));
+        labelImmagine->show();
+    }
+    else {
+        labelImmagine->show();
+        labelImmagine->clear();
+        labelImmagine->setText("Immagine");
+    }
 }
