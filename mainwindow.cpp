@@ -37,7 +37,10 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent) {
     stackPagine->setCurrentIndex(0);
 }
 
-MainWindow::~MainWindow() {}
+MainWindow::~MainWindow() {
+    for (int i = 0; i < listaMedia->count(); ++i) delete listaMedia->item(i)->data(Qt::UserRole).value<Media*>();
+    delete gestore;
+}
 
 void MainWindow::inizializzaGUI() {
     this->setMinimumSize(1000, 550);
@@ -59,17 +62,23 @@ void MainWindow::inizializzaGUI() {
 
     QShortcut* shortcutUpMedia = new QShortcut(QKeySequence(Qt::Key_Up), this);
     connect(shortcutUpMedia, &QShortcut::activated, this, [=] {
-        if (listaMedia->currentItem() && listaMedia->item(listaMedia->currentRow()-1)) {
+        if (listaMedia->currentItem() && listaMedia->item(listaMedia->currentRow()-1) && stackPagine->currentIndex()==0) {
             listaMedia->setCurrentRow(listaMedia->currentRow()-1);
             mostraInfo();
+        }
+        if (listaPrestiti->currentItem() && listaPrestiti->item(listaPrestiti->currentRow()-1) && stackPagine->currentIndex() == 2) {
+            listaPrestiti->setCurrentRow(listaPrestiti->currentRow()-1);
         }
     });
 
     QShortcut* shortcutDownMedia = new QShortcut(QKeySequence(Qt::Key_Down), this);
     connect(shortcutDownMedia, &QShortcut::activated, this, [=] {
-        if (listaMedia->currentItem() && listaMedia->item(listaMedia->currentRow()+1)) {
+        if (listaMedia->currentItem() && listaMedia->item(listaMedia->currentRow()+1) && stackPagine->currentIndex() == 0) {
             listaMedia->setCurrentRow(listaMedia->currentRow()+1);
             mostraInfo();
+        }
+        if (listaPrestiti->currentItem() && listaPrestiti->item(listaPrestiti->currentRow()+1) && stackPagine->currentIndex() == 2) {
+            listaPrestiti->setCurrentRow(listaPrestiti->currentRow()+1);
         }
     });
 
@@ -141,27 +150,27 @@ void MainWindow::inizializzaGUI() {
 
     dialogFiltri->setWindowTitle("Filtra ricerca");
 
-    QLabel* labelPrezzoMin = new QLabel("Prezzo minimo:");
+    QLabel* labelPrezzoMin = new QLabel("Prezzo minimo:", dialogFiltri);
     spinPrezzoMin->setRange(0, 1000);
     spinPrezzoMin->setDecimals(2);
 
-    QLabel* labelPrezzoMax = new QLabel("Prezzo massimo:");
+    QLabel* labelPrezzoMax = new QLabel("Prezzo massimo:", dialogFiltri);
     spinPrezzoMax->setRange(0, 1000);
     spinPrezzoMax->setDecimals(2);
     spinPrezzoMax->setValue(1000);
 
-    QLabel* labelDisponibilita = new QLabel("Disponibilità:");
+    QLabel* labelDisponibilita = new QLabel("Disponibilità:", dialogFiltri);
     comboDisponibilita->addItem("Tutti");
     comboDisponibilita->addItem("Disponibili");
     comboDisponibilita->addItem("Non disponibili");
 
-    QLabel* labelCategoria = new QLabel("Categoria:");
+    QLabel* labelCategoria = new QLabel("Categoria:", dialogFiltri);
     comboCategoria->addItem("Tutti");
     comboCategoria->addItems(GestoreMedia::getTipiDisponibili());
 
-    QPushButton* bottoneOk = new QPushButton("Applica filtri");
-    QPushButton* bottoneAnnulla = new QPushButton("Annulla");
-    QPushButton* bottonePulisci = new QPushButton("Pulisci");
+    QPushButton* bottoneOk = new QPushButton("Applica filtri", dialogFiltri);
+    QPushButton* bottoneAnnulla = new QPushButton("Annulla", dialogFiltri);
+    QPushButton* bottonePulisci = new QPushButton("Pulisci", dialogFiltri);
 
     QHBoxLayout* buttonLayout = new QHBoxLayout();
     buttonLayout->addStretch();
@@ -175,10 +184,9 @@ void MainWindow::inizializzaGUI() {
     formLayout->addRow(labelDisponibilita, comboDisponibilita);
     formLayout->addRow(labelCategoria, comboCategoria);
 
-    QVBoxLayout* mainLayout = new QVBoxLayout();
+    QVBoxLayout* mainLayout = new QVBoxLayout(dialogFiltri);
     mainLayout->addLayout(formLayout);
     mainLayout->addLayout(buttonLayout);
-    dialogFiltri->setLayout(mainLayout);
 
     connect(spinPrezzoMin, &QDoubleSpinBox::valueChanged, [=]() {
         spinPrezzoMin->setPalette(QPalette());
@@ -277,7 +285,7 @@ void MainWindow::creaPaginaPrincipale() {
     barraRicerca->setPlaceholderText("Cerca media... (CTRL+F)");
 
     // Bottone filtri
-    QPushButton* bottoneFiltri = new QPushButton("Filtri");
+    QPushButton* bottoneFiltri = new QPushButton("Filtri", ricerca);
 
     ricercaLayout->addWidget(barraRicerca);
     ricercaLayout->addWidget(bottoneFiltri);
@@ -455,28 +463,26 @@ void MainWindow::creaPaginaPrincipale() {
     connect(bottoneNuovoPrestito, &QPushButton::clicked, this, [=]() {
         Media* media = listaMedia->currentItem()->data(Qt::UserRole).value<Media*>();
         if (media->getDisponibilita()) {
-            media->setCopie(media->getCopie() - 1);
-            if (media->getCopie() == 0) media->setDisponibilita(false);
 
             dialog = new QDialog(this);
             dialog->setWindowTitle("Inserimento nuovo prestito");
 
             // Campi del form
-            QLabel *labelNome = new QLabel("Nome:");
-            QLineEdit *editNome = new QLineEdit();
+            QLabel *labelNome = new QLabel("Nome:", dialog);
+            QLineEdit *editNome = new QLineEdit(dialog);
 
-            QLabel *labelCognome = new QLabel("Cognome:");
-            QLineEdit *editCognome = new QLineEdit();
+            QLabel *labelCognome = new QLabel("Cognome:", dialog);
+            QLineEdit *editCognome = new QLineEdit(dialog);
 
-            QLabel *labelInizio = new QLabel("Data inizio:");
-            QDateEdit *editInizio = new QDateEdit(QDate::currentDate());
+            QLabel *labelInizio = new QLabel("Data inizio:", dialog);
+            QDateEdit *editInizio = new QDateEdit(QDate::currentDate(), dialog);
             editInizio->setCalendarPopup(true);
 
-            QLabel *labelFine = new QLabel("Data fine:");
-            QDateEdit *editFine = new QDateEdit(QDate::currentDate().addDays(7));
+            QLabel *labelFine = new QLabel("Data fine:", dialog);
+            QDateEdit *editFine = new QDateEdit(QDate::currentDate().addDays(7), dialog);
             editFine->setCalendarPopup(true);
 
-            QPushButton *okButton = new QPushButton("OK");
+            QPushButton *okButton = new QPushButton("OK", dialog);
             connect(okButton, &QPushButton::clicked, dialog, [=](){
                 if (editNome->text()=="") {
                     QPalette palette = editNome->palette();
@@ -495,17 +501,17 @@ void MainWindow::creaPaginaPrincipale() {
                     QDate dataFine = editFine->date();
 
                     // Costruisci il contenitore grafico
-                    QWidget* container = new QWidget;
+                    QWidget* container = new QWidget(listaPrestiti);
                     QVBoxLayout* layout = new QVBoxLayout(container);
                     layout->setContentsMargins(10, 6, 10, 6);
                     layout->setSpacing(2);
 
                     // Etichette
-                    QLabel* labelPrestito = new QLabel("Prestito");
-                    QLabel* labelUtente = new QLabel("🧑 Richiedente: " + nome + " " + cognome);
-                    QLabel* labelTitolo = new QLabel("📘 Titolo media: " + media->getTitolo());
-                    QLabel* labelDataInizio = new QLabel("📅 Data inizio: " + dataInizio.toString("dd/MM/yyyy"));
-                    QLabel* labelDataFine = new QLabel("📅 Data fine: " + dataFine.toString("dd/MM/yyyy"));
+                    QLabel* labelPrestito = new QLabel("Prestito", container);
+                    QLabel* labelUtente = new QLabel("🧑 Richiedente: " + nome + " " + cognome, container);
+                    QLabel* labelTitolo = new QLabel("📘 Titolo media: " + media->getTitolo(), container);
+                    QLabel* labelDataInizio = new QLabel("📅 Data inizio: " + dataInizio.toString("dd/MM/yyyy"), container);
+                    QLabel* labelDataFine = new QLabel("📅 Data fine: " + dataFine.toString("dd/MM/yyyy"), container);
 
                     // Font più evidente per il nome
                     QFont boldFont = labelPrestito->font();
@@ -519,6 +525,8 @@ void MainWindow::creaPaginaPrincipale() {
                     layout->addWidget(labelDataInizio);
                     layout->addWidget(labelDataFine);
 
+                    media->setCopie(media->getCopie() - 1);
+                    if (media->getCopie() == 0) media->setDisponibilita(false);
                     // Crea item invisibile e collega il widget
                     QListWidgetItem* item = new QListWidgetItem;
                     item->setSizeHint(container->sizeHint());
@@ -539,8 +547,15 @@ void MainWindow::creaPaginaPrincipale() {
                 }
             });
 
+            connect(editNome, &QLineEdit::textChanged, [=]() {
+                editNome->setPalette(QPalette());
+            });
+            connect(editCognome, &QLineEdit::textChanged, [=]() {
+                editCognome->setPalette(QPalette());
+            });
+
             // Layout
-            QVBoxLayout *layout = new QVBoxLayout();
+            QVBoxLayout *layout = new QVBoxLayout(dialog);
             layout->addWidget(labelNome);
             layout->addWidget(editNome);
             layout->addWidget(labelCognome);
@@ -574,6 +589,7 @@ void MainWindow::creaPaginaForm() {
     connect(shortcutIndietro, &QShortcut::activated, this, [=] {
         if (stackPagine->currentIndex()==1 || stackPagine->currentIndex()==2) {
             mostraPaginaPrincipale();
+            selettoreMedia->setCurrentIndex(0);
             pulisciForm();
         }
     });
@@ -617,6 +633,7 @@ void MainWindow::creaPaginaForm() {
             }
 
             stackPagine->setCurrentWidget(paginaPrincipale);
+            selettoreMedia->setCurrentIndex(0);
             pulisciForm();
         }
     });
@@ -663,19 +680,14 @@ void MainWindow::creaPaginaForm() {
 
     //Connect
     connect(selettoreMedia, &QComboBox::currentTextChanged, this, [=](const QString &tipoSelezionato) {
+        pulisciForm();
         bottoneSalva->show();
         labelAnteprimaImmagine->show();
-        while (formLayout->rowCount() > 0) {
-            QLayoutItem* labelItem = formLayout->itemAt(0, QFormLayout::LabelRole);
-            QLayoutItem* fieldItem = formLayout->itemAt(0, QFormLayout::FieldRole);
-            if (labelItem && labelItem->widget()) delete labelItem->widget();
-            if (fieldItem && fieldItem->widget()) delete fieldItem->widget();
-            formLayout->removeRow(0);
-        }
         gestore->creaForm(tipoSelezionato);
     });
     connect(bottoneIndietro, &QPushButton::clicked, this, [=]() {
         mostraPaginaPrincipale();
+        selettoreMedia->setCurrentIndex(0);
         pulisciForm();
     });
     connect(bottoneSalva, &QPushButton::clicked, this, [=]() {
@@ -699,7 +711,7 @@ void MainWindow::creaPaginaForm() {
 
         int indiceSelezionato = -1;
         if (listaMedia->currentItem()) {
-            indiceSelezionato = listaMedia->row(listaMedia->currentItem());
+            indiceSelezionato = listaMedia->currentRow();
             gestore->salvaMediaDaForm(selettoreMedia->currentText(), indiceSelezionato);
         } else {
             gestore->salvaMediaDaForm(selettoreMedia->currentText());
@@ -713,6 +725,7 @@ void MainWindow::creaPaginaForm() {
         }
 
         stackPagine->setCurrentWidget(paginaPrincipale);
+        selettoreMedia->setCurrentIndex(0);
         pulisciForm();
     });
 }
@@ -729,8 +742,10 @@ void MainWindow::mostraPaginaPrincipale() {
     msgBox.exec();
 
     if (msgBox.clickedButton() == confermaButton) {
-        pulisciInfo();
-        listaMedia->scrollToTop();
+        if (stackPagine->currentIndex()==1) {
+            pulisciInfo();
+            listaMedia->scrollToTop();
+        }
         stackPagine->setCurrentWidget(paginaPrincipale);
     }
     else if (msgBox.clickedButton() == annullaButton) {
@@ -746,11 +761,11 @@ void MainWindow::mostraPaginaForm() {
 void MainWindow::caricaBiblioteca() {
     QString percorsoFile = QFileDialog::getOpenFileName(nullptr, "Scegli Biblioteca", "", "Documento (*.json)");
     if (!percorsoFile.isEmpty()) {
+        pulisciInfo();
         gestore = new GestoreMedia(listaMedia, listaPrestiti, formLayout, labelAnteprimaImmagine, percorsoFile); // !!! Distruzione funziona????
         gestore->caricaBiblioteca(labelRisultatiMedia);
+        gestore->caricaPrestiti(labelRisultatiPrestiti);
     }
-    pulisciInfo();
-    gestore->caricaPrestiti(labelRisultatiPrestiti);
 }
 
 void MainWindow::eliminaMedia() {
@@ -945,7 +960,6 @@ void MainWindow::pulisciInfo() {
 }
 
 void MainWindow::pulisciForm() {
-    selettoreMedia->setCurrentIndex(0);
     while (formLayout->rowCount() > 0) {
         QLayoutItem* labelItem = formLayout->itemAt(0, QFormLayout::LabelRole);
         QLayoutItem* fieldItem = formLayout->itemAt(0, QFormLayout::FieldRole);

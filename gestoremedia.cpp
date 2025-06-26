@@ -113,7 +113,9 @@ void GestoreMedia::salvaMediaDaForm(const QString& tipo, int indice) {
 }
 
 void GestoreMedia::caricaBiblioteca(QLabel* risultatiLabel) {
+    for (int i = 0; i < listaMedia->count(); ++i) delete listaMedia->item(i)->data(Qt::UserRole).value<Media*>();
     listaMedia->clear();
+
     QList<Media*> lista = gestoreJson.caricaBiblioteca();
 
     for (Media* media : lista) {

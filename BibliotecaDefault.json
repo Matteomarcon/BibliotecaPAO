@@ -2,7 +2,7 @@
     {
         "Autore": "",
         "Classe": "Giornale",
-        "Copie": 22,
+        "Copie": 1,
         "Data di pubblicazione": "01/01/2000",
         "Disponibilita": true,
         "Editore": "",
@@ -10,22 +10,7 @@
         "Immagine": "",
         "Prezzo": 0.009999999776482582,
         "Testata": "",
-        "Titolo": "d",
-        "idMedia": 0
-    },
-    {
-        "Autore": "",
-        "Classe": "Rivista",
-        "Copie": 1,
-        "Data di pubblicazione": "01/01/2000",
-        "Disponibilita": true,
-        "Editore": "",
-        "Genere": "",
-        "Immagine": "",
-        "Numero": 0,
-        "Periodicita": "",
-        "Prezzo": 0.009999999776482582,
-        "Titolo": "faawfwafd",
-        "idMedia": 1
+        "Titolo": "b",
+        "idMedia": 3
     }
 ]

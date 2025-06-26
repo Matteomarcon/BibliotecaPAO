@@ -67,7 +67,6 @@ void GestoreJson::salvaMedia(Media* media, int indice) {
         listaMedia.append(media);
     }
     else {
-        delete listaMedia[indice];
         listaMedia.replace(indice, media);
     }
 
@@ -205,7 +204,7 @@ QList<Media*> GestoreJson::caricaBiblioteca() {
             else if(classe =="Libro") media = caricaLibro(jsonObject);
             else if (classe =="Giornale") media = caricaGiornale(jsonObject);
 
-            listaMedia.append(media);
+            if (media) listaMedia.append(media);
         }
     }
     return listaMedia;
