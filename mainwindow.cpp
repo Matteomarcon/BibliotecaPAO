@@ -26,6 +26,8 @@
 #include <QDate>
 #include <QList>
 #include <QDoubleSpinBox>
+#include <QFont>
+#include <QShortcut>
 
 MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent) {
     inizializzaGUI();
@@ -54,6 +56,48 @@ void MainWindow::inizializzaGUI() {
     connect(listaMedia, &QListWidget::itemClicked, this, [this]() {
         mostraInfo();
     });
+
+    QShortcut* shortcutUpMedia = new QShortcut(QKeySequence(Qt::Key_Up), this);
+    connect(shortcutUpMedia, &QShortcut::activated, this, [=] {
+        if (listaMedia->currentItem() && listaMedia->item(listaMedia->currentRow()-1)) {
+            listaMedia->setCurrentRow(listaMedia->currentRow()-1);
+            mostraInfo();
+        }
+    });
+
+    QShortcut* shortcutDownMedia = new QShortcut(QKeySequence(Qt::Key_Down), this);
+    connect(shortcutDownMedia, &QShortcut::activated, this, [=] {
+        if (listaMedia->currentItem() && listaMedia->item(listaMedia->currentRow()+1)) {
+            listaMedia->setCurrentRow(listaMedia->currentRow()+1);
+            mostraInfo();
+        }
+    });
+
+    QShortcut* shortcutCancMedia = new QShortcut(QKeySequence(Qt::Key_Delete), this);
+    connect(shortcutCancMedia, &QShortcut::activated, this, [=] {
+        if (listaMedia->currentItem() && stackPagine->currentIndex()==0) {
+            bool prestitiAttivi = false;
+            for (int i=0; i<listaPrestiti->count(); i++) {
+                if (listaPrestiti->item(i)->data(Qt::UserRole)==listaMedia->currentItem()->data(Qt::UserRole).value<Media*>()->getId()) {
+                    prestitiAttivi = true;
+                }
+            }
+            if (prestitiAttivi) {
+                QMessageBox::warning(nullptr, "Attenzione", "Non puoi eliminare un media con uno o piu' prestiti attivi.");
+            } else {
+                eliminaMedia();
+            }
+        }
+        int visibili = 0;
+        for (int i = 0; i < listaMedia->count(); ++i) {
+            QListWidgetItem *item = listaMedia->item(i);
+            item->setHidden(false);  // Mostra tutto
+            ++visibili;
+        }
+        labelRisultatiMedia->setText(QString("Risultati: %1").arg(visibili));
+        if (visibili==0) pulisciInfo();
+    });
+
     formLayout = new QFormLayout();
     labelAnteprimaImmagine = new QLabel("Anteprima Immagine");
 
@@ -149,7 +193,6 @@ void MainWindow::inizializzaGUI() {
         double prezzoMin = spinPrezzoMin->value();
         double prezzoMax = spinPrezzoMax->value();
 
-
         if (prezzoMin > prezzoMax) {
             QPalette palette = spinPrezzoMin->palette();
             palette.setColor(QPalette::Base, QColor(255, 0, 0));
@@ -194,7 +237,10 @@ void MainWindow::creaPaginaPrincipale() {
     bottoneNuovaBiblioteca->setCursor(Qt::PointingHandCursor);
     bottoneNuovaBiblioteca->setFixedHeight(50);
     bottoneNuovaBiblioteca->setFlat(true);
-    bottoneNuovaBiblioteca->setToolTip("Carica una nuova biblioteca (*.json)");
+    bottoneNuovaBiblioteca->setToolTip("Carica una nuova biblioteca (*.json) (CTRL+O)");
+
+    QShortcut* shortcutNuovaBiblioteca = new QShortcut(QKeySequence("Ctrl+O"), this);
+    connect(shortcutNuovaBiblioteca, &QShortcut::activated, this, &MainWindow::caricaBiblioteca);
 
     QPushButton *bottoneForm = new QPushButton("Nuovo\nMedia");
     bottoneForm->setIcon(QIcon(":/icone/add.png"));
@@ -202,7 +248,10 @@ void MainWindow::creaPaginaPrincipale() {
     bottoneForm->setCursor(Qt::PointingHandCursor);
     bottoneForm->setFixedHeight(50);
     bottoneForm->setFlat(true);
-    bottoneForm->setToolTip("Inserisci un nuovo media nella biblioteca");
+    bottoneForm->setToolTip("Inserisci un nuovo media nella biblioteca (CTRL+N)");
+
+    QShortcut* shortcutNuovoMedia = new QShortcut(QKeySequence("Ctrl+N"), this);
+    connect(shortcutNuovoMedia, &QShortcut::activated, this, &MainWindow::mostraPaginaForm);
 
     QPushButton *bottonePrestiti = new QPushButton("Visualizza\nPrestiti");
     bottonePrestiti->setIcon(QIcon(":/icone/listaprestiti.png"));
@@ -210,7 +259,10 @@ void MainWindow::creaPaginaPrincipale() {
     bottonePrestiti->setCursor(Qt::PointingHandCursor);
     bottonePrestiti->setFixedHeight(50);
     bottonePrestiti->setFlat(true);
-    bottonePrestiti->setToolTip("Visualizza i prestiti attivi");
+    bottonePrestiti->setToolTip("Visualizza i prestiti attivi (CTRL+P)");
+
+    QShortcut* shortcutListaPrestiti = new QShortcut(QKeySequence("Ctrl+P"), this);
+    connect(shortcutListaPrestiti, &QShortcut::activated, this, &MainWindow::mostraPaginaPrestiti);
 
     layoutTopBar->addWidget(bottoneNuovaBiblioteca);
     layoutTopBar->addWidget(bottoneForm);
@@ -222,7 +274,7 @@ void MainWindow::creaPaginaPrincipale() {
 
     //Barra di ricerca
     barraRicerca = new QLineEdit();
-    barraRicerca->setPlaceholderText("Cerca media...");
+    barraRicerca->setPlaceholderText("Cerca media... (CTRL+F)");
 
     // Bottone filtri
     QPushButton* bottoneFiltri = new QPushButton("Filtri");
@@ -268,6 +320,23 @@ void MainWindow::creaPaginaPrincipale() {
     bottoneModifica = new QPushButton("Modifica\nMedia");
     bottoneElimina = new QPushButton("Elimina\nMedia");
 
+    QShortcut* shortcutModifica = new QShortcut(QKeySequence("Ctrl+M"), this);
+    connect(shortcutModifica, &QShortcut::activated, this, [=] {
+        if (listaMedia->currentItem() && stackPagine->currentIndex()==0) {
+            stackPagine->setCurrentWidget(paginaForm);
+
+            Media* media = listaMedia->currentItem()->data(Qt::UserRole).value<Media*>();
+
+            if (typeid(*media) == typeid(Film)) selettoreMedia->setCurrentIndex(1);
+            else if (typeid(*media) == typeid(Giornale)) selettoreMedia->setCurrentIndex(2);
+            else if (typeid(*media) == typeid(Libro)) selettoreMedia->setCurrentIndex(3);
+            else if (typeid(*media) == typeid(Rivista)) selettoreMedia->setCurrentIndex(4);
+            else if (typeid(*media) == typeid(Vinile)) selettoreMedia->setCurrentIndex(5);
+
+            gestore->caricaFormDaMedia(listaMedia->row(listaMedia->currentItem()));
+        }
+    });
+
     QFont font = labelTitoloTopBar->font();
     font.setBold(true);
     labelTitoloTopBar->setFont(font);
@@ -283,14 +352,14 @@ void MainWindow::creaPaginaPrincipale() {
     bottoneModifica->setFlat(true);
     bottoneModifica->setCursor(Qt::PointingHandCursor);
     bottoneModifica->setIconSize(QSize(48, 48));
-    bottoneModifica->setToolTip("Modifica Media");
+    bottoneModifica->setToolTip("Modifica Media (CTRL+M)");
     bottoneModifica->hide();
 
     bottoneElimina->setIcon(QIcon(":/icone/elimina.png"));
     bottoneElimina->setFlat(true);
     bottoneElimina->setCursor(Qt::PointingHandCursor);
     bottoneElimina->setIconSize(QSize(48, 48));
-    bottoneElimina->setToolTip("Elimina Media");
+    bottoneElimina->setToolTip("Elimina Media (CANC)");
     bottoneElimina->hide();
 
     layoutTopBarDestra->addWidget(labelIconaTopBar);
@@ -349,7 +418,27 @@ void MainWindow::creaPaginaPrincipale() {
     //Connect
     connect(bottoneNuovaBiblioteca, &QPushButton::clicked, this, &MainWindow::caricaBiblioteca);
     connect(bottoneForm, &QPushButton::clicked, this, &MainWindow::mostraPaginaForm);
-    connect(bottoneElimina, &QPushButton::clicked, this, &MainWindow::eliminaMedia);
+    connect(bottoneElimina, &QPushButton::clicked, this, [=]() {
+        bool prestitiAttivi = false;
+        for (int i=0; i<listaPrestiti->count(); i++) {
+            if (listaPrestiti->item(i)->data(Qt::UserRole)==listaMedia->currentItem()->data(Qt::UserRole).value<Media*>()->getId()) {
+                prestitiAttivi = true;
+            }
+        }
+        if (prestitiAttivi) {
+            QMessageBox::warning(nullptr, "Attenzione", "Non puoi eliminare un media con uno o piu' prestiti attivi.");
+        } else {
+            eliminaMedia();
+        }
+        int visibili = 0;
+        for (int i = 0; i < listaMedia->count(); ++i) {
+            QListWidgetItem *item = listaMedia->item(i);
+            item->setHidden(false);  // Mostra tutto
+            ++visibili;
+        }
+        labelRisultatiMedia->setText(QString("Risultati: %1").arg(visibili));
+        if (visibili==0) pulisciInfo();
+    });
     connect(bottoneModifica, &QPushButton::clicked, this, [=]() {
         stackPagine->setCurrentWidget(paginaForm);
 
@@ -369,8 +458,8 @@ void MainWindow::creaPaginaPrincipale() {
             media->setCopie(media->getCopie() - 1);
             if (media->getCopie() == 0) media->setDisponibilita(false);
 
-            QDialog dialog;
-            dialog.setWindowTitle("Inserimento nuovo prestito");
+            dialog = new QDialog(this);
+            dialog->setWindowTitle("Inserimento nuovo prestito");
 
             // Campi del form
             QLabel *labelNome = new QLabel("Nome:");
@@ -388,8 +477,67 @@ void MainWindow::creaPaginaPrincipale() {
             editFine->setCalendarPopup(true);
 
             QPushButton *okButton = new QPushButton("OK");
+            connect(okButton, &QPushButton::clicked, dialog, [=](){
+                if (editNome->text()=="") {
+                    QPalette palette = editNome->palette();
+                    palette.setColor(QPalette::Base, QColor(255, 0, 0));
+                    editNome->setPalette(palette);
+                }
+                if (editCognome->text()=="") {
+                    QPalette palette = editCognome->palette();
+                    palette.setColor(QPalette::Base, QColor(255, 0, 0));
+                    editCognome->setPalette(palette);
+                }
+                if (editNome->text()!="" && editCognome->text()!="") {
+                    QString nome = editNome->text();
+                    QString cognome = editCognome->text();
+                    QDate dataInizio = editInizio->date();
+                    QDate dataFine = editFine->date();
 
-            QObject::connect(okButton, &QPushButton::clicked, &dialog, &QDialog::accept);
+                    // Costruisci il contenitore grafico
+                    QWidget* container = new QWidget;
+                    QVBoxLayout* layout = new QVBoxLayout(container);
+                    layout->setContentsMargins(10, 6, 10, 6);
+                    layout->setSpacing(2);
+
+                    // Etichette
+                    QLabel* labelPrestito = new QLabel("Prestito");
+                    QLabel* labelUtente = new QLabel("🧑 Richiedente: " + nome + " " + cognome);
+                    QLabel* labelTitolo = new QLabel("📘 Titolo media: " + media->getTitolo());
+                    QLabel* labelDataInizio = new QLabel("📅 Data inizio: " + dataInizio.toString("dd/MM/yyyy"));
+                    QLabel* labelDataFine = new QLabel("📅 Data fine: " + dataFine.toString("dd/MM/yyyy"));
+
+                    // Font più evidente per il nome
+                    QFont boldFont = labelPrestito->font();
+                    boldFont.setBold(true);
+                    labelPrestito->setFont(boldFont);
+
+                    // Componi
+                    layout->addWidget(labelPrestito);
+                    layout->addWidget(labelUtente);
+                    layout->addWidget(labelTitolo);
+                    layout->addWidget(labelDataInizio);
+                    layout->addWidget(labelDataFine);
+
+                    // Crea item invisibile e collega il widget
+                    QListWidgetItem* item = new QListWidgetItem;
+                    item->setSizeHint(container->sizeHint());
+                    item->setData(Qt::UserRole, media->getId());
+                    item->setText(nome + " " + cognome + " " + media->getTitolo() + " " + dataInizio.toString("dd/MM/yyy") + " " + dataFine.toString("dd/MM/yyyy"));
+                    listaPrestiti->addItem(item);
+                    listaPrestiti->setItemWidget(item, container);
+                    mostraInfo();
+                    gestore->salvaPrestito(new Prestito(nome, cognome, dataInizio, dataFine, media->getId()));  // eventualmente aggiorna se vuoi passare anche nome/cognome/date
+                    int visibili = 0;
+                    for (int i = 0; i < listaPrestiti->count(); ++i) {
+                        QListWidgetItem *item = listaPrestiti->item(i);
+                        item->setHidden(false);  // Mostra tutto
+                        ++visibili;
+                    }
+                    labelRisultatiPrestiti->setText(QString("Risultati: %1").arg(visibili));
+                    dialog->close();
+                }
+            });
 
             // Layout
             QVBoxLayout *layout = new QVBoxLayout();
@@ -403,51 +551,8 @@ void MainWindow::creaPaginaPrincipale() {
             layout->addWidget(editFine);
             layout->addWidget(okButton);
 
-            dialog.setLayout(layout);
-
-            if (dialog.exec() == QDialog::Accepted) {
-                QString nome = editNome->text();
-                QString cognome = editCognome->text();
-                QDate dataInizio = editInizio->date();
-                QDate dataFine = editFine->date();
-
-                // Costruisci il contenitore grafico
-                QWidget* container = new QWidget;
-                QVBoxLayout* layout = new QVBoxLayout(container);
-                layout->setContentsMargins(10, 6, 10, 6);
-                layout->setSpacing(2);
-
-                // Etichette
-                QLabel* labelPrestito = new QLabel("Prestito Nr. " + QString::number(listaPrestiti->count()));
-                QLabel* labelUtente = new QLabel("🧑 Richiedente: " + nome + " " + cognome);
-                QLabel* labelTitolo = new QLabel("📘 Titolo media: " + media->getTitolo());
-                QLabel* labelDataInizio = new QLabel("📅 Data inizio: " + dataInizio.toString("dd/MM/yyyy"));
-                QLabel* labelDataFine = new QLabel("📅 Data fine: " + dataFine.toString("dd/MM/yyyy"));
-
-                // Font più evidente per il nome
-                QFont boldFont = labelPrestito->font();
-                boldFont.setBold(true);
-                labelPrestito->setFont(boldFont);
-
-                // Componi
-                layout->addWidget(labelPrestito);
-                layout->addWidget(labelUtente);
-                layout->addWidget(labelTitolo);
-                layout->addWidget(labelDataInizio);
-                layout->addWidget(labelDataFine);
-
-                // Crea item invisibile e collega il widget
-                QListWidgetItem* item = new QListWidgetItem;
-                item->setSizeHint(container->sizeHint());
-                item->setData(Qt::UserRole, media->getId());
-                item->setText(nome + " " + cognome + " " + dataInizio.toString("dd/MM/yyy") + " " + dataFine.toString("dd/MM/yyyy"));
-                listaPrestiti->addItem(item);
-                listaPrestiti->setItemWidget(item, container);
-                mostraInfo();
-                gestore->salvaPrestito(new Prestito(nome, cognome, dataInizio, dataFine, media->getId()));  // eventualmente aggiorna se vuoi passare anche nome/cognome/date
-            }
-        } else {
-            QMessageBox::warning(nullptr, "Errore", "Il media selezionato non è disponibile nella biblioteca.");
+            dialog->setLayout(layout);
+            dialog->exec();
         }
     });
 
@@ -464,21 +569,71 @@ void MainWindow::creaPaginaForm() {
     QHBoxLayout *layoutTopBar = new QHBoxLayout(topBar);
 
     QPushButton *bottoneIndietro = new QPushButton("Torna\nIndietro");
+
+    QShortcut* shortcutIndietro = new QShortcut(QKeySequence("Ctrl+Z"), this);
+    connect(shortcutIndietro, &QShortcut::activated, this, [=] {
+        if (stackPagine->currentIndex()==1 || stackPagine->currentIndex()==2) {
+            mostraPaginaPrincipale();
+            pulisciForm();
+        }
+    });
+
     bottoneSalva = new QPushButton("Salva\nMedia");
+
+    QShortcut* shortcutSalvaMedia = new QShortcut(QKeySequence("Ctrl+S"), this);
+    connect(shortcutSalvaMedia, &QShortcut::activated, this, [=] {
+        if (!bottoneSalva->isHidden() && (stackPagine->currentIndex()==1)) {
+            auto findWidgetByLabel = [this](const QString& labelText) -> QWidget* {
+                for (int i = 0; i < formLayout->rowCount(); ++i) {
+                    QLabel* label = qobject_cast<QLabel*>(formLayout->itemAt(i, QFormLayout::LabelRole)->widget());
+                    if (label && label->text() == labelText) {
+                        return formLayout->itemAt(i, QFormLayout::FieldRole)->widget();
+                    }
+                }
+                return nullptr;
+            };
+            QLineEdit* titolo = qobject_cast<QLineEdit*>(findWidgetByLabel("Titolo"));
+            if (selettoreMedia->currentIndex() == 0) {
+                QMessageBox::warning(nullptr, "Attenzione", "Per favore seleziona un tipo di media.");
+                return;
+            } else if (titolo->text()=="") {
+                QMessageBox::warning(nullptr, "Attenzione", "Per favore inserisci un titolo.");
+                return;
+            }
+
+            int indiceSelezionato = -1;
+            if (listaMedia->currentItem()) {
+                indiceSelezionato = listaMedia->row(listaMedia->currentItem());
+                gestore->salvaMediaDaForm(selettoreMedia->currentText(), indiceSelezionato);
+            } else {
+                gestore->salvaMediaDaForm(selettoreMedia->currentText());
+                indiceSelezionato = listaMedia->count();
+            }
+            gestore->caricaBiblioteca(labelRisultatiMedia);
+
+            if (indiceSelezionato >= 0 && indiceSelezionato < listaMedia->count()) {
+                listaMedia->setCurrentRow(indiceSelezionato);
+                mostraInfo();
+            }
+
+            stackPagine->setCurrentWidget(paginaPrincipale);
+            pulisciForm();
+        }
+    });
 
     bottoneIndietro->setIcon(QIcon(":/icone/indietro.png"));
     bottoneIndietro->setIconSize(QSize(36, 36));
     bottoneIndietro->setCursor(Qt::PointingHandCursor);
     bottoneIndietro->setFixedHeight(50);
     bottoneIndietro->setFlat(true);
-    bottoneIndietro->setToolTip("Torna alla pagina principale");
+    bottoneIndietro->setToolTip("Torna alla pagina principale (CTRL+Z)");
 
     bottoneSalva->setIcon(QIcon(":/icone/salva.png"));
     bottoneSalva->setIconSize(QSize(36, 36));
     bottoneSalva->setCursor(Qt::PointingHandCursor);
     bottoneSalva->setFixedHeight(50);
     bottoneSalva->setFlat(true);
-    bottoneSalva->setToolTip("Salva media");
+    bottoneSalva->setToolTip("Salva media (CTRL+S)");
     bottoneSalva->hide();
 
     layoutTopBar->addWidget(bottoneIndietro);
@@ -519,10 +674,26 @@ void MainWindow::creaPaginaForm() {
         }
         gestore->creaForm(tipoSelezionato);
     });
-    connect(bottoneIndietro, &QPushButton::clicked, this, &MainWindow::mostraPaginaPrincipale);
+    connect(bottoneIndietro, &QPushButton::clicked, this, [=]() {
+        mostraPaginaPrincipale();
+        pulisciForm();
+    });
     connect(bottoneSalva, &QPushButton::clicked, this, [=]() {
+        auto findWidgetByLabel = [this](const QString& labelText) -> QWidget* {
+            for (int i = 0; i < formLayout->rowCount(); ++i) {
+                QLabel* label = qobject_cast<QLabel*>(formLayout->itemAt(i, QFormLayout::LabelRole)->widget());
+                if (label && label->text() == labelText) {
+                    return formLayout->itemAt(i, QFormLayout::FieldRole)->widget();
+                }
+            }
+            return nullptr;
+        };
+        QLineEdit* titolo = qobject_cast<QLineEdit*>(findWidgetByLabel("Titolo"));
         if (selettoreMedia->currentIndex() == 0) {
             QMessageBox::warning(nullptr, "Attenzione", "Per favore seleziona un tipo di media.");
+            return;
+        } else if (titolo->text()=="") {
+            QMessageBox::warning(nullptr, "Attenzione", "Per favore inserisci un titolo.");
             return;
         }
 
@@ -542,6 +713,7 @@ void MainWindow::creaPaginaForm() {
         }
 
         stackPagine->setCurrentWidget(paginaPrincipale);
+        pulisciForm();
     });
 }
 
@@ -577,6 +749,8 @@ void MainWindow::caricaBiblioteca() {
         gestore = new GestoreMedia(listaMedia, listaPrestiti, formLayout, labelAnteprimaImmagine, percorsoFile); // !!! Distruzione funziona????
         gestore->caricaBiblioteca(labelRisultatiMedia);
     }
+    pulisciInfo();
+    gestore->caricaPrestiti(labelRisultatiPrestiti);
 }
 
 void MainWindow::eliminaMedia() {
@@ -612,6 +786,7 @@ void MainWindow::creaPaginaPrestiti() {
     QHBoxLayout *layoutTopBar = new QHBoxLayout(topBar);
 
     QPushButton *bottoneIndietro = new QPushButton("Torna\nIndietro");
+
     bottoneRestituzione = new QPushButton("Restituisci\nPrestito");
 
     bottoneIndietro->setIcon(QIcon(":/icone/indietro.png"));
@@ -619,7 +794,7 @@ void MainWindow::creaPaginaPrestiti() {
     bottoneIndietro->setCursor(Qt::PointingHandCursor);
     bottoneIndietro->setFixedHeight(50);
     bottoneIndietro->setFlat(true);
-    bottoneIndietro->setToolTip("Torna alla pagina principale");
+    bottoneIndietro->setToolTip("Torna alla pagina principale (CTRL+Z)");
 
     bottoneRestituzione->setIcon(QIcon(":/icone/restituzione.png"));
     bottoneRestituzione->setFlat(true);
@@ -633,9 +808,9 @@ void MainWindow::creaPaginaPrestiti() {
     layoutTopBar->addWidget(bottoneRestituzione);
 
     //Barra di ricerca
-    QLineEdit *barraRicerca = new QLineEdit();
-    barraRicerca->setPlaceholderText("Cerca prestiti...");
-    connect(barraRicerca, &QLineEdit::textChanged, this, [=](const QString &text) {
+    QLineEdit *barraRicercaPrestiti = new QLineEdit();
+    barraRicercaPrestiti->setPlaceholderText("Cerca prestiti... (CTRL+F)");
+    connect(barraRicercaPrestiti, &QLineEdit::textChanged, this, [=](const QString &text) {
         int visibili = 0;
         for (int i = 0; i < listaPrestiti->count(); ++i) {
             QListWidgetItem *item = listaPrestiti->item(i);
@@ -646,8 +821,17 @@ void MainWindow::creaPaginaPrestiti() {
         labelRisultatiPrestiti->setText(QString("Risultati: %1").arg(visibili));
     });
 
+    QShortcut* shortcutRicerca = new QShortcut(QKeySequence("Ctrl+F"), this);
+    connect(shortcutRicerca, &QShortcut::activated, this, [=] {
+        if (stackPagine->currentIndex()==0) {
+            barraRicerca->setFocus();
+        } else if (stackPagine->currentIndex()==2) {
+            barraRicercaPrestiti->setFocus();
+        }
+    });
+
     layoutPaginaPrestiti->addWidget(topBar);
-    layoutPaginaPrestiti->addWidget(barraRicerca);
+    layoutPaginaPrestiti->addWidget(barraRicercaPrestiti);
     layoutPaginaPrestiti->addWidget(labelRisultatiPrestiti);
     layoutPaginaPrestiti->addWidget(listaPrestiti);
 
@@ -663,7 +847,6 @@ void MainWindow::creaPaginaPrestiti() {
     connect(bottoneRestituzione, &QPushButton::clicked, this, [=]() {
         QListWidgetItem* item = listaPrestiti->currentItem();
         int indice = listaPrestiti->row(item);
-        qDebug()<<item->data(Qt::UserRole).toString();
 
         QMessageBox msgBox(this);
         msgBox.setWindowTitle("Conferma restituzione");
@@ -690,6 +873,13 @@ void MainWindow::creaPaginaPrestiti() {
             gestore->eliminaPrestito(indice);
 
             if (!listaPrestiti->count()) bottoneRestituzione->hide();
+            int visibili = 0;
+            for (int i = 0; i < listaPrestiti->count(); ++i) {
+                QListWidgetItem *item = listaPrestiti->item(i);
+                item->setHidden(false);  // Mostra tutto
+                ++visibili;
+            }
+            labelRisultatiPrestiti->setText(QString("Risultati: %1").arg(visibili));
         }
         else if (msgBox.clickedButton() == annullaButton) {
             msgBox.close();
@@ -754,86 +944,100 @@ void MainWindow::pulisciInfo() {
     bottoneElimina->hide();
 }
 
+void MainWindow::pulisciForm() {
+    selettoreMedia->setCurrentIndex(0);
+    while (formLayout->rowCount() > 0) {
+        QLayoutItem* labelItem = formLayout->itemAt(0, QFormLayout::LabelRole);
+        QLayoutItem* fieldItem = formLayout->itemAt(0, QFormLayout::FieldRole);
+        if (labelItem && labelItem->widget()) delete labelItem->widget();
+        if (fieldItem && fieldItem->widget()) delete fieldItem->widget();
+        formLayout->removeRow(0);
+    }
+    bottoneSalva->hide();
+    labelAnteprimaImmagine->hide();
+}
+
 void MainWindow::mostraInfo() {
-    Media* media = listaMedia->currentItem()->data(Qt::UserRole).value<Media*>();
+    if (listaMedia->currentItem()) {
+        Media* media = listaMedia->currentItem()->data(Qt::UserRole).value<Media*>();
+        pulisciInfo();
 
-    pulisciInfo();
+        bottoneModifica->show();
+        bottoneElimina->show();
+        if (media->getDisponibilita()) bottoneNuovoPrestito->show();
 
-    bottoneModifica->show();
-    bottoneElimina->show();
-    if (media->getDisponibilita()) bottoneNuovoPrestito->show();
-
-    labelIconaTopBar->setPixmap(listaMedia->currentItem()->icon().pixmap(44,44));
-    labelIconaTopBar->show();
-    labelTitoloTopBar->setText(media->getTitolo());
-    labelTitoloTopBar->show();
-    labelTitolo->setText("Titolo: " + media->getTitolo());
-    labelTitolo->show();
-    labelPrezzo->setText("Prezzo: " + QString::number(media->getPrezzo()) + "€");
-    labelPrezzo->show();
-    labelData->setText("Data: " + media->getData().toString("dd/MM/yyyy"));
-    labelData->show();
-    labelGenere->setText("Genere: " + media->getGenere());
-    labelGenere->show();
-    labelDisponibilita->setText(media->getDisponibilita() ? "Disponibilità: Disponibile" : "Disponibilità: Non disponibile");
-    labelDisponibilita->show();
-    labelCopie->setText("Copie: " + QString::number(media->getCopie()));
-    labelCopie->show();
-    labelCategoria->show();
+        labelIconaTopBar->setPixmap(listaMedia->currentItem()->icon().pixmap(44,44));
+        labelIconaTopBar->show();
+        labelTitoloTopBar->setText(media->getTitolo());
+        labelTitoloTopBar->show();
+        labelTitolo->setText("Titolo: " + media->getTitolo());
+        labelTitolo->show();
+        labelPrezzo->setText("Prezzo: " + QString::number(media->getPrezzo()) + "€");
+        labelPrezzo->show();
+        labelData->setText("Data: " + media->getData().toString("dd/MM/yyyy"));
+        labelData->show();
+        labelGenere->setText("Genere: " + media->getGenere());
+        labelGenere->show();
+        labelDisponibilita->setText(media->getDisponibilita() ? "Disponibilità: Disponibile" : "Disponibilità: Non disponibile");
+        labelDisponibilita->show();
+        labelCopie->setText("Copie: " + QString::number(media->getCopie()));
+        labelCopie->show();
+        labelCategoria->show();
 
 
-    if (auto* film = dynamic_cast<Film*>(media)) {
-        labelCategoria->setText("Categoria: Film");
-        labelDurata->setText("Durata: " + QString::number(film->getDurata()));
-        labelProduzione->setText("Produzione: " + film->getProduzione());
-        labelRegista->setText("Regista: " + film->getRegista());
-        labelLinguaOriginale->setText("Lingua originale: " + film->getLinguaOriginale());
-        labelPaese->setText("Paese: " + film->getPaeseProduzione());
-        labelDurata->show(); labelProduzione->show(); labelRegista->show(); labelLinguaOriginale->show(); labelPaese->show();
-    }
-    else if (auto* giornale = dynamic_cast<Giornale*>(media)) {
-        labelCategoria->setText("Categoria: Giornale");
-        labelAutore->setText("Autore: " + giornale->getAutore());
-        labelEditore->setText("Editore: " + giornale->getEditore());
-        labelTestata->setText("Testata: " + giornale->getTestata());
-        labelAutore->show(); labelEditore->show(); labelTestata->show();
-    }
-    else if (auto* libro = dynamic_cast<Libro*>(media)) {
-        labelCategoria->setText("Categoria: Libro");
-        labelAutore->setText("Autore: " + libro->getAutore());
-        labelEditore->setText("Editore: " + libro->getEditore());
-        labelLingua->setText("Lingua: " + libro->getLingua());
-        labelFormato->setText("Formato: " + libro->getFormato());
-        labelAutore->show(); labelEditore->show(); labelLingua->show(); labelFormato->show();
-    }
-    else if (auto* rivista = dynamic_cast<Rivista*>(media)) {
-        labelCategoria->setText("Categoria: Rivista");
-        labelAutore->setText("Autore: " + rivista->getAutore());
-        labelEditore->setText("Editore: " + rivista->getEditore());
-        labelNumero->setText("Numero: " + QString::number(rivista->getNumero()));
-        labelPeriodicita->setText("Periodicità: " + rivista->getPeriodicita());
-        labelAutore->show(); labelEditore->show(); labelNumero->show(); labelPeriodicita->show();
-    }
-    else if (auto* vinile = dynamic_cast<Vinile*>(media)) {
-        labelCategoria->setText("Categoria: Vinile");
-        labelDurata->setText("Durata: " + QString::number(vinile->getDurata()));
-        labelProduzione->setText("Produzione: " + vinile->getProduzione());
-        labelArtista->setText("Artista: " + vinile->getArtista());
-        labelNumeroTracce->setText("Numero tracce: " + QString::number(vinile->getNumeroTracce()));
-        labelDurata->show(); labelProduzione->show(); labelArtista->show(); labelNumeroTracce->show();
-    }
+        if (auto* film = dynamic_cast<Film*>(media)) {
+            labelCategoria->setText("Categoria: Film");
+            labelDurata->setText("Durata: " + QString::number(film->getDurata()));
+            labelProduzione->setText("Produzione: " + film->getProduzione());
+            labelRegista->setText("Regista: " + film->getRegista());
+            labelLinguaOriginale->setText("Lingua originale: " + film->getLinguaOriginale());
+            labelPaese->setText("Paese: " + film->getPaeseProduzione());
+            labelDurata->show(); labelProduzione->show(); labelRegista->show(); labelLinguaOriginale->show(); labelPaese->show();
+        }
+        else if (auto* giornale = dynamic_cast<Giornale*>(media)) {
+            labelCategoria->setText("Categoria: Giornale");
+            labelAutore->setText("Autore: " + giornale->getAutore());
+            labelEditore->setText("Editore: " + giornale->getEditore());
+            labelTestata->setText("Testata: " + giornale->getTestata());
+            labelAutore->show(); labelEditore->show(); labelTestata->show();
+        }
+        else if (auto* libro = dynamic_cast<Libro*>(media)) {
+            labelCategoria->setText("Categoria: Libro");
+            labelAutore->setText("Autore: " + libro->getAutore());
+            labelEditore->setText("Editore: " + libro->getEditore());
+            labelLingua->setText("Lingua: " + libro->getLingua());
+            labelFormato->setText("Formato: " + libro->getFormato());
+            labelAutore->show(); labelEditore->show(); labelLingua->show(); labelFormato->show();
+        }
+        else if (auto* rivista = dynamic_cast<Rivista*>(media)) {
+            labelCategoria->setText("Categoria: Rivista");
+            labelAutore->setText("Autore: " + rivista->getAutore());
+            labelEditore->setText("Editore: " + rivista->getEditore());
+            labelNumero->setText("Numero: " + QString::number(rivista->getNumero()));
+            labelPeriodicita->setText("Periodicità: " + rivista->getPeriodicita());
+            labelAutore->show(); labelEditore->show(); labelNumero->show(); labelPeriodicita->show();
+        }
+        else if (auto* vinile = dynamic_cast<Vinile*>(media)) {
+            labelCategoria->setText("Categoria: Vinile");
+            labelDurata->setText("Durata: " + QString::number(vinile->getDurata()));
+            labelProduzione->setText("Produzione: " + vinile->getProduzione());
+            labelArtista->setText("Artista: " + vinile->getArtista());
+            labelNumeroTracce->setText("Numero tracce: " + QString::number(vinile->getNumeroTracce()));
+            labelDurata->show(); labelProduzione->show(); labelArtista->show(); labelNumeroTracce->show();
+        }
 
-    QString base64 = media->getImmagine();
-    QByteArray byteArray = QByteArray::fromBase64(base64.toLatin1());
+        QString base64 = media->getImmagine();
+        QByteArray byteArray = QByteArray::fromBase64(base64.toLatin1());
 
-    QPixmap pixmap;
-    if (pixmap.loadFromData(byteArray)) {
-        labelImmagine->setPixmap(pixmap.scaled(500, 500, Qt::KeepAspectRatio, Qt::SmoothTransformation));
-        labelImmagine->show();
-    }
-    else {
-        labelImmagine->show();
-        labelImmagine->clear();
-        labelImmagine->setText("Immagine");
+        QPixmap pixmap;
+        if (pixmap.loadFromData(byteArray)) {
+            labelImmagine->setPixmap(pixmap.scaled(500, 500, Qt::KeepAspectRatio, Qt::SmoothTransformation));
+            labelImmagine->show();
+        }
+        else {
+            labelImmagine->show();
+            labelImmagine->clear();
+            labelImmagine->setText("Immagine");
+        }
     }
 }

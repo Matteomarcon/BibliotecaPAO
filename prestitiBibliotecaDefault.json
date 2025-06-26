@@ -1,16 +1,65 @@
 [
     {
-        "Cognome": "dd",
-        "DataFine": "02/07/2025",
-        "DataInizio": "25/06/2025",
-        "IdMedia": 7,
-        "Nome": "dd"
+        "Cognome": "d",
+        "DataFine": "03/07/2025",
+        "DataInizio": "26/06/2025",
+        "IdMedia": 0,
+        "Nome": "d"
     },
     {
-        "Cognome": "f",
-        "DataFine": "02/07/2025",
-        "DataInizio": "25/06/2025",
-        "IdMedia": 7,
+        "Cognome": "",
+        "DataFine": "03/07/2025",
+        "DataInizio": "26/06/2025",
+        "IdMedia": 0,
+        "Nome": "d"
+    },
+    {
+        "Cognome": "",
+        "DataFine": "03/07/2025",
+        "DataInizio": "26/06/2025",
+        "IdMedia": 1,
+        "Nome": "www"
+    },
+    {
+        "Cognome": "s",
+        "DataFine": "03/07/2025",
+        "DataInizio": "26/06/2025",
+        "IdMedia": 1,
+        "Nome": "ss"
+    },
+    {
+        "Cognome": "d",
+        "DataFine": "03/07/2025",
+        "DataInizio": "26/06/2025",
+        "IdMedia": 0,
+        "Nome": "d"
+    },
+    {
+        "Cognome": "d",
+        "DataFine": "03/07/2025",
+        "DataInizio": "26/06/2025",
+        "IdMedia": 0,
+        "Nome": "d"
+    },
+    {
+        "Cognome": "d",
+        "DataFine": "03/07/2025",
+        "DataInizio": "26/06/2025",
+        "IdMedia": 0,
+        "Nome": "d"
+    },
+    {
+        "Cognome": "d",
+        "DataFine": "03/07/2025",
+        "DataInizio": "26/06/2025",
+        "IdMedia": 0,
+        "Nome": "d"
+    },
+    {
+        "Cognome": "s",
+        "DataFine": "03/07/2025",
+        "DataInizio": "26/06/2025",
+        "IdMedia": 1,
         "Nome": "s"
     }
 ]

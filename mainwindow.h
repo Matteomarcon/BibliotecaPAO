@@ -29,6 +29,7 @@ private:
     void mostraPaginaPrestiti();
     void mostraInfo();
     void pulisciInfo();
+    void pulisciForm();
     QLabel* creaLabel(QWidget *parent, QVBoxLayout *layout);
     void caricaBiblioteca();
     void eliminaMedia();
@@ -36,6 +37,7 @@ private:
     //filtri
     QLineEdit* barraRicerca;
     QDialog* dialogFiltri;
+    QDialog* dialog;
     QDoubleSpinBox* spinPrezzoMin;
     QDoubleSpinBox* spinPrezzoMax;
     QComboBox* comboCategoria;

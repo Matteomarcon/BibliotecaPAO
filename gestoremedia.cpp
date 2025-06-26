@@ -18,7 +18,6 @@
 #include <QBuffer>
 #include <QPushButton>
 #include <QFileDialog>
-#include <QDebug>
 
 GestoreMedia::GestoreMedia(QListWidget* listaMedia, QListWidget* listaPrestiti, QFormLayout* formLayout, QLabel* imagePreview, QString percorso)
     : listaMedia(listaMedia), listaPrestiti(listaPrestiti), formLayout(formLayout), imagePreview(imagePreview), gestoreJson(percorso) {}
@@ -143,8 +142,8 @@ void GestoreMedia::caricaBiblioteca(QLabel* risultatiLabel) {
 //Creazione Form
 void GestoreMedia::creaForm(const QString& tipo) {
     QPushButton* caricaImmagine = new QPushButton("Carica Immagine");
-    caricaImmagine->setObjectName("BottoneImmagine");
-    formLayout->addRow("BottoneImmagine", caricaImmagine);
+    caricaImmagine->setObjectName("Immagine");
+    formLayout->addRow("Immagine", caricaImmagine);
 
     QTextEdit* base64Edit = new QTextEdit();
     base64Edit->setObjectName("Immagine");
@@ -183,10 +182,14 @@ void GestoreMedia::creaForm(const QString& tipo) {
     });
 
     formLayout->addRow("Titolo", new QLineEdit());
-    formLayout->addRow("Prezzo", new QDoubleSpinBox());
+    QDoubleSpinBox *spinPrezzo = new QDoubleSpinBox();
+    spinPrezzo->setMinimum(0.01);
+    formLayout->addRow("Prezzo", spinPrezzo);
     formLayout->addRow("Data", new QDateEdit());
     formLayout->addRow("Genere", new QLineEdit());
-    formLayout->addRow("Copie", new QSpinBox());
+    QSpinBox *spinCopie = new QSpinBox();
+    spinCopie->setRange(1, 999);
+    formLayout->addRow("Copie", spinCopie);
 
     if (tipo == "Film") creaFormFilm();
     else if (tipo == "Giornale") creaFormGiornale();
@@ -196,7 +199,9 @@ void GestoreMedia::creaForm(const QString& tipo) {
 }
 
 void GestoreMedia::creaFormAudiovisivo() {
-    formLayout->addRow("Durata (min)", new QSpinBox());
+    QSpinBox *spinDurata = new QSpinBox();
+    spinDurata->setRange(0, 999);
+    formLayout->addRow("Durata (min)", spinDurata);
     formLayout->addRow("Produzione", new QLineEdit());
 }
 
@@ -619,7 +624,7 @@ void GestoreMedia::caricaPrestiti(QLabel* labelRisultatiPrestiti) {
         layout->setSpacing(2);
 
         // Etichette
-        QLabel* labelPrestito = new QLabel("Prestito Nr. " + QString::number(listaPrestiti->count()));
+        QLabel* labelPrestito = new QLabel("Prestito");
         QLabel* labelUtente = new QLabel("🧑 Richiedente: " + nome + " " + cognome);
         QLabel* labelTitolo = new QLabel("📘 Titolo media: " + media->getTitolo());
         QLabel* labelDataInizio = new QLabel("📅 Data inizio: " + dataInizio.toString("dd/MM/yyyy"));
@@ -641,7 +646,7 @@ void GestoreMedia::caricaPrestiti(QLabel* labelRisultatiPrestiti) {
         QListWidgetItem* item = new QListWidgetItem;
         item->setSizeHint(container->sizeHint());
         item->setData(Qt::UserRole, prestito->getIdMedia());
-        item->setText(nome + " " + cognome + " " + dataInizio.toString("dd/MM/yyy") + " " + dataFine.toString("dd/MM/yyyy"));
+        item->setText(nome + " " + cognome + " " + media->getTitolo() + " " + dataInizio.toString("dd/MM/yyy") + " " + dataFine.toString("dd/MM/yyyy"));
         listaPrestiti->addItem(item);
         listaPrestiti->setItemWidget(item, container);
     }
