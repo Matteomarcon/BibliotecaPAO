@@ -641,7 +641,7 @@ void GestoreMedia::caricaPrestiti(QLabel* labelRisultatiPrestiti) {
         QListWidgetItem* item = new QListWidgetItem;
         item->setSizeHint(container->sizeHint());
         item->setData(Qt::UserRole, prestito->getIdMedia());
-        item->setText(nome + cognome + dataInizio.toString("dd/MM/yyy") + dataFine.toString("dd/MM/yyyy"));
+        item->setText(nome + " " + cognome + " " + dataInizio.toString("dd/MM/yyy") + " " + dataFine.toString("dd/MM/yyyy"));
         listaPrestiti->addItem(item);
         listaPrestiti->setItemWidget(item, container);
     }
