@@ -116,7 +116,7 @@ void MainWindow::inizializzaGUI() {
     labelAnteprimaImmagine->setStyleSheet("border: 1px solid gray;");
     labelAnteprimaImmagine->hide();
 
-    QString percorsoFile = QDir(QCoreApplication::applicationDirPath()).filePath("../../../BibliotecaDefault.json");
+    QString percorsoFile = QDir(QCoreApplication::applicationDirPath()).filePath("BibliotecaDefault.json");
     QFileInfo checkFile(percorsoFile);
     if (!checkFile.exists()) {
         QFile file(percorsoFile);
@@ -126,7 +126,7 @@ void MainWindow::inizializzaGUI() {
             file.close();
         }
     }
-    QString percorsoPrestiti = QDir(QCoreApplication::applicationDirPath()).filePath("../../../prestitiBibliotecaDefault.json");
+    QString percorsoPrestiti = QDir(QCoreApplication::applicationDirPath()).filePath("prestitiBibliotecaDefault.json");
     QFileInfo checkPrestiti(percorsoPrestiti);
     if (!checkPrestiti.exists()) {
         QFile file(percorsoPrestiti);

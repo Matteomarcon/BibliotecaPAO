@@ -12,5 +12,21 @@
         "Testata": "",
         "Titolo": "b",
         "idMedia": 3
+    },
+    {
+        "Classe": "Film",
+        "Copie": 1,
+        "Data di pubblicazione": "01/01/2000",
+        "Disponibilita": true,
+        "Durata": 0,
+        "Genere": "",
+        "Immagine": "",
+        "Lingua originale": "",
+        "Paese produzione": "",
+        "Prezzo": 0.009999999776482582,
+        "Produzione": "",
+        "Regista": "",
+        "Titolo": "c",
+        "idMedia": 4
     }
 ]
