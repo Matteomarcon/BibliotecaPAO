@@ -525,8 +525,11 @@ void MainWindow::creaPaginaPrincipale() {
                     layout->addWidget(labelDataInizio);
                     layout->addWidget(labelDataFine);
 
+
                     media->setCopie(media->getCopie() - 1);
                     if (media->getCopie() == 0) media->setDisponibilita(false);
+                    gestore->modificaMedia(listaMedia->currentRow(), media->getCopie(), media->getDisponibilita());
+
                     // Crea item invisibile e collega il widget
                     QListWidgetItem* item = new QListWidgetItem;
                     item->setSizeHint(container->sizeHint());
@@ -875,8 +878,9 @@ void MainWindow::creaPaginaPrestiti() {
 
         if (msgBox.clickedButton() == confermaButton) {
             Media* media = listaMedia->item(0)->data(Qt::UserRole).value<Media*>();
-            for (int i=0; media->getId()!=item->data(Qt::UserRole).toInt(); i++) {
-                media = listaMedia->item(i)->data(Qt::UserRole).value<Media*>();
+            int indiceMedia = 0;
+            for (; media->getId()!=item->data(Qt::UserRole).toInt(); indiceMedia++) {
+                media = listaMedia->item(indiceMedia)->data(Qt::UserRole).value<Media*>();
 
             }
             if (!media->getCopie()) {
@@ -884,6 +888,7 @@ void MainWindow::creaPaginaPrestiti() {
                 media->setDisponibilita(true);
             }
             media->setCopie(media->getCopie()+1);
+            gestore->modificaMedia(indiceMedia, media->getCopie(), media->getDisponibilita());
             delete listaPrestiti->takeItem(indice);
             gestore->eliminaPrestito(indice);
 

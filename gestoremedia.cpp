@@ -665,3 +665,6 @@ void GestoreMedia::caricaPrestiti(QLabel* labelRisultatiPrestiti) {
 
 }
 
+void GestoreMedia::modificaMedia(int indice, int copie, bool disponibilita) {
+    gestoreJson.modificaMedia(indice, copie, disponibilita);
+}

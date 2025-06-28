@@ -24,7 +24,7 @@ public:
     //Gestione Media
     void salvaMediaDaForm(const QString& tipo, int indice = -1);
     void caricaFormDaMedia(int indice);
-    void modificaMedia(int indice);
+    void modificaMedia(int indice, int copie, bool disponibilita);
     void caricaBiblioteca(QLabel* risultatiLabel);
 
     //Creazione Form

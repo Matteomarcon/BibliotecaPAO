@@ -307,7 +307,37 @@ void GestoreJson::salvaPrestito(Prestito* prestito) {
 Prestito* GestoreJson::caricaPrestito (const QJsonObject& jsonObject) {
     return new Prestito(jsonObject["Nome"].toString(), jsonObject["Cognome"].toString(), QDate::fromString(jsonObject["DataInizio"].toString(), "dd/MM/yyyy"), QDate::fromString(jsonObject["DataFine"].toString(), "dd/MM/yyyy"), jsonObject["idMedia"].toInt());
 }
+void GestoreJson::modificaMedia(int indice, int copie, bool disponibilita) {
+    QFile file(percorsoFile);
+    if (!file.open(QIODevice::ReadOnly)) {
+        throw std::runtime_error("Impossibile aprire 1 dati.json");
+    }
+    QJsonDocument documento = QJsonDocument::fromJson(file.readAll());
+    file.close();
+    if (!documento.isArray()) {
+        throw std::runtime_error("Non c'è nessun array in dati.json");
+        return;
+    }
+    QJsonArray jsonArray = documento.array();
 
+    QJsonObject obj = jsonArray[indice].toObject();
+
+    // Modifica dei due campi
+    obj["Copie"] = copie;
+    obj["Disponibilita"] = disponibilita;
+
+    // Re-inserimento dell'oggetto modificato
+    jsonArray[indice] = obj;
+
+    QFile outputFile(percorsoFile);
+    QJsonDocument aggiornaDocumento(jsonArray);
+    if (!outputFile.open(QIODevice::WriteOnly)) {
+        throw std::runtime_error("Impossibile aprire 2 dati.json");
+        return;
+    }
+    outputFile.write(aggiornaDocumento.toJson());
+    outputFile.close();
+}
 
 
 

@@ -34,6 +34,7 @@ public:
     QJsonObject salvaMedia(Vinile* vinile);
     QJsonObject salvaMedia(Film* film);
     QJsonObject salvaMedia(Giornale* giornale);
+    void modificaMedia(int indice, int copie, bool disponibilita);
 
     Rivista* caricaRivista(const QJsonObject& jsonObject);
     Film* caricaFilm(const QJsonObject& jsonObject);
