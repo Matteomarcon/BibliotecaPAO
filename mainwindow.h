@@ -42,7 +42,7 @@ private:
     QDoubleSpinBox* spinPrezzoMax;
     QComboBox* comboCategoria;
     QComboBox* comboDisponibilita;
-    void aggiornaFiltroMedia(QString testoRicerca, QString categoriaSelezionata, QString disponibilitaSelezionata, double minPrezzo, double maxPrezzo);
+    void aggiornaFiltroMedia(const QString& testoRicerca, const QString& categoriaSelezionata, const QString& disponibilitaSelezionata, double minPrezzo, double maxPrezzo);
 
     //GUI
     QStackedWidget *stackPagine;

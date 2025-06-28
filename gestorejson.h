@@ -15,17 +15,23 @@
 #include <QString>
 #include <QObject>
 
-class GestoreJson: public QObject {
+class GestoreJson {
+public:
+    GestoreJson(const QString& nomeFile);
+
+    QList<Media*> caricaBiblioteca();
+    QList<Prestito*> caricaPrestiti();
+    void eliminaMedia(int indice);
+    void eliminaPrestito(int indice);
+    void salvaMedia(Media* media, int indice);
+    void modificaMedia(int indice, int copie, bool disponibilita);
+    void salvaPrestito(Prestito* prestito);
+
 private:
     QList<Media*> listaMedia;
     QList<Prestito*> listaPrestiti;
     QString percorsoFile;
-public:
-    GestoreJson(const QString& nomeFile);
-    QList<Media*> caricaBiblioteca();
-    void eliminaMedia(int indice);
-    void eliminaPrestito(int indice);
-    void salvaMedia(Media* media, int indice);
+
     void salvaMedia(Media* media, QJsonObject& oggetto);
     void salvaMedia(Audiovisivo* audiovisivo, QJsonObject& oggetto);
     void salvaMedia(Cartaceo* cartaceo, QJsonObject& oggetto);
@@ -34,17 +40,13 @@ public:
     QJsonObject salvaMedia(Vinile* vinile);
     QJsonObject salvaMedia(Film* film);
     QJsonObject salvaMedia(Giornale* giornale);
-    void modificaMedia(int indice, int copie, bool disponibilita);
 
-    Rivista* caricaRivista(const QJsonObject& jsonObject);
-    Film* caricaFilm(const QJsonObject& jsonObject);
-    Vinile* caricaVinile(const QJsonObject& jsonObject);
-    Giornale* caricaGiornale(const QJsonObject& jsonObject);
-    Libro* caricaLibro(const QJsonObject& jsonObject);
-
-    QList<Prestito*> caricaPrestiti();
-    void salvaPrestito(Prestito* prestito);
-    Prestito* caricaPrestito (const QJsonObject& jsonObject);
+    Rivista* caricaRivista(const QJsonObject& jsonObject) const;
+    Film* caricaFilm(const QJsonObject& jsonObject) const;
+    Vinile* caricaVinile(const QJsonObject& jsonObject) const;
+    Giornale* caricaGiornale(const QJsonObject& jsonObject) const;
+    Libro* caricaLibro(const QJsonObject& jsonObject) const;
+    Prestito* caricaPrestito (const QJsonObject& jsonObject) const;
 };
 
 #endif // GESTOREJSON_H

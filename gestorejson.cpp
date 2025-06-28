@@ -210,31 +210,31 @@ QList<Media*> GestoreJson::caricaBiblioteca() {
     return listaMedia;
 }
 
-Rivista* GestoreJson::caricaRivista(const QJsonObject& jsonObject) {
+Rivista* GestoreJson::caricaRivista(const QJsonObject& jsonObject) const {
     return new Rivista(jsonObject["idMedia"].toInt(), jsonObject["Immagine"].toString(), jsonObject["Titolo"].toString(), static_cast<float>(jsonObject["Prezzo"].toDouble()),
                        QDate::fromString(jsonObject["Data di pubblicazione"].toString(), "dd/MM/yyyy"), jsonObject["Genere"].toString(), jsonObject["Disponibilita"].toBool(),
                        jsonObject["Copie"].toInt(), jsonObject["Autore"].toString(), jsonObject["Editore"].toString(),
                        jsonObject["Numero"].toInt(), jsonObject["Periodicita"].toString());
 }
-Film* GestoreJson::caricaFilm(const QJsonObject& jsonObject) {
+Film* GestoreJson::caricaFilm(const QJsonObject& jsonObject) const {
     return new Film(jsonObject["idMedia"].toInt(), jsonObject["Immagine"].toString(), jsonObject["Titolo"].toString(), static_cast<float>(jsonObject["Prezzo"].toDouble()),
                        QDate::fromString(jsonObject["Data di pubblicazione"].toString(), "dd/MM/yyyy"), jsonObject["Genere"].toString(), jsonObject["Disponibilita"].toBool(),
                     jsonObject["Copie"].toInt(), jsonObject["Durata"].toInt(), jsonObject["Produzione"].toString(), jsonObject["Regista"].toString(),
                        jsonObject["Lingua originale"].toString(), jsonObject["Paese produzione"].toString());
 }
-Vinile* GestoreJson::caricaVinile(const QJsonObject& jsonObject) {
+Vinile* GestoreJson::caricaVinile(const QJsonObject& jsonObject) const {
     return new Vinile(jsonObject["idMedia"].toInt(), jsonObject["Immagine"].toString(), jsonObject["Titolo"].toString(), static_cast<float>(jsonObject["Prezzo"].toDouble()),
                        QDate::fromString(jsonObject["Data di pubblicazione"].toString(), "dd/MM/yyyy"), jsonObject["Genere"].toString(), jsonObject["Disponibilita"].toBool(),
                        jsonObject["Copie"].toInt(), jsonObject["Durata"].toInt(), jsonObject["Produzione"].toString(),
                        jsonObject["Artista"].toString(), jsonObject["Numero tracce"].toInt());
 }
-Giornale* GestoreJson::caricaGiornale(const QJsonObject& jsonObject) {
+Giornale* GestoreJson::caricaGiornale(const QJsonObject& jsonObject) const {
     return new Giornale(jsonObject["idMedia"].toInt(), jsonObject["Immagine"].toString(), jsonObject["Titolo"].toString(), static_cast<float>(jsonObject["Prezzo"].toDouble()),
                     QDate::fromString(jsonObject["Data di pubblicazione"].toString(), "dd/MM/yyyy"), jsonObject["Genere"].toString(), jsonObject["Disponibilita"].toBool(),
                     jsonObject["Copie"].toInt(), jsonObject["Autore"].toString(), jsonObject["Editore"].toString(),
                     jsonObject["Testata"].toString());
 }
-Libro* GestoreJson::caricaLibro(const QJsonObject& jsonObject) {
+Libro* GestoreJson::caricaLibro(const QJsonObject& jsonObject) const {
     return new Libro(jsonObject["idMedia"].toInt(), jsonObject["Immagine"].toString(), jsonObject["Titolo"].toString(), static_cast<float>(jsonObject["Prezzo"].toDouble()),
                       QDate::fromString(jsonObject["Data di pubblicazione"].toString(), "dd/MM/yyyy"), jsonObject["Genere"].toString(), jsonObject["Disponibilita"].toBool(),
                       jsonObject["Copie"].toInt(), jsonObject["Autore"].toString(), jsonObject["Editore"].toString(),
@@ -304,7 +304,7 @@ void GestoreJson::salvaPrestito(Prestito* prestito) {
     outputFile.write(aggiornaDocumento.toJson());
     outputFile.close();
 }
-Prestito* GestoreJson::caricaPrestito (const QJsonObject& jsonObject) {
+Prestito* GestoreJson::caricaPrestito (const QJsonObject& jsonObject) const {
     return new Prestito(jsonObject["Nome"].toString(), jsonObject["Cognome"].toString(), QDate::fromString(jsonObject["DataInizio"].toString(), "dd/MM/yyyy"), QDate::fromString(jsonObject["DataFine"].toString(), "dd/MM/yyyy"), jsonObject["idMedia"].toInt());
 }
 void GestoreJson::modificaMedia(int indice, int copie, bool disponibilita) {

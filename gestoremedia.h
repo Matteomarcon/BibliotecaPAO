@@ -8,50 +8,40 @@
 #include <QLabel>
 
 class GestoreMedia {
-private:
+public:
+    GestoreMedia(QListWidget* listaMedia, QListWidget* listaPrestiti, QFormLayout* formLayout, QLabel* imagePreview, QString percorsoJson = "BibliotecaDefault.json");
+
+    static QStringList getTipiDisponibili();
+    void caricaFormDaMedia(int indice) const;
+    void caricaBiblioteca(QLabel* risultatiLabel);
+    void salvaMediaDaForm(const QString& tipo, int indice = -1);
+    void modificaMedia(int indice, int copie, bool disponibilita);
+    void eliminaMedia(int indice);
+    void caricaPrestiti(QLabel* labelRisultatiPrestiti);
+    void salvaPrestito(Prestito* prestito);
+    void eliminaPrestito(int indice);
+    void creaForm(const QString& tipo) const;
+
+private:    
     QListWidget* listaMedia;
     QListWidget* listaPrestiti;
     QFormLayout* formLayout;
     QLabel* imagePreview;
     GestoreJson gestoreJson;
 
-public:
-    GestoreMedia(QListWidget* listaMedia, QListWidget* listaPrestiti, QFormLayout* formLayout, QLabel* imagePreview, QString percorsoJson = "BibliotecaDefault.json");
+    void creaFormAudiovisivo() const;
+    void creaFormCartaceo() const;
+    void creaFormFilm() const;
+    void creaFormGiornale() const;
+    void creaFormLibro() const;
+    void creaFormRivista() const;
+    void creaFormVinile() const;
+    Media* creaFilm(int indice) const;
+    Media* creaGiornale(int indice) const;
+    Media* creaLibro(int indice) const;
+    Media* creaRivista(int indice) const;
+    Media* creaVinile(int indice) const;
 
-    //Utilità
-    static QStringList getTipiDisponibili();
-
-    //Gestione Media
-    void salvaMediaDaForm(const QString& tipo, int indice = -1);
-    void caricaFormDaMedia(int indice);
-    void modificaMedia(int indice, int copie, bool disponibilita);
-    void caricaBiblioteca(QLabel* risultatiLabel);
-
-    //Creazione Form
-    void creaForm(const QString& tipo);
-    void creaFormAudiovisivo();
-    void creaFormCartaceo();
-    void creaFormFilm();
-    void creaFormGiornale();
-    void creaFormLibro();
-    void creaFormRivista();
-    void creaFormVinile();
-
-    //Creazione Media
-    Media* creaFilm();
-    Media* creaGiornale();
-    Media* creaLibro();
-    Media* creaRivista();
-    Media* creaVinile();
-
-    //Eliminazione Media
-    void eliminaMedia(int indice);
-
-    //Prestiti
-    void creaPrestito();
-    void caricaPrestiti(QLabel* labelRisultatiPrestiti);
-    void salvaPrestito(Prestito* prestito);
-    void eliminaPrestito(int indice);
 };
 
 #endif // GESTOREMEDIA_H

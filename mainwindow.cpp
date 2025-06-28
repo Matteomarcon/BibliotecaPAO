@@ -538,7 +538,7 @@ void MainWindow::creaPaginaPrincipale() {
                     listaPrestiti->addItem(item);
                     listaPrestiti->setItemWidget(item, container);
                     mostraInfo();
-                    gestore->salvaPrestito(new Prestito(nome, cognome, dataInizio, dataFine, media->getId()));  // eventualmente aggiorna se vuoi passare anche nome/cognome/date
+                    gestore->salvaPrestito(new Prestito(nome, cognome, dataInizio, dataFine, media->getId()));
                     int visibili = 0;
                     for (int i = 0; i < listaPrestiti->count(); ++i) {
                         QListWidgetItem *item = listaPrestiti->item(i);
@@ -911,7 +911,7 @@ void MainWindow::mostraPaginaPrestiti() {
     stackPagine->setCurrentWidget(paginaPrestiti);
 }
 
-void MainWindow::aggiornaFiltroMedia(QString testoRicerca, QString categoriaSelezionata, QString disponibilitaSelezionata, double minPrezzo, double maxPrezzo) {
+void MainWindow::aggiornaFiltroMedia(const QString& testoRicerca, const QString& categoriaSelezionata, const QString& disponibilitaSelezionata, double minPrezzo, double maxPrezzo) {
     int visibili = 0;
 
 

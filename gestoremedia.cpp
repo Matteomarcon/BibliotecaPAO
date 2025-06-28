@@ -28,7 +28,7 @@ QStringList GestoreMedia::getTipiDisponibili() {
     return {"Film", "Giornale", "Libro", "Rivista", "Vinile"};
 }
 
-void GestoreMedia::caricaFormDaMedia(int indice) {
+void GestoreMedia::caricaFormDaMedia(int indice) const {
     Media* media = listaMedia->item(indice)->data(Qt::UserRole).value<Media*>();
 
     // Funzione interna per trovare il widget del formLayout con una certa label (da ripetere ogni volta)
@@ -104,11 +104,11 @@ void GestoreMedia::caricaFormDaMedia(int indice) {
 void GestoreMedia::salvaMediaDaForm(const QString& tipo, int indice) {
     Media* media = nullptr;
 
-    if (tipo == "Film") media = creaFilm();
-    else if (tipo == "Giornale") media = creaGiornale();
-    else if (tipo == "Libro") media = creaLibro();
-    else if (tipo == "Rivista") media = creaRivista();
-    else if (tipo == "Vinile") media = creaVinile();
+    if (tipo == "Film") media = creaFilm(indice);
+    else if (tipo == "Giornale") media = creaGiornale(indice);
+    else if (tipo == "Libro") media = creaLibro(indice);
+    else if (tipo == "Rivista") media = creaRivista(indice);
+    else if (tipo == "Vinile") media = creaVinile(indice);
 
     gestoreJson.salvaMedia(media, indice);
 }
@@ -143,7 +143,7 @@ void GestoreMedia::caricaBiblioteca(QLabel* risultatiLabel) {
 }
 
 //Creazione Form
-void GestoreMedia::creaForm(const QString& tipo) {
+void GestoreMedia::creaForm(const QString& tipo) const {
     QPushButton* caricaImmagine = new QPushButton("Carica Immagine");
     caricaImmagine->setObjectName("Immagine");
     formLayout->addRow("Immagine", caricaImmagine);
@@ -191,7 +191,8 @@ void GestoreMedia::creaForm(const QString& tipo) {
     formLayout->addRow("Data", new QDateEdit());
     formLayout->addRow("Genere", new QLineEdit());
     QSpinBox *spinCopie = new QSpinBox();
-    spinCopie->setRange(1, 999);
+    spinCopie->setRange(0, 999);
+    spinCopie->setValue(1);
     formLayout->addRow("Copie", spinCopie);
 
     if (tipo == "Film") creaFormFilm();
@@ -201,37 +202,37 @@ void GestoreMedia::creaForm(const QString& tipo) {
     else if (tipo == "Vinile") creaFormVinile();
 }
 
-void GestoreMedia::creaFormAudiovisivo() {
+void GestoreMedia::creaFormAudiovisivo() const {
     QSpinBox *spinDurata = new QSpinBox();
     spinDurata->setRange(0, 999);
     formLayout->addRow("Durata (min)", spinDurata);
     formLayout->addRow("Produzione", new QLineEdit());
 }
 
-void GestoreMedia::creaFormCartaceo() {
+void GestoreMedia::creaFormCartaceo() const {
     formLayout->addRow("Autore", new QLineEdit());
     formLayout->addRow("Editore", new QLineEdit());
 }
 
-void GestoreMedia::creaFormFilm() {
+void GestoreMedia::creaFormFilm() const {
     creaFormAudiovisivo();
     formLayout->addRow("Regista", new QLineEdit());
     formLayout->addRow("Lingua originale", new QLineEdit());
     formLayout->addRow("Paese di produzione", new QLineEdit());
 }
 
-void GestoreMedia::creaFormGiornale() {
+void GestoreMedia::creaFormGiornale() const {
     creaFormCartaceo();
     formLayout->addRow("Testata", new QLineEdit());
 }
 
-void GestoreMedia::creaFormLibro() {
+void GestoreMedia::creaFormLibro() const {
     creaFormCartaceo();
     formLayout->addRow("Formato", new QLineEdit());
     formLayout->addRow("Lingua", new QLineEdit());
 }
 
-void GestoreMedia::creaFormRivista() {
+void GestoreMedia::creaFormRivista() const {
     creaFormCartaceo();
     formLayout->addRow("Numero", new QSpinBox());
     QComboBox* periodicita = new QComboBox();
@@ -241,14 +242,14 @@ void GestoreMedia::creaFormRivista() {
     formLayout->addRow("Periodicità", periodicita);
 }
 
-void GestoreMedia::creaFormVinile() {
+void GestoreMedia::creaFormVinile() const {
     creaFormAudiovisivo();
     formLayout->addRow("Artista", new QLineEdit());
     formLayout->addRow("Numero tracce", new QSpinBox());
 }
 
 //Creazione Media
-Media* GestoreMedia::creaFilm() {
+Media* GestoreMedia::creaFilm(int indice) const {
     QString immagineStr, titoloStr, genereStr, produzioneStr, registaStr, linguaOriginaleStr, paeseProduzioneStr;
     double prezzoVal = 0;
     QDate dataVal;
@@ -313,14 +314,15 @@ Media* GestoreMedia::creaFilm() {
     int idMedia = 0;
     if (listaMedia->count()) {
         Media* media = listaMedia->item(listaMedia->count()-1)->data(Qt::UserRole).value<Media*>();
-        idMedia = media->getId()+1;
+        if (indice == -1) idMedia = media->getId()+1;
+        else idMedia = media->getId();
     }
 
     return new Film(idMedia, immagineStr, titoloStr, static_cast<float>(prezzoVal), dataVal, genereStr, disponibilitaVal, copieVal,
                     durataVal, produzioneStr, registaStr, linguaOriginaleStr, paeseProduzioneStr);
 }
 
-Media* GestoreMedia::creaGiornale() {
+Media* GestoreMedia::creaGiornale(int indice) const{
     QString immagineStr, titoloStr, genereStr, autoreStr, editoreStr, testataStr;
     double prezzoVal = 0;
     QDate dataVal;
@@ -378,7 +380,8 @@ Media* GestoreMedia::creaGiornale() {
     int idMedia = 0;
     if (listaMedia->count()) {
         Media* media = listaMedia->item(listaMedia->count()-1)->data(Qt::UserRole).value<Media*>();
-        idMedia = media->getId()+1;
+        if (indice == -1) idMedia = media->getId()+1;
+        else idMedia = media->getId();
     }
 
     return new Giornale(idMedia, immagineStr, titoloStr, static_cast<float>(prezzoVal), dataVal, genereStr, disponibilitaVal, copieVal,
@@ -386,7 +389,7 @@ Media* GestoreMedia::creaGiornale() {
 }
 
 
-Media* GestoreMedia::creaLibro() {
+Media* GestoreMedia::creaLibro(int indice) const {
     QString immagineStr, titoloStr, genereStr, autoreStr, editoreStr, formatoStr, linguaStr;
     double prezzoVal = 0;
     QDate dataVal;
@@ -448,7 +451,8 @@ Media* GestoreMedia::creaLibro() {
     int idMedia = 0;
     if (listaMedia->count()) {
         Media* media = listaMedia->item(listaMedia->count()-1)->data(Qt::UserRole).value<Media*>();
-        idMedia = media->getId()+1;
+        if (indice == -1) idMedia = media->getId()+1;
+        else idMedia = media->getId();
     }
 
     return new Libro(idMedia, immagineStr, titoloStr, static_cast<float>(prezzoVal), dataVal, genereStr, disponibilitaVal, copieVal,
@@ -456,7 +460,7 @@ Media* GestoreMedia::creaLibro() {
 }
 
 
-Media* GestoreMedia::creaRivista() {
+Media* GestoreMedia::creaRivista(int indice) const {
     QString immagineStr, titoloStr, genereStr, autoreStr, editoreStr, periodicitaStr;
     double prezzoVal = 0;
     QDate dataVal;
@@ -519,13 +523,14 @@ Media* GestoreMedia::creaRivista() {
     int idMedia = 0;
     if (listaMedia->count()) {
         Media* media = listaMedia->item(listaMedia->count()-1)->data(Qt::UserRole).value<Media*>();
-        idMedia = media->getId()+1;
+        if (indice == -1) idMedia = media->getId()+1;
+        else idMedia = media->getId();
     }
 
     return new Rivista(idMedia, immagineStr, titoloStr, static_cast<float>(prezzoVal), dataVal, genereStr, disponibilitaVal, copieVal,
                        autoreStr, editoreStr, numeroVal, periodicitaStr);
 }
-Media* GestoreMedia::creaVinile() {
+Media* GestoreMedia::creaVinile(int indice) const {
     QString immagineStr, titoloStr, genereStr, produzioneStr, artistaStr;
     double prezzoVal = 0;
     QDate dataVal;
@@ -586,7 +591,8 @@ Media* GestoreMedia::creaVinile() {
     int idMedia = 0;
     if (listaMedia->count()) {
         Media* media = listaMedia->item(listaMedia->count()-1)->data(Qt::UserRole).value<Media*>();
-        idMedia = media->getId()+1;
+        if (indice == -1) idMedia = media->getId()+1;
+        else idMedia = media->getId();
     }
 
     return new Vinile(idMedia, immagineStr, titoloStr, static_cast<float>(prezzoVal), dataVal, genereStr, disponibilitaVal, copieVal,
