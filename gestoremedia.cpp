@@ -23,7 +23,6 @@
 GestoreMedia::GestoreMedia(QListWidget* listaMedia, QListWidget* listaPrestiti, QFormLayout* formLayout, QLabel* imagePreview, QString percorso)
     : listaMedia(listaMedia), listaPrestiti(listaPrestiti), formLayout(formLayout), imagePreview(imagePreview), gestoreJson(percorso) {}
 
-//Utilità
 QStringList GestoreMedia::getTipiDisponibili() {
     return {"Film", "Giornale", "Libro", "Rivista", "Vinile"};
 }
@@ -31,7 +30,7 @@ QStringList GestoreMedia::getTipiDisponibili() {
 void GestoreMedia::caricaFormDaMedia(int indice) const {
     Media* media = listaMedia->item(indice)->data(Qt::UserRole).value<Media*>();
 
-    // Funzione interna per trovare il widget del formLayout con una certa label (da ripetere ogni volta)
+    // Funzione interna per trovare il widget del formLayout con una certa label
     auto findWidgetByLabel = [this](const QString& labelText) -> QWidget* {
         for (int i = 0; i < formLayout->rowCount(); ++i) {
             QLabel* label = qobject_cast<QLabel*>(formLayout->itemAt(i, QFormLayout::LabelRole)->widget());
@@ -100,7 +99,6 @@ void GestoreMedia::caricaFormDaMedia(int indice) const {
 
 }
 
-//Gestione Media
 void GestoreMedia::salvaMediaDaForm(const QString& tipo, int indice) {
     Media* media = nullptr;
 
@@ -130,19 +128,16 @@ void GestoreMedia::caricaBiblioteca(QLabel* risultatiLabel) {
         listaMedia->setIconSize(QSize(48, 48));
     }
 
-
-    // Aggiorna conteggio all’avvio (tutti visibili)
     int visibili = 0;
     for (int i = 0; i < listaMedia->count(); ++i) {
         QListWidgetItem *item = listaMedia->item(i);
-        item->setHidden(false);  // Mostra tutto
+        item->setHidden(false);
         ++visibili;
     }
     risultatiLabel->setText(QString("Risultati: %1").arg(visibili));
 
 }
 
-//Creazione Form
 void GestoreMedia::creaForm(const QString& tipo) const {
     QPushButton* caricaImmagine = new QPushButton("Carica Immagine");
     caricaImmagine->setObjectName("Immagine");
@@ -237,7 +232,7 @@ void GestoreMedia::creaFormRivista() const {
     formLayout->addRow("Numero", new QSpinBox());
     QComboBox* periodicita = new QComboBox();
     periodicita->addItems({"Seleziona periocità...", "Settimanale", "Mensile", "Trimestrale", "Quadrimestrale", "Semestrale", "Annuale"});
-    periodicita->setItemData(0, 0, Qt::UserRole - 1); //Disabilita la voce
+    periodicita->setItemData(0, 0, Qt::UserRole - 1);
     periodicita->setCurrentIndex(-1);
     formLayout->addRow("Periodicità", periodicita);
 }
@@ -248,7 +243,6 @@ void GestoreMedia::creaFormVinile() const {
     formLayout->addRow("Numero tracce", new QSpinBox());
 }
 
-//Creazione Media
 Media* GestoreMedia::creaFilm(int indice) const {
     QString immagineStr, titoloStr, genereStr, produzioneStr, registaStr, linguaOriginaleStr, paeseProduzioneStr;
     double prezzoVal = 0;
@@ -599,7 +593,6 @@ Media* GestoreMedia::creaVinile(int indice) const {
                       durataVal, produzioneStr, artistaStr, tracceVal);
 }
 
-//Eliminazione Media
 void GestoreMedia::eliminaMedia(int indice) {
     gestoreJson.eliminaMedia(indice);
 }
@@ -626,32 +619,27 @@ void GestoreMedia::caricaPrestiti(QLabel* labelRisultatiPrestiti) {
         QDate dataInizio = prestito->getDataInizio();
         QDate dataFine = prestito->getDataFine();
 
-        // Costruisci il contenitore grafico
         QWidget* container = new QWidget;
         QVBoxLayout* layout = new QVBoxLayout(container);
         layout->setContentsMargins(10, 6, 10, 6);
         layout->setSpacing(2);
 
-        // Etichette
         QLabel* labelPrestito = new QLabel("Prestito");
         QLabel* labelUtente = new QLabel("🧑 Richiedente: " + nome + " " + cognome);
         QLabel* labelTitolo = new QLabel("📘 Titolo media: " + media->getTitolo());
         QLabel* labelDataInizio = new QLabel("📅 Data inizio: " + dataInizio.toString("dd/MM/yyyy"));
         QLabel* labelDataFine = new QLabel("📅 Data fine: " + dataFine.toString("dd/MM/yyyy"));
 
-        // Font più evidente per il nome
         QFont boldFont = labelPrestito->font();
         boldFont.setBold(true);
         labelPrestito->setFont(boldFont);
 
-        // Componi
         layout->addWidget(labelPrestito);
         layout->addWidget(labelUtente);
         layout->addWidget(labelTitolo);
         layout->addWidget(labelDataInizio);
         layout->addWidget(labelDataFine);
 
-        // Crea item invisibile e collega il widget
         QListWidgetItem* item = new QListWidgetItem;
         item->setSizeHint(container->sizeHint());
         item->setData(Qt::UserRole, prestito->getIdMedia());
@@ -660,11 +648,10 @@ void GestoreMedia::caricaPrestiti(QLabel* labelRisultatiPrestiti) {
         listaPrestiti->setItemWidget(item, container);
     }
 
-    // Aggiorna conteggio all’avvio (tutti visibili)
     int visibili = 0;
     for (int i = 0; i < listaPrestiti->count(); ++i) {
         QListWidgetItem *item = listaPrestiti->item(i);
-        item->setHidden(false);  // Mostra tutto
+        item->setHidden(false);
         ++visibili;
     }
     labelRisultatiPrestiti->setText(QString("Risultati: %1").arg(visibili));

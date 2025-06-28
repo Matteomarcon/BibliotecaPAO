@@ -188,7 +188,6 @@ QList<Media*> GestoreJson::caricaBiblioteca() {
         return {};
     }
 
-    // Leggi il contenuto del file
     QByteArray data = file.readAll();
     QJsonDocument doc = QJsonDocument::fromJson(data);
     QJsonArray array = doc.array();
@@ -254,7 +253,6 @@ QList<Prestito*> GestoreJson::caricaPrestiti() {
         return {};
     }
 
-    // Leggi il contenuto del file
     QByteArray data = file.readAll();
     QJsonDocument doc = QJsonDocument::fromJson(data);
     QJsonArray array = doc.array();
@@ -322,11 +320,9 @@ void GestoreJson::modificaMedia(int indice, int copie, bool disponibilita) {
 
     QJsonObject obj = jsonArray[indice].toObject();
 
-    // Modifica dei due campi
     obj["Copie"] = copie;
     obj["Disponibilita"] = disponibilita;
 
-    // Re-inserimento dell'oggetto modificato
     jsonArray[indice] = obj;
 
     QFile outputFile(percorsoFile);

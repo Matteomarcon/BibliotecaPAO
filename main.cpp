@@ -7,7 +7,7 @@ int main(int argc, char *argv[])
 {
     QApplication a(argc, argv);
     MainWindow w;
-    QIcon appIcon(":/icone/biblioteca.png");  // Se usi le risorse Qt (qrc)
+    QIcon appIcon(":/icone/biblioteca.png");
     w.setWindowIcon(appIcon);
     w.showMaximized();
     return a.exec();

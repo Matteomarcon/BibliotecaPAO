@@ -100,7 +100,7 @@ void MainWindow::inizializzaGUI() {
         int visibili = 0;
         for (int i = 0; i < listaMedia->count(); ++i) {
             QListWidgetItem *item = listaMedia->item(i);
-            item->setHidden(false);  // Mostra tutto
+            item->setHidden(false);
             ++visibili;
         }
         labelRisultatiMedia->setText(QString("Risultati: %1").arg(visibili));
@@ -196,7 +196,7 @@ void MainWindow::inizializzaGUI() {
         spinPrezzoMin->setPalette(QPalette());
         spinPrezzoMax->setPalette(QPalette());
     });
-    // Connect pulsanti
+
     connect(bottoneOk, &QPushButton::clicked, dialogFiltri, [=](){
         double prezzoMin = spinPrezzoMin->value();
         double prezzoMax = spinPrezzoMax->value();
@@ -382,8 +382,8 @@ void MainWindow::creaPaginaPrincipale() {
     QHBoxLayout *layoutPannelloInfo = new QHBoxLayout(pannelloInfo);
 
     labelImmagine = new QLabel(pannelloInfo);
-    labelImmagine->setFixedSize(300, 400); // Dimensioni fisse opzionali
-    labelImmagine->setStyleSheet("border: 1px solid gray;"); // Bordi visivi
+    labelImmagine->setFixedSize(300, 400);
+    labelImmagine->setStyleSheet("border: 1px solid gray;");
     labelImmagine->setAlignment(Qt::AlignCenter);
     labelImmagine->setScaledContents(true);
     labelImmagine->hide();
@@ -423,7 +423,6 @@ void MainWindow::creaPaginaPrincipale() {
     layoutPaginaPrincipale->addWidget(line);
     layoutPaginaPrincipale->addWidget(pannelloDestra, 3);
 
-    //Connect
     connect(bottoneNuovaBiblioteca, &QPushButton::clicked, this, &MainWindow::caricaBiblioteca);
     connect(bottoneForm, &QPushButton::clicked, this, &MainWindow::mostraPaginaForm);
     connect(bottoneElimina, &QPushButton::clicked, this, [=]() {
@@ -441,7 +440,7 @@ void MainWindow::creaPaginaPrincipale() {
         int visibili = 0;
         for (int i = 0; i < listaMedia->count(); ++i) {
             QListWidgetItem *item = listaMedia->item(i);
-            item->setHidden(false);  // Mostra tutto
+            item->setHidden(false);
             ++visibili;
         }
         labelRisultatiMedia->setText(QString("Risultati: %1").arg(visibili));
@@ -467,7 +466,6 @@ void MainWindow::creaPaginaPrincipale() {
             dialog = new QDialog(this);
             dialog->setWindowTitle("Inserimento nuovo prestito");
 
-            // Campi del form
             QLabel *labelNome = new QLabel("Nome:", dialog);
             QLineEdit *editNome = new QLineEdit(dialog);
 
@@ -500,37 +498,31 @@ void MainWindow::creaPaginaPrincipale() {
                     QDate dataInizio = editInizio->date();
                     QDate dataFine = editFine->date();
 
-                    // Costruisci il contenitore grafico
                     QWidget* container = new QWidget(listaPrestiti);
                     QVBoxLayout* layout = new QVBoxLayout(container);
                     layout->setContentsMargins(10, 6, 10, 6);
                     layout->setSpacing(2);
 
-                    // Etichette
                     QLabel* labelPrestito = new QLabel("Prestito", container);
                     QLabel* labelUtente = new QLabel("🧑 Richiedente: " + nome + " " + cognome, container);
                     QLabel* labelTitolo = new QLabel("📘 Titolo media: " + media->getTitolo(), container);
                     QLabel* labelDataInizio = new QLabel("📅 Data inizio: " + dataInizio.toString("dd/MM/yyyy"), container);
                     QLabel* labelDataFine = new QLabel("📅 Data fine: " + dataFine.toString("dd/MM/yyyy"), container);
 
-                    // Font più evidente per il nome
                     QFont boldFont = labelPrestito->font();
                     boldFont.setBold(true);
                     labelPrestito->setFont(boldFont);
 
-                    // Componi
                     layout->addWidget(labelPrestito);
                     layout->addWidget(labelUtente);
                     layout->addWidget(labelTitolo);
                     layout->addWidget(labelDataInizio);
                     layout->addWidget(labelDataFine);
 
-
                     media->setCopie(media->getCopie() - 1);
                     if (media->getCopie() == 0) media->setDisponibilita(false);
                     gestore->modificaMedia(listaMedia->currentRow(), media->getCopie(), media->getDisponibilita());
 
-                    // Crea item invisibile e collega il widget
                     QListWidgetItem* item = new QListWidgetItem;
                     item->setSizeHint(container->sizeHint());
                     item->setData(Qt::UserRole, media->getId());
@@ -542,7 +534,7 @@ void MainWindow::creaPaginaPrincipale() {
                     int visibili = 0;
                     for (int i = 0; i < listaPrestiti->count(); ++i) {
                         QListWidgetItem *item = listaPrestiti->item(i);
-                        item->setHidden(false);  // Mostra tutto
+                        item->setHidden(false);
                         ++visibili;
                     }
                     labelRisultatiPrestiti->setText(QString("Risultati: %1").arg(visibili));
@@ -557,7 +549,6 @@ void MainWindow::creaPaginaPrincipale() {
                 editCognome->setPalette(QPalette());
             });
 
-            // Layout
             QVBoxLayout *layout = new QVBoxLayout(dialog);
             layout->addWidget(labelNome);
             layout->addWidget(editNome);
@@ -582,7 +573,6 @@ void MainWindow::creaPaginaForm() {
     QVBoxLayout *layoutPaginaForm = new QVBoxLayout(paginaForm);
     stackPagine->addWidget(paginaForm);
 
-    //Top Bar
     QWidget *topBar = new QWidget();
     QHBoxLayout *layoutTopBar = new QHBoxLayout(topBar);
 
@@ -660,14 +650,12 @@ void MainWindow::creaPaginaForm() {
     layoutTopBar->addStretch();
     layoutTopBar->addWidget(bottoneSalva);
 
-    //Selettore Media
     selettoreMedia = new QComboBox();
     selettoreMedia->addItem("Scegli media...");
     selettoreMedia->setItemData(0, 0, Qt::UserRole - 1);
     selettoreMedia->addItems(GestoreMedia::getTipiDisponibili());
     selettoreMedia->setCurrentIndex(0);
 
-    //Form
     QWidget *form = new QWidget();
     QHBoxLayout *layoutForm = new QHBoxLayout(form);
 
@@ -681,7 +669,6 @@ void MainWindow::creaPaginaForm() {
     layoutPaginaForm->addWidget(selettoreMedia);
     layoutPaginaForm->addWidget(form);
 
-    //Connect
     connect(selettoreMedia, &QComboBox::currentTextChanged, this, [=](const QString &tipoSelezionato) {
         pulisciForm();
         bottoneSalva->show();
@@ -765,7 +752,7 @@ void MainWindow::caricaBiblioteca() {
     QString percorsoFile = QFileDialog::getOpenFileName(nullptr, "Scegli Biblioteca", "", "Documento (*.json)");
     if (!percorsoFile.isEmpty()) {
         pulisciInfo();
-        gestore = new GestoreMedia(listaMedia, listaPrestiti, formLayout, labelAnteprimaImmagine, percorsoFile); // !!! Distruzione funziona????
+        gestore = new GestoreMedia(listaMedia, listaPrestiti, formLayout, labelAnteprimaImmagine, percorsoFile);
         gestore->caricaBiblioteca(labelRisultatiMedia);
         gestore->caricaPrestiti(labelRisultatiPrestiti);
     }
@@ -799,7 +786,6 @@ void MainWindow::creaPaginaPrestiti() {
     QVBoxLayout *layoutPaginaPrestiti = new QVBoxLayout(paginaPrestiti);
     stackPagine->addWidget(paginaPrestiti);
 
-    //Top bar
     QWidget *topBar= new QWidget(this);
     QHBoxLayout *layoutTopBar = new QHBoxLayout(topBar);
 
@@ -825,7 +811,6 @@ void MainWindow::creaPaginaPrestiti() {
     layoutTopBar->addStretch();
     layoutTopBar->addWidget(bottoneRestituzione);
 
-    //Barra di ricerca
     QLineEdit *barraRicercaPrestiti = new QLineEdit();
     barraRicercaPrestiti->setPlaceholderText("Cerca prestiti... (CTRL+F)");
     connect(barraRicercaPrestiti, &QLineEdit::textChanged, this, [=](const QString &text) {
@@ -896,7 +881,7 @@ void MainWindow::creaPaginaPrestiti() {
             int visibili = 0;
             for (int i = 0; i < listaPrestiti->count(); ++i) {
                 QListWidgetItem *item = listaPrestiti->item(i);
-                item->setHidden(false);  // Mostra tutto
+                item->setHidden(false);
                 ++visibili;
             }
             labelRisultatiPrestiti->setText(QString("Risultati: %1").arg(visibili));
@@ -973,7 +958,6 @@ void MainWindow::pulisciForm() {
         formLayout->removeRow(0);
     }
     bottoneSalva->hide();
-    //labelAnteprimaImmagine->clear();
     labelAnteprimaImmagine->setText("Anteprima Immagine");
     labelAnteprimaImmagine->hide();
 }
