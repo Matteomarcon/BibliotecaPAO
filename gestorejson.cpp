@@ -275,7 +275,7 @@ void GestoreJson::salvaPrestito(Prestito* prestito) {
     oggetto["Cognome"] = prestito->getCognome();
     oggetto["DataInizio"] = prestito->getDataInizio().toString("dd/MM/yyyy");
     oggetto["DataFine"] = prestito->getDataFine().toString("dd/MM/yyyy");
-    oggetto["IdMedia"] = prestito->getIdMedia();
+    oggetto["idMedia"] = prestito->getIdMedia();
 
     QFileInfo info(percorsoFile);
     QString nuovaBase = "prestiti" + info.fileName();
