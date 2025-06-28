@@ -968,6 +968,8 @@ void MainWindow::pulisciForm() {
         formLayout->removeRow(0);
     }
     bottoneSalva->hide();
+    //labelAnteprimaImmagine->clear();
+    labelAnteprimaImmagine->setText("Anteprima Immagine");
     labelAnteprimaImmagine->hide();
 }
 

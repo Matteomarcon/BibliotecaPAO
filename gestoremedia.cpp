@@ -18,6 +18,7 @@
 #include <QBuffer>
 #include <QPushButton>
 #include <QFileDialog>
+#include <QDebug>
 
 GestoreMedia::GestoreMedia(QListWidget* listaMedia, QListWidget* listaPrestiti, QFormLayout* formLayout, QLabel* imagePreview, QString percorso)
     : listaMedia(listaMedia), listaPrestiti(listaPrestiti), formLayout(formLayout), imagePreview(imagePreview), gestoreJson(percorso) {}
@@ -55,7 +56,7 @@ void GestoreMedia::caricaFormDaMedia(int indice) {
         imagePreview->setText("Anteprima Immagine");
     }
 
-    if (QLineEdit* base64Edit = qobject_cast<QLineEdit*>(findWidgetByLabel("Immagine"))) base64Edit->setText(media->getImmagine());
+    if (QTextEdit* base64Edit = qobject_cast<QTextEdit*>(findWidgetByLabel("ImmagineBase64"))) base64Edit->setText(media->getImmagine());
     if (QLineEdit* titolo = qobject_cast<QLineEdit*>(findWidgetByLabel("Titolo"))) titolo->setText(media->getTitolo());
     if (QDoubleSpinBox* prezzo = qobject_cast<QDoubleSpinBox*>(findWidgetByLabel("Prezzo"))) prezzo->setValue(media->getPrezzo());
     if (QDateEdit* data = qobject_cast<QDateEdit*>(findWidgetByLabel("Data"))) data->setDate(media->getData());
@@ -148,9 +149,9 @@ void GestoreMedia::creaForm(const QString& tipo) {
     formLayout->addRow("Immagine", caricaImmagine);
 
     QTextEdit* base64Edit = new QTextEdit();
-    base64Edit->setObjectName("Immagine");
+    base64Edit->setObjectName("ImmagineBase64");
     base64Edit->setVisible(false);
-    formLayout->addRow("Immagine", base64Edit);
+    formLayout->addRow("ImmagineBase64", base64Edit);
 
     QLabel* label = qobject_cast<QLabel*>(formLayout->labelForField(base64Edit));
     if (label) label->setVisible(false);
@@ -260,7 +261,7 @@ Media* GestoreMedia::creaFilm() {
 
         QString labelText = label->text();
 
-        if (labelText == "Immagine") {
+        if (labelText == "ImmagineBase64") {
             if (auto lineEdit = qobject_cast<QTextEdit*>(field)) {
                 immagineStr = lineEdit->toPlainText();
             }
@@ -333,7 +334,7 @@ Media* GestoreMedia::creaGiornale() {
         QString labelText = label->text();
 
 
-        if (labelText == "Immagine") {
+        if (labelText == "ImmagineBase64") {
             if (auto lineEdit = qobject_cast<QTextEdit*>(field)) {
                 immagineStr = lineEdit->toPlainText();
             }
@@ -399,7 +400,7 @@ Media* GestoreMedia::creaLibro() {
         QString labelText = label->text();
 
 
-        if (labelText == "Immagine") {
+        if (labelText == "ImmagineBase64") {
             if (auto lineEdit = qobject_cast<QTextEdit*>(field)) {
                 immagineStr = lineEdit->toPlainText();
             }
@@ -469,7 +470,7 @@ Media* GestoreMedia::creaRivista() {
         QString labelText = label->text();
 
 
-        if (labelText == "Immagine") {
+        if (labelText == "ImmagineBase64") {
             if (auto lineEdit = qobject_cast<QTextEdit*>(field)) {
                 immagineStr = lineEdit->toPlainText();
             }
@@ -537,7 +538,7 @@ Media* GestoreMedia::creaVinile() {
 
         QString labelText = label->text();
 
-        if (labelText == "Immagine") {
+        if (labelText == "ImmagineBase64") {
             if (auto lineEdit = qobject_cast<QTextEdit*>(field)) {
                 immagineStr = lineEdit->toPlainText();
             }
