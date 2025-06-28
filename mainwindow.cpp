@@ -893,6 +893,7 @@ void MainWindow::creaPaginaPrestiti() {
 }
 
 void MainWindow::mostraPaginaPrestiti() {
+    gestore->caricaPrestiti(labelRisultatiPrestiti);
     stackPagine->setCurrentWidget(paginaPrestiti);
 }
 
