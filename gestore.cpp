@@ -199,7 +199,7 @@ QJsonObject Gestore::salvaMedia(Giornale* giornale){
     return oggetto;
 }
 
-QList<Media*> Gestore::caricaMedia() {
+void Gestore::caricaMedia() {
     QFile file(percorsoFile);
 
     for (Media* media : listaMedia) delete media;
@@ -207,7 +207,6 @@ QList<Media*> Gestore::caricaMedia() {
 
     if (!file.open(QIODevice::ReadOnly | QIODevice::Text)) {
         qWarning() << "Impossibile aprire il file per la lettura:" << file.errorString();
-        return {};
     }
 
     QByteArray data = file.readAll();
@@ -228,7 +227,6 @@ QList<Media*> Gestore::caricaMedia() {
             if (media) listaMedia.append(media);
         }
     }
-    return listaMedia;
 }
 
 Rivista* Gestore::caricaRivista(const QJsonObject& jsonObject) const {
@@ -262,7 +260,7 @@ Libro* Gestore::caricaLibro(const QJsonObject& jsonObject) const {
                      jsonObject["Lingua"].toString(), jsonObject["Formato"].toString());
 }
 
-QList<Prestito*> Gestore::caricaPrestiti() {
+void Gestore::caricaPrestiti() {
     QFileInfo info(percorsoFile);
     QString nuovaBase = "prestiti" + info.fileName();
     QString percorsoPrestiti = info.dir().absoluteFilePath(nuovaBase);
@@ -273,7 +271,6 @@ QList<Prestito*> Gestore::caricaPrestiti() {
 
     if (!file.open(QIODevice::ReadOnly | QIODevice::Text)) {
         qWarning() << "Impossibile aprire il file per la lettura:" << file.errorString();
-        return {};
     }
 
     QByteArray data = file.readAll();
@@ -287,7 +284,6 @@ QList<Prestito*> Gestore::caricaPrestiti() {
             listaPrestiti.append(prestito);
         }
     }
-    return listaPrestiti;
 }
 
 void Gestore::salvaPrestito(Prestito* prestito) {

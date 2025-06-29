@@ -4,8 +4,6 @@ Audiovisivo::Audiovisivo(int idMedia, QString immagine, QString titolo, float pr
                                      QString genere, bool disponibilita, int copie, int durata, QString produzione):
     Media(idMedia, immagine, titolo, prezzo, dataPubblicazione, genere, disponibilita, copie), durata(durata), produzione(produzione){}
 
-Audiovisivo::Audiovisivo(): Media() {}
-
 Audiovisivo::~Audiovisivo() {}
 
 int Audiovisivo::getDurata() const {

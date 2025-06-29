@@ -1,11 +1,7 @@
 #include "media.h"
 
-using std::string;
-
 Media::Media(int idMedia, QString immagine, QString titolo, float prezzo, QDate dataPubblicazione, QString genere, bool disponibilita, int copie):
     idMedia(idMedia), immagine(immagine), titolo(titolo), prezzo(prezzo), dataPubblicazione(dataPubblicazione), genere(genere), disponibilita(disponibilita), copie(copie){}
-
-Media::Media() {}
 
 Media::~Media() {}
 

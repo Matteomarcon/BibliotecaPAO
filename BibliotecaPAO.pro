@@ -11,7 +11,6 @@ CONFIG += c++17
 SOURCES += \
     audiovisivo.cpp \
     cartaceo.cpp \
-    data.cpp \
     film.cpp \
     gestore.cpp \
     giornale.cpp \
@@ -26,7 +25,6 @@ SOURCES += \
 HEADERS += \
     audiovisivo.h \
     cartaceo.h \
-    data.h \
     film.h \
     gestore.h \
     giornale.h \

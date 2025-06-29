@@ -25,8 +25,8 @@ public:
     int getQuantitaMedia();
     int getQuantitaPrestiti();
 
-    QList<Media*> caricaMedia();
-    QList<Prestito*> caricaPrestiti();
+    void caricaMedia();
+    void caricaPrestiti();
     void eliminaMedia(int indice);
     void eliminaPrestito(int indice);
     void salvaMedia(Media* media, int indice);

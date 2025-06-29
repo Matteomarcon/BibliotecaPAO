@@ -5,8 +5,6 @@ Film::Film(int idMedia, QString immagine, QString titolo, float prezzo, QDate da
     Audiovisivo(idMedia, immagine, titolo, prezzo, dataPubblicazione, genere, disponibilita, copie, durata, produzione),
     regista(regista), linguaOriginale(linguaOriginale), paeseProduzione(paeseProduzione) {}
 
-Film::Film(): Audiovisivo() {}
-
 QString Film::getRegista() const {
     return regista;
 }

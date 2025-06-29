@@ -18,7 +18,6 @@ public:
     virtual ~Media();
 
     Media(int idMedia, QString immagine, QString titolo, float prezzo, QDate dataPubblicazione, QString genere, bool disponibilita, int copie);
-    Media();
     int getId() const;
     QString getImmagine() const;
     QString getTitolo() const;

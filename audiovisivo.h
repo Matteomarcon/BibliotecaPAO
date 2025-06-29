@@ -11,7 +11,6 @@ public:
     virtual ~Audiovisivo();
 
     Audiovisivo(int idMedia, QString immagine, QString titolo, float prezzo, QDate dataPubblicazione, QString genere, bool disponibilita, int copie, int durata, QString produzione);
-    Audiovisivo();
     int getDurata() const;
     QString getProduzione() const;
 
