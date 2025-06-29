@@ -1,7 +1,7 @@
 #ifndef MAINWINDOW_H
 #define MAINWINDOW_H
 
-#include "GestoreMedia.h"
+#include "Gestore.h"
 
 #include <QMainWindow>
 #include <QStackedWidget>
@@ -10,6 +10,8 @@
 #include <QComboBox>
 #include <QPushButton>
 #include <QDoubleSpinBox>
+#include <QVBoxLayout>
+#include <QFormLayout>
 
 class MainWindow : public QMainWindow {
     Q_OBJECT
@@ -19,6 +21,12 @@ public:
     ~MainWindow();
 
 private:
+    Media* creaMedia() const;
+    void creaForm();
+
+    void caricaMedia();
+    void caricaPrestiti();
+    void caricaForm();
     //Funzionalità
     void inizializzaGUI();
     void creaPaginaPrincipale();
@@ -100,7 +108,7 @@ private:
     QLabel *labelNumeroTracce;
 
     //Backend
-    GestoreMedia *gestore;
+    Gestore *gestore;
 };
 
 #endif // MAINWINDOW_H

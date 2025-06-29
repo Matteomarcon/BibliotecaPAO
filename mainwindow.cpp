@@ -28,6 +28,8 @@
 #include <QDoubleSpinBox>
 #include <QFont>
 #include <QShortcut>
+#include <QTextEdit>
+#include <QBuffer>
 
 MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent) {
     inizializzaGUI();
@@ -38,7 +40,6 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent) {
 }
 
 MainWindow::~MainWindow() {
-    for (int i = 0; i < listaMedia->count(); ++i) delete listaMedia->item(i)->data(Qt::UserRole).value<Media*>();
     delete gestore;
 }
 
@@ -87,7 +88,7 @@ void MainWindow::inizializzaGUI() {
         if (listaMedia->currentItem() && stackPagine->currentIndex()==0) {
             bool prestitiAttivi = false;
             for (int i=0; i<listaPrestiti->count(); i++) {
-                if (listaPrestiti->item(i)->data(Qt::UserRole)==listaMedia->currentItem()->data(Qt::UserRole).value<Media*>()->getId()) {
+                if (listaPrestiti->item(i)->data(Qt::UserRole)==gestore->getMedia(listaMedia->currentRow())->getId()) {
                     prestitiAttivi = true;
                 }
             }
@@ -137,9 +138,9 @@ void MainWindow::inizializzaGUI() {
         }
     }
 
-    gestore = new GestoreMedia(listaMedia, listaPrestiti, formLayout, labelAnteprimaImmagine, percorsoFile);
-    gestore->caricaBiblioteca(labelRisultatiMedia);
-    gestore->caricaPrestiti(labelRisultatiPrestiti);
+    gestore = new Gestore(percorsoFile);
+    caricaMedia();
+    caricaPrestiti();
 
 
     dialogFiltri = new QDialog(this);
@@ -166,7 +167,7 @@ void MainWindow::inizializzaGUI() {
 
     QLabel* labelCategoria = new QLabel("Categoria:", dialogFiltri);
     comboCategoria->addItem("Tutti");
-    comboCategoria->addItems(GestoreMedia::getTipiDisponibili());
+    comboCategoria->addItems(Gestore::getTipiDisponibili());
 
     QPushButton* bottoneOk = new QPushButton("Applica filtri", dialogFiltri);
     QPushButton* bottoneAnnulla = new QPushButton("Annulla", dialogFiltri);
@@ -292,12 +293,9 @@ void MainWindow::creaPaginaPrincipale() {
     ricercaLayout->setStretch(0, 2);
     ricercaLayout->setStretch(1, 1);
 
-    // Connect barra di ricerca
     connect(barraRicerca, &QLineEdit::textChanged, this, [=]() {
         aggiornaFiltroMedia(barraRicerca->text(), comboCategoria->currentText(), comboDisponibilita->currentText(), spinPrezzoMin->value(), spinPrezzoMax->value());
     });
-
-    // Connect bottone filtri
 
     connect(bottoneFiltri, &QPushButton::clicked, this, [=]() {
         dialogFiltri->exec();
@@ -309,16 +307,13 @@ void MainWindow::creaPaginaPrincipale() {
     layoutPannelloSinistra->addWidget(labelRisultatiMedia);
     layoutPannelloSinistra->addWidget(listaMedia);
 
-    //DIVISORE
     QFrame *line = new QFrame();
     line->setFrameShape(QFrame::VLine);
     line->setFrameShadow(QFrame::Sunken);
 
-    //PANNELLO DESTRA
     QWidget *pannelloDestra = new QWidget();
     QVBoxLayout *layoutPannelloDestra = new QVBoxLayout(pannelloDestra);
 
-    //Top bar destra
     QWidget *topBarDestra = new QWidget(this);
     QHBoxLayout *layoutTopBarDestra = new QHBoxLayout(topBarDestra);
 
@@ -332,16 +327,7 @@ void MainWindow::creaPaginaPrincipale() {
     connect(shortcutModifica, &QShortcut::activated, this, [=] {
         if (listaMedia->currentItem() && stackPagine->currentIndex()==0) {
             stackPagine->setCurrentWidget(paginaForm);
-
-            Media* media = listaMedia->currentItem()->data(Qt::UserRole).value<Media*>();
-
-            if (typeid(*media) == typeid(Film)) selettoreMedia->setCurrentIndex(1);
-            else if (typeid(*media) == typeid(Giornale)) selettoreMedia->setCurrentIndex(2);
-            else if (typeid(*media) == typeid(Libro)) selettoreMedia->setCurrentIndex(3);
-            else if (typeid(*media) == typeid(Rivista)) selettoreMedia->setCurrentIndex(4);
-            else if (typeid(*media) == typeid(Vinile)) selettoreMedia->setCurrentIndex(5);
-
-            gestore->caricaFormDaMedia(listaMedia->row(listaMedia->currentItem()));
+            caricaForm();
         }
     });
 
@@ -377,7 +363,6 @@ void MainWindow::creaPaginaPrincipale() {
     layoutTopBarDestra->addWidget(bottoneModifica);
     layoutTopBarDestra->addWidget(bottoneElimina);
 
-    //Pannello Info
     QWidget *pannelloInfo = new QWidget(this);
     QHBoxLayout *layoutPannelloInfo = new QHBoxLayout(pannelloInfo);
 
@@ -428,7 +413,7 @@ void MainWindow::creaPaginaPrincipale() {
     connect(bottoneElimina, &QPushButton::clicked, this, [=]() {
         bool prestitiAttivi = false;
         for (int i=0; i<listaPrestiti->count(); i++) {
-            if (listaPrestiti->item(i)->data(Qt::UserRole)==listaMedia->currentItem()->data(Qt::UserRole).value<Media*>()->getId()) {
+            if (listaPrestiti->item(i)->data(Qt::UserRole)==gestore->getMedia(listaMedia->currentRow())->getId()) {
                 prestitiAttivi = true;
             }
         }
@@ -448,19 +433,10 @@ void MainWindow::creaPaginaPrincipale() {
     });
     connect(bottoneModifica, &QPushButton::clicked, this, [=]() {
         stackPagine->setCurrentWidget(paginaForm);
-
-        Media* media = listaMedia->currentItem()->data(Qt::UserRole).value<Media*>();
-
-        if (typeid(*media) == typeid(Film)) selettoreMedia->setCurrentIndex(1);
-        else if (typeid(*media) == typeid(Giornale)) selettoreMedia->setCurrentIndex(2);
-        else if (typeid(*media) == typeid(Libro)) selettoreMedia->setCurrentIndex(3);
-        else if (typeid(*media) == typeid(Rivista)) selettoreMedia->setCurrentIndex(4);
-        else if (typeid(*media) == typeid(Vinile)) selettoreMedia->setCurrentIndex(5);
-
-        gestore->caricaFormDaMedia(listaMedia->row(listaMedia->currentItem()));
+        caricaForm();
     });
     connect(bottoneNuovoPrestito, &QPushButton::clicked, this, [=]() {
-        Media* media = listaMedia->currentItem()->data(Qt::UserRole).value<Media*>();
+        Media* media = gestore->getMedia(listaMedia->currentRow());
         if (media->getDisponibilita()) {
 
             dialog = new QDialog(this);
@@ -592,20 +568,11 @@ void MainWindow::creaPaginaForm() {
     QShortcut* shortcutSalvaMedia = new QShortcut(QKeySequence("Ctrl+S"), this);
     connect(shortcutSalvaMedia, &QShortcut::activated, this, [=] {
         if (!bottoneSalva->isHidden() && (stackPagine->currentIndex()==1)) {
-            auto findWidgetByLabel = [this](const QString& labelText) -> QWidget* {
-                for (int i = 0; i < formLayout->rowCount(); ++i) {
-                    QLabel* label = qobject_cast<QLabel*>(formLayout->itemAt(i, QFormLayout::LabelRole)->widget());
-                    if (label && label->text() == labelText) {
-                        return formLayout->itemAt(i, QFormLayout::FieldRole)->widget();
-                    }
-                }
-                return nullptr;
-            };
-            QLineEdit* titolo = qobject_cast<QLineEdit*>(findWidgetByLabel("Titolo"));
+            QString titolo = findChild<QLineEdit*>("campoTitolo")->text();
             if (selettoreMedia->currentIndex() == 0) {
                 QMessageBox::warning(nullptr, "Attenzione", "Per favore seleziona un tipo di media.");
                 return;
-            } else if (titolo->text()=="") {
+            } else if (titolo == "") {
                 QMessageBox::warning(nullptr, "Attenzione", "Per favore inserisci un titolo.");
                 return;
             }
@@ -613,12 +580,12 @@ void MainWindow::creaPaginaForm() {
             int indiceSelezionato = -1;
             if (listaMedia->currentItem()) {
                 indiceSelezionato = listaMedia->row(listaMedia->currentItem());
-                gestore->salvaMediaDaForm(selettoreMedia->currentText(), indiceSelezionato);
+                gestore->salvaMedia(creaMedia(), indiceSelezionato);
             } else {
-                gestore->salvaMediaDaForm(selettoreMedia->currentText());
+                gestore->salvaMedia(creaMedia(), -1);
                 indiceSelezionato = listaMedia->count();
             }
-            gestore->caricaBiblioteca(labelRisultatiMedia);
+            caricaMedia();
 
             if (indiceSelezionato >= 0 && indiceSelezionato < listaMedia->count()) {
                 listaMedia->setCurrentRow(indiceSelezionato);
@@ -653,7 +620,7 @@ void MainWindow::creaPaginaForm() {
     selettoreMedia = new QComboBox();
     selettoreMedia->addItem("Scegli media...");
     selettoreMedia->setItemData(0, 0, Qt::UserRole - 1);
-    selettoreMedia->addItems(GestoreMedia::getTipiDisponibili());
+    selettoreMedia->addItems(Gestore::getTipiDisponibili());
     selettoreMedia->setCurrentIndex(0);
 
     QWidget *form = new QWidget();
@@ -669,32 +636,24 @@ void MainWindow::creaPaginaForm() {
     layoutPaginaForm->addWidget(selettoreMedia);
     layoutPaginaForm->addWidget(form);
 
-    connect(selettoreMedia, &QComboBox::currentTextChanged, this, [=](const QString &tipoSelezionato) {
+    connect(selettoreMedia, &QComboBox::currentTextChanged, this, [=]() {
         pulisciForm();
         bottoneSalva->show();
         labelAnteprimaImmagine->show();
-        gestore->creaForm(tipoSelezionato);
+        creaForm();
     });
     connect(bottoneIndietro, &QPushButton::clicked, this, [=]() {
         mostraPaginaPrincipale();
         selettoreMedia->setCurrentIndex(0);
         pulisciForm();
+        if (listaMedia->currentItem()) mostraInfo();
     });
     connect(bottoneSalva, &QPushButton::clicked, this, [=]() {
-        auto findWidgetByLabel = [this](const QString& labelText) -> QWidget* {
-            for (int i = 0; i < formLayout->rowCount(); ++i) {
-                QLabel* label = qobject_cast<QLabel*>(formLayout->itemAt(i, QFormLayout::LabelRole)->widget());
-                if (label && label->text() == labelText) {
-                    return formLayout->itemAt(i, QFormLayout::FieldRole)->widget();
-                }
-            }
-            return nullptr;
-        };
-        QLineEdit* titolo = qobject_cast<QLineEdit*>(findWidgetByLabel("Titolo"));
+        QString titolo = findChild<QLineEdit*>("campoTitolo")->text();
         if (selettoreMedia->currentIndex() == 0) {
             QMessageBox::warning(nullptr, "Attenzione", "Per favore seleziona un tipo di media.");
             return;
-        } else if (titolo->text()=="") {
+        } else if (titolo == "") {
             QMessageBox::warning(nullptr, "Attenzione", "Per favore inserisci un titolo.");
             return;
         }
@@ -702,12 +661,12 @@ void MainWindow::creaPaginaForm() {
         int indiceSelezionato = -1;
         if (listaMedia->currentItem()) {
             indiceSelezionato = listaMedia->currentRow();
-            gestore->salvaMediaDaForm(selettoreMedia->currentText(), indiceSelezionato);
+            gestore->salvaMedia(creaMedia(), indiceSelezionato);
         } else {
-            gestore->salvaMediaDaForm(selettoreMedia->currentText());
+            gestore->salvaMedia(creaMedia(), -1);
             indiceSelezionato = listaMedia->count();
         }
-        gestore->caricaBiblioteca(labelRisultatiMedia);
+        caricaMedia();
 
         if (indiceSelezionato >= 0 && indiceSelezionato < listaMedia->count()) {
             listaMedia->setCurrentRow(indiceSelezionato);
@@ -752,9 +711,10 @@ void MainWindow::caricaBiblioteca() {
     QString percorsoFile = QFileDialog::getOpenFileName(nullptr, "Scegli Biblioteca", "", "Documento (*.json)");
     if (!percorsoFile.isEmpty()) {
         pulisciInfo();
-        gestore = new GestoreMedia(listaMedia, listaPrestiti, formLayout, labelAnteprimaImmagine, percorsoFile);
-        gestore->caricaBiblioteca(labelRisultatiMedia);
-        gestore->caricaPrestiti(labelRisultatiPrestiti);
+        delete gestore;
+        gestore = new Gestore(percorsoFile);
+        caricaMedia();
+        caricaPrestiti();
     }
 }
 
@@ -862,10 +822,10 @@ void MainWindow::creaPaginaPrestiti() {
         msgBox.exec();
 
         if (msgBox.clickedButton() == confermaButton) {
-            Media* media = listaMedia->item(0)->data(Qt::UserRole).value<Media*>();
+            Media* media = gestore->getMedia(0);
             int indiceMedia = 0;
             for (; media->getId()!=item->data(Qt::UserRole).toInt(); indiceMedia++) {
-                media = listaMedia->item(indiceMedia)->data(Qt::UserRole).value<Media*>();
+                media = gestore->getMedia(indiceMedia);
 
             }
             if (!media->getCopie()) {
@@ -893,7 +853,7 @@ void MainWindow::creaPaginaPrestiti() {
 }
 
 void MainWindow::mostraPaginaPrestiti() {
-    gestore->caricaPrestiti(labelRisultatiPrestiti);
+    caricaPrestiti();
     stackPagine->setCurrentWidget(paginaPrestiti);
 }
 
@@ -905,7 +865,7 @@ void MainWindow::aggiornaFiltroMedia(const QString& testoRicerca, const QString&
 
     for (int i = 0; i < listaMedia->count(); ++i) {
         QListWidgetItem *item = listaMedia->item(i);
-        Media* media = item->data(Qt::UserRole).value<Media*>();
+        Media* media = gestore->getMedia(i);
 
         if (!media) continue;
 
@@ -965,7 +925,7 @@ void MainWindow::pulisciForm() {
 
 void MainWindow::mostraInfo() {
     if (listaMedia->currentItem()) {
-        Media* media = listaMedia->currentItem()->data(Qt::UserRole).value<Media*>();
+        Media* media = gestore->getMedia(listaMedia->currentRow());
         pulisciInfo();
 
         bottoneModifica->show();
@@ -1045,5 +1005,401 @@ void MainWindow::mostraInfo() {
             labelImmagine->clear();
             labelImmagine->setText("Immagine");
         }
+    }
+}
+
+void MainWindow::creaForm() {
+    QPushButton* caricaImmagine = new QPushButton("Carica Immagine");
+    caricaImmagine->setObjectName("Immagine");
+    formLayout->addRow("Immagine", caricaImmagine);
+
+    QTextEdit* base64Edit = new QTextEdit();
+    base64Edit->setObjectName("campoImmagine");
+    base64Edit->setVisible(false);
+    formLayout->addRow("campoImmagine", base64Edit);
+
+    QLabel* label = qobject_cast<QLabel*>(formLayout->labelForField(base64Edit));
+    if (label) label->setVisible(false);
+
+    QObject::connect(caricaImmagine, &QPushButton::clicked, [=]() {
+        QString fileName = QFileDialog::getOpenFileName(nullptr, "Scegli immagine", "", "Immagini (*.png *.jpg *.bmp)");
+
+        if (fileName.isEmpty())
+            return;
+
+        QPixmap pixmap(fileName);
+        if (pixmap.isNull()) {
+            QMessageBox::warning(nullptr, "Errore", "Impossibile caricare l'immagine.");
+            return;
+        }
+
+        QByteArray byteArray;
+        QBuffer buffer(&byteArray);
+        buffer.open(QIODevice::WriteOnly);
+        bool saved = pixmap.save(&buffer, "PNG");
+
+        if (!saved) {
+            QMessageBox::warning(nullptr, "Errore", "Errore nel salvataggio dell'immagine in memoria.");
+            return;
+        } else {
+            labelAnteprimaImmagine->setPixmap(pixmap);
+        }
+
+        QString base64 = QString::fromLatin1(byteArray.toBase64());
+        base64Edit->setText(base64);
+    });
+
+    QLineEdit* campoTitolo = new QLineEdit;
+    campoTitolo->setObjectName("campoTitolo");
+    formLayout->addRow("Titolo:", campoTitolo);
+
+    QDoubleSpinBox* campoPrezzo = new QDoubleSpinBox();
+    campoPrezzo->setObjectName("campoPrezzo");
+    campoPrezzo->setMinimum(0.01);
+    formLayout->addRow("Prezzo:", campoPrezzo);
+
+    QDateEdit* campoData = new QDateEdit();
+    campoData->setObjectName("campoData");
+    formLayout->addRow("Data", campoData);
+
+    QLineEdit* campoGenere = new QLineEdit();
+    campoGenere->setObjectName("campoGenere");
+    formLayout->addRow("Genere", campoGenere);
+
+    QSpinBox* campoCopie = new QSpinBox();
+    campoCopie->setRange(0, 999);
+    campoCopie->setValue(1);
+    campoCopie->setObjectName("campoCopie");
+    formLayout->addRow("Copie", campoCopie);
+
+    QString categoria = selettoreMedia->currentText();
+
+    if (categoria == "Film") {
+        QSpinBox* campoDurata = new QSpinBox();
+        campoDurata->setRange(0, 999);
+        campoDurata->setObjectName("campoDurata");
+        formLayout->addRow("Durata (min)", campoDurata);
+
+        QLineEdit* campoProduzione = new QLineEdit();
+        campoProduzione->setObjectName("campoProduzione");
+        formLayout->addRow("Produzione", campoProduzione);
+
+        QLineEdit* campoRegista = new QLineEdit();
+        campoRegista->setObjectName("campoRegista");
+        formLayout->addRow("Regista", campoRegista);
+
+        QLineEdit* campoLinguaOriginale = new QLineEdit();
+        campoLinguaOriginale->setObjectName("campoLinguaOriginale");
+        formLayout->addRow("Lingua originale", campoLinguaOriginale);
+
+        QLineEdit* campoPaese = new QLineEdit();
+        campoPaese->setObjectName("campoPaeseProduzione");
+        formLayout->addRow("Paese di produzione", campoPaese);
+    }
+    else if (categoria == "Giornale") {
+        QLineEdit* campoAutore = new QLineEdit();
+        campoAutore->setObjectName("campoAutore");
+        formLayout->addRow("Autore", campoAutore);
+
+        QLineEdit* campoEditore = new QLineEdit();
+        campoEditore->setObjectName("campoEditore");
+        formLayout->addRow("Editore", campoEditore);
+
+        QLineEdit* campoTestata = new QLineEdit();
+        campoTestata->setObjectName("campoTestata");
+        formLayout->addRow("Testata", campoTestata);
+    }
+    else if (categoria == "Libro") {
+        QLineEdit* campoAutore = new QLineEdit();
+        campoAutore->setObjectName("campoAutore");
+        formLayout->addRow("Autore", campoAutore);
+
+        QLineEdit* campoEditore = new QLineEdit();
+        campoEditore->setObjectName("campoEditore");
+        formLayout->addRow("Editore", campoEditore);
+
+        QLineEdit* campoFormato = new QLineEdit();
+        campoFormato->setObjectName("campoFormato");
+        formLayout->addRow("Formato", campoFormato);
+
+        QLineEdit* campoLingua = new QLineEdit();
+        campoLingua->setObjectName("campoLingua");
+        formLayout->addRow("Lingua", campoLingua);
+    }
+    else if (categoria == "Rivista") {
+        QLineEdit* campoAutore = new QLineEdit();
+        campoAutore->setObjectName("campoAutore");
+        formLayout->addRow("Autore", campoAutore);
+
+        QLineEdit* campoEditore = new QLineEdit();
+        campoEditore->setObjectName("campoEditore");
+        formLayout->addRow("Editore", campoEditore);
+
+        QSpinBox* campoNumero = new QSpinBox();
+        campoNumero->setObjectName("campoNumero");
+        formLayout->addRow("Numero", campoNumero);
+
+        QComboBox* comboPeriodicita = new QComboBox();
+        comboPeriodicita->setObjectName("comboPeriodicita");
+        comboPeriodicita->addItems({
+            "Seleziona periodicità...",
+            "Settimanale", "Mensile", "Trimestrale",
+            "Quadrimestrale", "Semestrale", "Annuale"
+        });
+        comboPeriodicita->setItemData(0, 0, Qt::UserRole - 1);
+        comboPeriodicita->setCurrentIndex(-1);
+        formLayout->addRow("Periodicità", comboPeriodicita);
+    }
+    else if (categoria == "Vinile") {
+        QSpinBox* campoDurata = new QSpinBox();
+        campoDurata->setRange(0, 999);
+        campoDurata->setObjectName("campoDurata");
+        formLayout->addRow("Durata (min)", campoDurata);
+
+        QLineEdit* campoProduzione = new QLineEdit();
+        campoProduzione->setObjectName("campoProduzione");
+        formLayout->addRow("Produzione", campoProduzione);
+
+        QLineEdit* campoArtista = new QLineEdit();
+        campoArtista->setObjectName("campoArtista");
+        formLayout->addRow("Artista", campoArtista);
+
+        QSpinBox* campoTracce = new QSpinBox();
+        campoTracce->setObjectName("campoTracce");
+        formLayout->addRow("Numero tracce", campoTracce);
+    }
+}
+
+Media* MainWindow::creaMedia() const {
+    QString titolo = findChild<QLineEdit*>("campoTitolo")->text();
+    float prezzo = findChild<QDoubleSpinBox*>("campoPrezzo")->value();
+    QDate data = findChild<QDateEdit*>("campoData")->date();
+    QString genere = findChild<QLineEdit*>("campoGenere")->text();
+    int copie = findChild<QSpinBox*>("campoCopie")->value();
+    QString immagine = findChild<QTextEdit*>("campoImmagine")->toPlainText();
+    bool disponibilita;
+    if (copie) disponibilita = true;
+    else disponibilita = false;
+
+
+    int idMedia = 0;
+    if (gestore->getQuantitaMedia()) {
+        Media* media = gestore->getMedia(gestore->getQuantitaMedia()-1);
+        if (listaMedia->currentItem()) idMedia = media->getId();
+        else idMedia = media->getId()+1;
+    }
+
+    switch(selettoreMedia->currentIndex()) {
+    case 1: {
+        int durata = findChild<QSpinBox*>("campoDurata")->value();
+        QString produzione = findChild<QLineEdit*>("campoProduzione")->text();
+        QString regista = findChild<QLineEdit*>("campoRegista")->text();
+        QString linguaOriginale = findChild<QLineEdit*>("campoLinguaOriginale")->text();
+        QString paeseProduzione = findChild<QLineEdit*>("campoPaeseProduzione")->text();
+        return new Film(idMedia, immagine, titolo, prezzo, data, genere, disponibilita, copie, durata, produzione,
+                        regista, linguaOriginale, paeseProduzione);
+    }
+    case 2: {
+        QString autore = findChild<QLineEdit*>("campoAutore")->text();
+        QString editore = findChild<QLineEdit*>("campoEditore")->text();
+        QString testata = findChild<QLineEdit*>("campoTestata")->text();
+        return new Giornale(idMedia, immagine, titolo, prezzo, data, genere, disponibilita, copie, autore, editore, testata);
+    }
+    case 3: {
+        QString autore = findChild<QLineEdit*>("campoAutore")->text();
+        QString editore = findChild<QLineEdit*>("campoEditore")->text();
+        QString formato = findChild<QLineEdit*>("campoFormato")->text();
+        QString lingua = findChild<QLineEdit*>("campoLingua")->text();
+        return new Libro(idMedia, immagine, titolo, prezzo, data, genere, disponibilita, copie, autore, editore, formato, lingua);
+    }
+    case 4: {
+        QString autore = findChild<QLineEdit*>("campoAutore")->text();
+        QString editore = findChild<QLineEdit*>("campoEditore")->text();
+        int numero = findChild<QSpinBox*>("campoNumero")->value();
+        QString periodicita = findChild<QComboBox*>("comboPeriodicita")->currentText();
+        return new Rivista(idMedia, immagine, titolo, prezzo, data, genere, disponibilita, copie, autore, editore, numero, periodicita);
+    }
+    case 5: {
+        int durata = findChild<QSpinBox*>("campoDurata")->value();
+        QString produzione = findChild<QLineEdit*>("campoProduzione")->text();
+        QString artista = findChild<QLineEdit*>("campoArtista")->text();
+        int tracce = findChild<QSpinBox*>("campoTracce")->value();
+        return new Vinile(idMedia, immagine, titolo, prezzo, data, genere, disponibilita, copie, durata, produzione, artista, tracce);
+    }
+    }
+}
+
+void MainWindow::caricaMedia() {
+    gestore->caricaMedia();
+
+    listaMedia->clear();
+
+    for (int i=0; i<gestore->getQuantitaMedia(); i++) {
+        Media* media = gestore->getMedia(i);
+        QListWidgetItem* item = new QListWidgetItem(media->getIcon(), media->getTitolo(), listaMedia);
+
+        QFont font;
+        font.setBold(true);
+        item->setFont(font);
+
+        listaMedia->setIconSize(QSize(48, 48));
+    }
+
+    int visibili = 0;
+    for (int i = 0; i < listaMedia->count(); ++i) {
+        QListWidgetItem *item = listaMedia->item(i);
+        item->setHidden(false);
+        ++visibili;
+    }
+    labelRisultatiMedia->setText(QString("Risultati: %1").arg(visibili));
+}
+
+void MainWindow::caricaPrestiti() {
+    gestore->caricaPrestiti();
+    listaPrestiti->clear();
+
+    for (int i=0; i<gestore->getQuantitaPrestiti(); ++i) {
+        Media* media = gestore->getMedia(0);
+        Prestito* prestito = gestore->getPrestito(i);
+        for (int j=0; media->getId()!=prestito->getIdMedia(); ++j) {
+            media = gestore->getMedia(j+1);
+        }
+
+        QString nome = prestito->getNome();
+        QString cognome = prestito->getCognome();
+        QDate dataInizio = prestito->getDataInizio();
+        QDate dataFine = prestito->getDataFine();
+
+        QWidget* container = new QWidget;
+        QVBoxLayout* layout = new QVBoxLayout(container);
+        layout->setContentsMargins(10, 6, 10, 6);
+        layout->setSpacing(2);
+
+        QLabel* labelPrestito = new QLabel("Prestito");
+        QLabel* labelUtente = new QLabel("🧑 Richiedente: " + nome + " " + cognome);
+        QLabel* labelTitolo = new QLabel("📘 Titolo media: " + media->getTitolo());
+        QLabel* labelDataInizio = new QLabel("📅 Data inizio: " + dataInizio.toString("dd/MM/yyyy"));
+        QLabel* labelDataFine = new QLabel("📅 Data fine: " + dataFine.toString("dd/MM/yyyy"));
+
+        QFont boldFont = labelPrestito->font();
+        boldFont.setBold(true);
+        labelPrestito->setFont(boldFont);
+
+        layout->addWidget(labelPrestito);
+        layout->addWidget(labelUtente);
+        layout->addWidget(labelTitolo);
+        layout->addWidget(labelDataInizio);
+        layout->addWidget(labelDataFine);
+
+        QListWidgetItem* item = new QListWidgetItem;
+        item->setSizeHint(container->sizeHint());
+        item->setData(Qt::UserRole, prestito->getIdMedia());
+        item->setText(nome + " " + cognome + " " + media->getTitolo() + " " + dataInizio.toString("dd/MM/yyy") + " " + dataFine.toString("dd/MM/yyyy"));
+        listaPrestiti->addItem(item);
+        listaPrestiti->setItemWidget(item, container);
+    }
+
+    int visibili = 0;
+    for (int i = 0; i < listaPrestiti->count(); ++i) {
+        QListWidgetItem *item = listaPrestiti->item(i);
+        item->setHidden(false);
+        ++visibili;
+    }
+    labelRisultatiPrestiti->setText(QString("Risultati: %1").arg(visibili));
+}
+
+void MainWindow::caricaForm() {
+    Media* media = gestore->getMedia(listaMedia->currentRow());
+
+    if (dynamic_cast<Film*>(media)) selettoreMedia->setCurrentIndex(1);
+    else if (dynamic_cast<Giornale*>(media)) selettoreMedia->setCurrentIndex(2);
+    else if (dynamic_cast<Libro*>(media)) selettoreMedia->setCurrentIndex(3);
+    else if (dynamic_cast<Rivista*>(media)) selettoreMedia->setCurrentIndex(4);
+    else if (dynamic_cast<Vinile*>(media)) selettoreMedia->setCurrentIndex(5);
+
+    QString base64 = media->getImmagine();
+    QByteArray byteArray = QByteArray::fromBase64(base64.toLatin1());
+
+    QPixmap pixmap;
+    if (pixmap.loadFromData(byteArray)) {
+        labelAnteprimaImmagine->setPixmap(pixmap.scaled(500, 500, Qt::KeepAspectRatio, Qt::SmoothTransformation));
+        labelAnteprimaImmagine->show();
+    }
+    else {
+        labelAnteprimaImmagine->show();
+        labelAnteprimaImmagine->clear();
+        labelAnteprimaImmagine->setText("Anteprima Immagine");
+    }
+
+    if (QTextEdit* base64Edit = findChild<QTextEdit*>("campoImmagine"))
+        base64Edit->setText(media->getImmagine());
+
+    if (QLineEdit* titolo = findChild<QLineEdit*>("campoTitolo"))
+        titolo->setText(media->getTitolo());
+
+    if (QDoubleSpinBox* prezzo = findChild<QDoubleSpinBox*>("campoPrezzo"))
+        prezzo->setValue(media->getPrezzo());
+
+    if (QDateEdit* data = findChild<QDateEdit*>("campoData"))
+        data->setDate(media->getData());
+
+    if (QLineEdit* genere = findChild<QLineEdit*>("campoGenere"))
+        genere->setText(media->getGenere());
+
+    if (QSpinBox* copie = findChild<QSpinBox*>("campoCopie"))
+        copie->setValue(media->getCopie());
+
+    if (Film* film = dynamic_cast<Film*>(media)) {
+        if (QSpinBox* durata = findChild<QSpinBox*>("campoDurata"))
+            durata->setValue(film->getDurata());
+        if (QLineEdit* produzione = findChild<QLineEdit*>("campoProduzione"))
+            produzione->setText(film->getProduzione());
+        if (QLineEdit* regista = findChild<QLineEdit*>("campoRegista"))
+            regista->setText(film->getRegista());
+        if (QLineEdit* lingua = findChild<QLineEdit*>("campoLinguaOriginale"))
+            lingua->setText(film->getLinguaOriginale());
+        if (QLineEdit* paese = findChild<QLineEdit*>("campoPaeseProduzione"))
+            paese->setText(film->getPaeseProduzione());
+    }
+    else if (Giornale* giornale = dynamic_cast<Giornale*>(media)) {
+        if (QLineEdit* autore = findChild<QLineEdit*>("campoAutore"))
+            autore->setText(giornale->getAutore());
+        if (QLineEdit* editore = findChild<QLineEdit*>("campoEditore"))
+            editore->setText(giornale->getEditore());
+        if (QLineEdit* testata = findChild<QLineEdit*>("campoTestata"))
+            testata->setText(giornale->getTestata());
+    }
+    else if (Libro* libro = dynamic_cast<Libro*>(media)) {
+        if (QLineEdit* autore = findChild<QLineEdit*>("campoAutore"))
+            autore->setText(libro->getAutore());
+        if (QLineEdit* editore = findChild<QLineEdit*>("campoEditore"))
+            editore->setText(libro->getEditore());
+        if (QLineEdit* formato = findChild<QLineEdit*>("campoFormato"))
+            formato->setText(libro->getFormato());
+        if (QLineEdit* lingua = findChild<QLineEdit*>("campoLingua"))
+            lingua->setText(libro->getLingua());
+    }
+    else if (Rivista* rivista = dynamic_cast<Rivista*>(media)) {
+        if (QLineEdit* autore = findChild<QLineEdit*>("campoAutore"))
+            autore->setText(rivista->getAutore());
+        if (QLineEdit* editore = findChild<QLineEdit*>("campoEditore"))
+            editore->setText(rivista->getEditore());
+        if (QSpinBox* numero = findChild<QSpinBox*>("campoNumero"))
+            numero->setValue(rivista->getNumero());
+        if (QComboBox* periodicita = findChild<QComboBox*>("comboPeriodicita")) {
+            int index = periodicita->findText(rivista->getPeriodicita());
+            if (index != -1)
+                periodicita->setCurrentIndex(index);
+        }
+    }
+    else if (Vinile* vinile = dynamic_cast<Vinile*>(media)) {
+        if (QSpinBox* durata = findChild<QSpinBox*>("campoDurata"))
+            durata->setValue(vinile->getDurata());
+        if (QLineEdit* produzione = findChild<QLineEdit*>("campoProduzione"))
+            produzione->setText(vinile->getProduzione());
+        if (QLineEdit* artista = findChild<QLineEdit*>("campoArtista"))
+            artista->setText(vinile->getArtista());
+        if (QSpinBox* tracce = findChild<QSpinBox*>("campoTracce"))
+            tracce->setValue(vinile->getNumeroTracce());
     }
 }

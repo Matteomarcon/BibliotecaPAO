@@ -1,5 +1,5 @@
-#ifndef GESTOREJSON_H
-#define GESTOREJSON_H
+#ifndef GESTORE_H
+#define GESTORE_H
 
 #include <prestito.h>
 #include <media.h>
@@ -15,17 +15,23 @@
 #include <QString>
 #include <QObject>
 
-class GestoreJson {
+class Gestore {
 public:
-    GestoreJson(const QString& nomeFile);
+    Gestore(const QString& nomeFile);
 
-    QList<Media*> caricaBiblioteca();
+    static QStringList getTipiDisponibili();
+    Media* getMedia(int indice);
+    Prestito* getPrestito(int indice);
+    int getQuantitaMedia();
+    int getQuantitaPrestiti();
+
+    QList<Media*> caricaMedia();
     QList<Prestito*> caricaPrestiti();
     void eliminaMedia(int indice);
     void eliminaPrestito(int indice);
     void salvaMedia(Media* media, int indice);
-    void modificaMedia(int indice, int copie, bool disponibilita);
     void salvaPrestito(Prestito* prestito);
+    void modificaMedia(int indice, int copie, bool disponibilita);
 
 private:
     QList<Media*> listaMedia;
@@ -49,4 +55,4 @@ private:
     Prestito* caricaPrestito (const QJsonObject& jsonObject) const;
 };
 
-#endif // GESTOREJSON_H
+#endif // GESTORE_H
